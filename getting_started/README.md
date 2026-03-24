@@ -31,39 +31,33 @@ TWILIO_TAC_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
 
 ## Examples
 
-See [`examples/fastapi/`](examples/fastapi/) for complete working examples:
+See [`examples/`](examples/) for complete working example:
 
-- `strands_agents.py` - Strands SDK with FastAPI server
-- `bedrock.py` - Bedrock Agent Runtime with FastAPI server
-- `bedrock_agentcore.py` - Bedrock AgentCore with FastAPI server
+- `strands_agents.py` - Strands SDK with TAC Server
 
 ## Quick Example
 
 ```python
 from strands import Agent
 from tac import TAC, TACConfig
-from tac.channels import SMSChannel, VoiceChannel
+from tac.server import TACServer
 from tac_aws.adapters import StrandsAdapter
-from tac_aws.handlers import OmniChannelHandlers
-from tac_aws.servers import OmniChannelFastAPIServer
+from tac_aws.handlers import OmniChannelHandler
 
 # Create TAC instance
 tac = TAC(config=TACConfig.from_env())
 
-# Create agent and wrap in adapter
-agent = Agent(model="gpt-4o")
-adapter = StrandsAdapter(agent)
+# Create agent factory and adapter
+def create_agent() -> Agent:
+    return Agent(model="amazon.nova-pro-v1:0", system_prompt="You are helpful.")
 
-# Create channel handlers
-handlers = OmniChannelHandlers(
-    tac=tac,
-    adapter=adapter,
-    voice=VoiceChannel(tac=tac, auto_retrieve_memory=True),
-    sms=SMSChannel(tac=tac, auto_retrieve_memory=True),
-)
+adapter = StrandsAdapter(agent_factory=create_agent)
 
-# Create and start server
-server = OmniChannelFastAPIServer(handlers=handlers)
+# Create channel handler
+handler = OmniChannelHandler(tac=tac, adapter=adapter)
+
+# TAC Server uses handler's channels for HTTP routing
+server = TACServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
 server.start()
 ```
 

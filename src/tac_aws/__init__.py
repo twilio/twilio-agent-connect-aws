@@ -1,56 +1,29 @@
 """AWS integrations for Twilio Agent Connect (TAC).
 
-This package provides AWS-specific adapters and servers for TAC:
+This package provides AWS-specific adapters and handlers for TAC:
 
 Adapters:
-    - StrandsAdapter: AWS Strands SDK integration
-    - BedrockAdapter: AWS Bedrock Agent Runtime integration
-    - BedrockAgentCoreAdapter: AWS Bedrock AgentCore integration
-
-Servers:
-    - OmniChannelFastAPIServer: FastAPI-based multi-channel server
-    - OmniChannelAgentCoreServer: BedrockAgentCore-based multi-channel server
+    - StrandsAdapter: AWS Strands SDK integration with per-conversation agents
 
 Handlers:
-    - OmniChannelHandlers: Container for channel handler instances
+    - OmniChannelHandler: Multi-channel message processing with adapter integration
+
+Tools:
+    - create_memory_tool: Strands tool for Twilio Memory retrieval
 """
 
 __version__ = "0.1.0"
 
 # Import adapters
-from tac_aws.adapters import (
-    BedrockAdapter,
-    BedrockAgentCoreAdapter,
-    StrandsAdapter,
-)
+from tac_aws.adapters import StrandsAdapter
 
 # Import handlers
-from tac_aws.handlers import OmniChannelHandlers
-
-# Import servers (only if dependencies are available)
-try:
-    from tac_aws.servers import (
-        OmniChannelFastAPIServer,
-    )
-except ImportError:
-    pass  # FastAPI not installed
-
-try:
-    from tac_aws.servers import (
-        OmniChannelAgentCoreServer,
-    )
-except ImportError:
-    pass  # BedrockAgentCore not installed
+from tac_aws.handlers import OmniChannelHandler
 
 __all__ = [
     "__version__",
     # Adapters
     "StrandsAdapter",
-    "BedrockAdapter",
-    "BedrockAgentCoreAdapter",
     # Handlers
-    "OmniChannelHandlers",
-    # Servers
-    "OmniChannelFastAPIServer",
-    "OmniChannelAgentCoreServer",
+    "OmniChannelHandler",
 ]

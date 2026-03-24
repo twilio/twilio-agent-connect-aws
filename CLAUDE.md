@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-TAC AWS is an open-source library providing AWS-specific integrations for Twilio Agent Connect (TAC). It contains adapters for AWS agent runtimes (Strands, Bedrock Agent Runtime, Bedrock AgentCore) and a FastAPI-based multi-channel server.
+TAC AWS is an open-source library providing AWS-specific integrations for Twilio Agent Connect (TAC). It contains adapters for AWS Strands SDK and multi-channel conversation handlers.
 
 **Key Architecture**: TAC AWS is a separate package that depends on TAC as an external dependency. It does NOT contain TAC source code - it imports from the `tac` package.
 
@@ -27,22 +27,19 @@ src/tac_aws/
 ├── __init__.py         # Package exports
 ├── adapters/           # AWS adapter implementations
 │   ├── __init__.py
-│   ├── strands_adapter.py       # Strands SDK
-│   ├── bedrock_adapter.py       # Bedrock Agent Runtime
-│   └── agentcore_adapter.py     # Bedrock AgentCore
+│   ├── base.py                  # BaseAgentAdapter interface
+│   └── strands_adapter.py       # Strands SDK
 ├── handlers/           # Multi-channel conversation management
 │   ├── __init__.py
-│   └── omni.py                  # OmniChannelHandlers (conversation logic)
-└── servers/            # FastAPI-based servers
-    ├── __init__.py
-    └── fastapi.py               # OmniChannelFastAPIServer (HTTP routing)
+│   └── omni.py                  # OmniChannelHandler (conversation logic)
+└── tools/              # LLM tools for Strands
+    └── strands.py               # Memory tool for Strands agents
 
 getting_started/
-└── examples/
-    └── fastapi/        # FastAPI server examples
-        ├── strands_agents.py
-        ├── bedrock.py
-        └── bedrock_agentcore.py
+└── examples/           # FastAPI server examples
+    ├── strands_agents.py
+    ├── bedrock.py
+    └── bedrock_agentcore.py
 ```
 
 ## Code Conventions
@@ -67,37 +64,35 @@ dependencies = [
 ### Optional Dependencies
 
 - `strands-agents` - AWS Strands SDK
-- `boto3` - AWS Bedrock (Agent Runtime and AgentCore)
-- `server` - FastAPI + Uvicorn for OmniChannelFastAPIServer
 - `dev` - Development tools (pytest, ruff, mypy, type stubs)
+
+**Note**: Server support requires `tac[server]` from the core TAC package.
 
 ## Key Concepts
 
 ### Adapters
 
-All adapters implement `BaseAgentAdapter` from TAC:
+All adapters implement `BaseAgentAdapter`:
 
 ```python
-from tac.adapters import BaseAgentAdapter
+from tac_aws.adapters import BaseAgentAdapter
 
 class MyAdapter(BaseAgentAdapter):
-    async def run_async(self, message: str, session_id: str, **kwargs) -> str:
+    async def run_async(self, message: str, conversation_id: str, **kwargs) -> str:
         # Call agent SDK
         pass
 
-    async def stream_async(self, message: str, session_id: str, **kwargs):
+    async def stream_async(self, message: str, conversation_id: str, **kwargs):
         # Stream from agent SDK
         yield "chunk"
 ```
 
 **Available Adapters:**
-- `StrandsAdapter` - Wraps `strands.Agent`
-- `BedrockAdapter` - Wraps boto3 `bedrock-agent-runtime` client
-- `BedrockAgentCoreAdapter` - Wraps boto3 `bedrock-agentcore` client
+- `StrandsAdapter` - Wraps `strands.Agent` with per-conversation agent instances
 
 ### Handlers
 
-**OmniChannelHandlers:**
+**OmniChannelHandler:**
 - Manages conversation history per session
 - Injects TAC memory context using `MemoryPromptBuilder`
 - Invokes agent adapter with conversation history
@@ -107,13 +102,12 @@ class MyAdapter(BaseAgentAdapter):
 
 ### Server
 
-**OmniChannelFastAPIServer:**
-- Standalone FastAPI server (no base class)
-- Accepts `handlers: OmniChannelHandlers` parameter for conversation management
-- Optional `server_config: TACServerConfig` for server customization
-- Creates FastAPI app with TAC routes (SMS, Voice, WebSocket, CI webhooks)
-- HTTP routing layer - conversation logic handled by OmniChannelHandlers
-- Clean separation: handlers manage conversation, server handles HTTP
+TAC AWS uses `TACServer` from the core TAC package (`tac.server`):
+- FastAPI-based server with TAC integration
+- Accepts voice and SMS channel instances
+- Handles HTTP routes (SMS, Voice, WebSocket, CI webhooks)
+- OmniChannelHandler creates channels and manages conversation logic
+- Clean separation: handler manages conversation, TACServer handles HTTP
 
 ## Import Patterns
 
@@ -121,15 +115,14 @@ class MyAdapter(BaseAgentAdapter):
 
 ```python
 # TAC imports - external dependency
-from tac.adapters import BaseAgentAdapter
 from tac.core import TAC, TACConfig
 from tac.models.session import ConversationSession
 from tac.models.tac import TACMemoryResponse
-from tac.server import TACServerConfig, FastAPIWebSocketAdapter
+from tac.server import TACServer
 
 # TAC AWS imports - local package
-from tac_aws.adapters import StrandsAdapter, BedrockAdapter
-from tac_aws.servers import OmniChannelFastAPIServer
+from tac_aws.adapters import BaseAgentAdapter, StrandsAdapter
+from tac_aws.handlers import OmniChannelHandler
 ```
 
 ### Incorrect Imports (DO NOT DO)
@@ -142,59 +135,34 @@ from tac_aws.core import TAC
 from src.tac.adapters import BaseAgentAdapter
 ```
 
-## Type Hints for AWS Clients
-
-**Bedrock Agent Runtime:**
-```python
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from mypy_boto3_bedrock_agent_runtime.client import AgentsforBedrockRuntimeClient
-
-def __init__(self, client: AgentsforBedrockRuntimeClient, ...):
-    self.client: AgentsforBedrockRuntimeClient = client
-```
-
-**Bedrock AgentCore:**
-```python
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from mypy_boto3_bedrock_agentcore.client import BedrockAgentCoreClient
-
-def __init__(self, client: BedrockAgentCoreClient, ...):
-    self.client: BedrockAgentCoreClient = client
-```
-
 ## Example Usage Patterns
 
-### Strands with FastAPI Server
+### Strands with TAC Server
 
 ```python
 from strands import Agent
 from tac import TAC, TACConfig
-from tac.channels import SMSChannel, VoiceChannel
+from tac.server import TACServer
 from tac_aws.adapters import StrandsAdapter
-from tac_aws.handlers import OmniChannelHandlers
-from tac_aws.servers import OmniChannelFastAPIServer
+from tac_aws.handlers import OmniChannelHandler
 
 # Create TAC instance
 tac = TAC(config=TACConfig.from_env())
 
-# Create agent and adapter
-agent = Agent(model="gpt-4o", system_prompt="You are helpful.")
-adapter = StrandsAdapter(agent)
+# Create agent factory and adapter
+def create_agent() -> Agent:
+    return Agent(
+        model="amazon.nova-pro-v1:0",
+        system_prompt="You are a helpful assistant."
+    )
 
-# Create channel handlers (manages conversation logic)
-handlers = OmniChannelHandlers(
-    tac=tac,
-    adapter=adapter,
-    voice=VoiceChannel(tac=tac, auto_retrieve_memory=True),
-    sms=SMSChannel(tac=tac, auto_retrieve_memory=True),
-)
+adapter = StrandsAdapter(agent_factory=create_agent)
 
-# Create and start server (handles HTTP routing)
-server = OmniChannelFastAPIServer(handlers=handlers)
+# Create channel handler (manages conversation logic)
+handler = OmniChannelHandler(tac=tac, adapter=adapter)
+
+# TAC Server uses handler's channels for HTTP routing
+server = TACServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
 server.start()
 ```
 

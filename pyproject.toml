@@ -21,6 +21,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "strands-agents-tools>=0.2.23",
     # Core TAC from GitHub
     "twilio-agent-connect @ git+https://github.com/twilio-innovation/twilio-agent-connect-python.git@d613dd8c442ec5edb5a3d37b22e7802cca45aeb1",
 ]

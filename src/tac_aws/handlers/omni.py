@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 from tac.adapters import MemoryPromptBuilder
 from tac.channels.sms import SMSChannel
 from tac.channels.voice import VoiceChannel
@@ -17,45 +15,38 @@ from tac_aws.adapters.base import BaseAgentAdapter
 logger = get_logger(__name__)
 
 
-class OmniChannelHandlers:
+class OmniChannelHandler:
     """
     Multi-channel conversation handler with message processing.
 
-    Manages conversation history, memory injection, agent invocation,
-    and response routing across multiple channels (Voice, SMS).
-
-    This class separates conversation management from HTTP routing,
-    making it reusable across different server implementations.
+    Creates Voice and SMS channels internally and manages conversation flow
+    through the adapter. Provides access to channels for server integration.
 
     Args:
         tac: TAC instance for channel integration
         adapter: Agent adapter (StrandsAdapter, BedrockAdapter, etc.)
-        voice: Optional VoiceChannel handler instance
-        sms: Optional SMSChannel handler instance
+        auto_retrieve_memory: Enable automatic memory retrieval for both channels
+
+    Attributes:
+        voice: VoiceChannel instance for voice conversations
+        sms: SMSChannel instance for SMS conversations
 
     Example:
         ```python
         from tac import TAC, TACConfig
-        from tac.channels import VoiceChannel, SMSChannel
+        from tac.server import TACServer
         from tac_aws.adapters import StrandsAdapter
-        from tac_aws.handlers import OmniChannelHandlers
+        from tac_aws.handlers import OmniChannelHandler
         from strands import Agent
 
         tac = TAC(config=TACConfig.from_env())
-        agent = Agent(model="gpt-4o")
-        adapter = StrandsAdapter(agent)
+        adapter = StrandsAdapter(agent_factory=lambda: Agent(model="gpt-4o"))
 
-        # Create handlers with conversation management
-        handlers = OmniChannelHandlers(
-            tac=tac,
-            adapter=adapter,
-            voice=VoiceChannel(tac=tac, auto_retrieve_memory=True),
-            sms=SMSChannel(tac=tac, auto_retrieve_memory=True),
-        )
+        handler = OmniChannelHandler(tac=tac, adapter=adapter)
 
-        # Handlers automatically process messages via TAC callbacks
-        # Pass to server for HTTP routing
-        server = OmniChannelFastAPIServer(handlers=handlers)
+        # Use handler's channels for server
+        server = TACServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
+        server.start()
         ```
     """
 
@@ -63,34 +54,37 @@ class OmniChannelHandlers:
         self,
         tac: TAC,
         adapter: BaseAgentAdapter,
-        voice: VoiceChannel | None = None,
-        sms: SMSChannel | None = None,
+        auto_retrieve_memory: bool = False,
     ) -> None:
         self.tac = tac
         self.adapter = adapter
-        self.voice = voice
-        self.sms = sms
 
-        # Track conversation history per conversation ID
-        # Format: {'role': 'user'|'assistant', 'content': [{'text': '...'}]}
-        self.conversation_history: dict[str, list[dict[str, Any]]] = {}
+        # Create channels internally
+        self.voice = VoiceChannel(tac=tac, auto_retrieve_memory=auto_retrieve_memory)
+        self.sms = SMSChannel(tac=tac, auto_retrieve_memory=auto_retrieve_memory)
+
+        # Track which sessions have been initialized (for memory injection)
+        self.initialized_sessions: set[str] = set()
+
+        # Always auto-inject memory context when available
+        # Users control memory behavior via auto_retrieve_memory in channels
+        self.auto_inject_memory = True
 
         # Register message handler with TAC
-        self.tac.on_message_ready(self._handle_message_internal)
+        self.tac.on_message_ready(self._handle_message)
 
-        logger.info(f"Initialized {self}")
+        logger.info("OmniChannelHandler initialized")
 
-    async def _handle_message_internal(
+    async def _handle_message(
         self,
         user_message: str,
         context: ConversationSession,
         memory_response: TACMemoryResponse | None,
     ) -> None:
-        """Internal handler that processes messages with conversation history and memory.
+        """Handler that processes messages and routes them through the adapter.
 
-        This method is called by TAC when a message is ready to be processed.
-        It manages conversation history, injects memory context, invokes the agent,
-        and routes responses to the appropriate channel.
+        The adapter is responsible for managing conversation history in an SDK-specific way.
+        This handler focuses on memory injection and channel routing.
 
         Args:
             user_message: The user's message text
@@ -100,43 +94,23 @@ class OmniChannelHandlers:
         try:
             conv_id = context.conversation_id
 
-            # Initialize conversation history for new conversations
-            if conv_id not in self.conversation_history:
-                self.conversation_history[conv_id] = []
+            # For new sessions, inject memory context if configured
+            if conv_id not in self.initialized_sessions:
+                self.initialized_sessions.add(conv_id)
 
-                # Inject memory as initial context using TAC's MemoryPromptBuilder
-                if memory_response:
+                # Auto-inject memory if configured
+                if self.auto_inject_memory and memory_response:
                     memory_context = MemoryPromptBuilder.build(memory_response, context)
                     if memory_context:
-                        # Add memory context as initial user message
-                        self.conversation_history[conv_id].append(
-                            {"role": "user", "content": [{"text": memory_context}]}
-                        )
-                        # Add assistant acknowledgment
-                        self.conversation_history[conv_id].append(
-                            {
-                                "role": "assistant",
-                                "content": [
-                                    {"text": "I understand. I'll use this context to help you."}
-                                ],
-                            }
+                        # Send memory context to adapter first
+                        await self.adapter.run_async(
+                            message=memory_context, conversation_id=conv_id
                         )
 
-            # Add user message to conversation history
-            self.conversation_history[conv_id].append(
-                {"role": "user", "content": [{"text": user_message}]}
-            )
-
-            # Call agent adapter with conversation history
-            # Pass full history to ensure isolation between conversations
+            # Send user message to adapter
+            # Adapter manages conversation history in SDK-specific way
             response_text = await self.adapter.run_async(
-                message=self.conversation_history[conv_id],  # type: ignore[arg-type]
-                session_id=conv_id,
-            )
-
-            # Save assistant response to conversation history
-            self.conversation_history[conv_id].append(
-                {"role": "assistant", "content": [{"text": response_text}]}
+                message=user_message, conversation_id=conv_id
             )
 
             # Automatically route response to the appropriate channel
@@ -171,11 +145,3 @@ class OmniChannelHandlers:
                 await self.sms.send_response(
                     context.conversation_id, error_msg, role="assistant"
                 )
-
-    def __repr__(self) -> str:
-        channels = []
-        if self.voice:
-            channels.append("voice")
-        if self.sms:
-            channels.append("sms")
-        return f"OmniChannelHandlers({', '.join(channels)})"

@@ -16,13 +16,13 @@ class BaseAgentAdapter(ABC):
     """
 
     @abstractmethod
-    async def run_async(self, message: str, session_id: str, **kwargs: Any) -> str:
+    async def run_async(self, message: str, conversation_id: str, **kwargs: Any) -> str:
         """
         Run agent asynchronously and return complete response.
 
         Args:
             message: Input message or prompt
-            session_id: Session/conversation ID for state management
+            conversation_id: Session/conversation ID for state management
             **kwargs: Additional runtime-specific parameters
 
         Returns:
@@ -32,7 +32,7 @@ class BaseAgentAdapter(ABC):
 
     @abstractmethod
     def stream_async(
-        self, message: str, session_id: str, **kwargs: Any
+        self, message: str, conversation_id: str, **kwargs: Any
     ) -> AsyncIterator[str]:
         """
         Run agent asynchronously with streaming response.
@@ -43,7 +43,7 @@ class BaseAgentAdapter(ABC):
 
         Args:
             message: Input message or prompt
-            session_id: Session/conversation ID for state management
+            conversation_id: Session/conversation ID for state management
             **kwargs: Additional runtime-specific parameters
 
         Yields:
@@ -51,13 +51,13 @@ class BaseAgentAdapter(ABC):
         """
         pass
 
-    def run_sync(self, message: str, session_id: str, **kwargs: Any) -> str:
+    def run_sync(self, message: str, conversation_id: str, **kwargs: Any) -> str:
         """
         Run agent synchronously and return complete response.
 
         Args:
             message: Input message or prompt
-            session_id: Session/conversation ID for state management
+            conversation_id: Session/conversation ID for state management
             **kwargs: Additional runtime-specific parameters
 
         Returns:
