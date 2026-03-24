@@ -102,12 +102,12 @@ class MyAdapter(BaseAgentAdapter):
 
 ### Server
 
-TAC AWS uses `TACServer` from the core TAC package (`tac.server`):
+TAC AWS uses `TACFastAPIServer` from the core TAC package (`tac.server`):
 - FastAPI-based server with TAC integration
 - Accepts voice and SMS channel instances
 - Handles HTTP routes (SMS, Voice, WebSocket, CI webhooks)
 - OmniChannelHandler creates channels and manages conversation logic
-- Clean separation: handler manages conversation, TACServer handles HTTP
+- Clean separation: handler manages conversation, TACFastAPIServer handles HTTP
 
 ## Import Patterns
 
@@ -118,7 +118,7 @@ TAC AWS uses `TACServer` from the core TAC package (`tac.server`):
 from tac.core import TAC, TACConfig
 from tac.models.session import ConversationSession
 from tac.models.tac import TACMemoryResponse
-from tac.server import TACServer
+from tac.server import TACFastAPIServer
 
 # TAC AWS imports - local package
 from tac_aws.adapters import BaseAgentAdapter, StrandsAdapter
@@ -142,7 +142,7 @@ from src.tac.adapters import BaseAgentAdapter
 ```python
 from strands import Agent
 from tac import TAC, TACConfig
-from tac.server import TACServer
+from tac.server import TACFastAPIServer
 from tac_aws.adapters import StrandsAdapter
 from tac_aws.handlers import OmniChannelHandler
 
@@ -162,7 +162,7 @@ adapter = StrandsAdapter(agent_factory=create_agent)
 handler = OmniChannelHandler(tac=tac, adapter=adapter)
 
 # TAC Server uses handler's channels for HTTP routing
-server = TACServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
+server = TACFastAPIServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
 server.start()
 ```
 

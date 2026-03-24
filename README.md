@@ -57,7 +57,7 @@ pip install tac-aws[dev]
 from dotenv import load_dotenv
 from strands import Agent
 from tac import TAC, TACConfig
-from tac.server import TACServer
+from tac.server import TACFastAPIServer
 from tac_aws.adapters import StrandsAdapter
 from tac_aws.handlers import OmniChannelHandler
 
@@ -83,7 +83,7 @@ adapter = StrandsAdapter(agent_factory=create_agent)
 handler = OmniChannelHandler(tac=tac, adapter=adapter)
 
 # TAC Server uses handler's channels for HTTP routing
-server = TACServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
+server = TACFastAPIServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
 server.start()
 ```
 

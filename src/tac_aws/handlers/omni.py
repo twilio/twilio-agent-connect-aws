@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from tac.adapters import MemoryPromptBuilder
-from tac.channels.sms import SMSChannel
-from tac.channels.voice import VoiceChannel
+from tac.channels.sms import SMSChannel, SMSChannelConfig
+from tac.channels.voice import VoiceChannel, VoiceChannelConfig
 from tac.core.logging import get_logger
 from tac.core.tac import TAC
 from tac.models.session import ConversationSession
@@ -25,7 +27,8 @@ class OmniChannelHandler:
     Args:
         tac: TAC instance for channel integration
         adapter: Agent adapter (StrandsAdapter, BedrockAdapter, etc.)
-        auto_retrieve_memory: Enable automatic memory retrieval for both channels
+        sms_config: Optional SMS channel configuration (SMSChannelConfig or dict)
+        voice_config: Optional Voice channel configuration (VoiceChannelConfig or dict)
 
     Attributes:
         voice: VoiceChannel instance for voice conversations
@@ -34,7 +37,9 @@ class OmniChannelHandler:
     Example:
         ```python
         from tac import TAC, TACConfig
-        from tac.server import TACServer
+        from tac.server import TACFastAPIServer
+        from tac.channels.sms import SMSChannelConfig
+        from tac.channels.voice import VoiceChannelConfig
         from tac_aws.adapters import StrandsAdapter
         from tac_aws.handlers import OmniChannelHandler
         from strands import Agent
@@ -42,10 +47,19 @@ class OmniChannelHandler:
         tac = TAC(config=TACConfig.from_env())
         adapter = StrandsAdapter(agent_factory=lambda: Agent(model="gpt-4o"))
 
-        handler = OmniChannelHandler(tac=tac, adapter=adapter)
+        # Configure channels
+        sms_config = SMSChannelConfig(auto_retrieve_memory=True, dedup_capacity=20000)
+        voice_config = VoiceChannelConfig(auto_retrieve_memory=True)
+
+        handler = OmniChannelHandler(
+            tac=tac,
+            adapter=adapter,
+            sms_config=sms_config,
+            voice_config=voice_config
+        )
 
         # Use handler's channels for server
-        server = TACServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
+        server = TACFastAPIServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
         server.start()
         ```
     """
@@ -54,14 +68,15 @@ class OmniChannelHandler:
         self,
         tac: TAC,
         adapter: BaseAgentAdapter,
-        auto_retrieve_memory: bool = False,
+        sms_config: SMSChannelConfig | dict[str, Any] | None = None,
+        voice_config: VoiceChannelConfig | dict[str, Any] | None = None,
     ) -> None:
         self.tac = tac
         self.adapter = adapter
 
-        # Create channels internally
-        self.voice = VoiceChannel(tac=tac, auto_retrieve_memory=auto_retrieve_memory)
-        self.sms = SMSChannel(tac=tac, auto_retrieve_memory=auto_retrieve_memory)
+        # Create channels with configs (use defaults if None)
+        self.voice = VoiceChannel(tac=tac, config=voice_config)
+        self.sms = SMSChannel(tac=tac, config=sms_config)
 
         # Track which sessions have been initialized (for memory injection)
         self.initialized_sessions: set[str] = set()
