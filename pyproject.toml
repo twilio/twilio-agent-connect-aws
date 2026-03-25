@@ -27,11 +27,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# FastAPI-based OmniChannelFastAPIServer
+# FastAPI-based OmniChannelFastAPIServer (uses TAC core's server extras)
 server = [
-    "fastapi>=0.115.0,<1",
-    "uvicorn[standard]>=0.32.0,<1",
-    "python-multipart>=0.0.12",
+    "twilio-agent-connect[server] @ git+https://github.com/twilio-innovation/twilio-agent-connect-python.git@01643f9dd7aa7767050d327683171bb557362bf6",
 ]
 
 # Development dependencies (includes all runtime features and AWS SDKs)
@@ -39,10 +37,8 @@ dev = [
     # AWS SDK dependencies
     "strands-agents>=1.30.0",
     "boto3>=1.34.0,<2",
-    # Server dependencies
-    "fastapi>=0.115.0,<1",
-    "uvicorn[standard]>=0.32.0,<1",
-    "python-multipart>=0.0.12",
+    # Server dependencies (via TAC core)
+    "twilio-agent-connect[server] @ git+https://github.com/twilio-innovation/twilio-agent-connect-python.git@01643f9dd7aa7767050d327683171bb557362bf6",
     # Dev tools
     "pytest>=7.0.0,<8",
     "pytest-asyncio>=0.23.0,<1",

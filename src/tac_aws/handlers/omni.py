@@ -81,10 +81,6 @@ class OmniChannelHandler:
         # Track which sessions have been initialized (for memory injection)
         self.initialized_sessions: set[str] = set()
 
-        # Always auto-inject memory context when available
-        # Users control memory behavior via auto_retrieve_memory in channels
-        self.auto_inject_memory = True
-
         # Register message handler with TAC
         self.tac.on_message_ready(self._handle_message)
 
@@ -109,12 +105,12 @@ class OmniChannelHandler:
         try:
             conv_id = context.conversation_id
 
-            # For new sessions, inject memory context if configured
+            # For new sessions, inject memory context if available
             if conv_id not in self.initialized_sessions:
                 self.initialized_sessions.add(conv_id)
 
-                # Auto-inject memory if configured
-                if self.auto_inject_memory and memory_response:
+                # Inject memory context if retrieved
+                if memory_response:
                     memory_context = MemoryPromptBuilder.build(memory_response, context)
                     if memory_context:
                         # Send memory context to adapter first
