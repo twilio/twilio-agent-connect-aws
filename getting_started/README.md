@@ -18,7 +18,6 @@ Create a `.env` file with your Twilio credentials:
 
 ```bash
 # Twilio Configuration (required)
-TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_API_KEY=your_api_key
 TWILIO_API_TOKEN=your_api_token

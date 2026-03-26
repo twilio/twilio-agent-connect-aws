@@ -132,7 +132,6 @@ TAC AWS requires TAC environment variables. See [TAC Configuration](https://gith
 
 ```bash
 # Twilio Configuration
-TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_API_KEY=your_api_key          # Starts with SK
 TWILIO_API_TOKEN=your_api_token      # Secret for API key
