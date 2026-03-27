@@ -65,3 +65,16 @@ That's it! TAC AWS handles:
 - Memory retrieval and injection
 - Conversation history management
 - Response routing
+
+## Production Deployment
+
+For production deployments on AWS Fargate with CloudFormation, see:
+
+**[`../deploy/strands_aws_fargate/README.md`](../deploy/strands_aws_fargate/README.md)**
+
+The deployment guide includes:
+- ECS Fargate + ALB infrastructure
+- Docker build process
+- Complete CloudFormation templates
+- Architecture diagrams
+- Production configuration

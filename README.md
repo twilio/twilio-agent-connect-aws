@@ -165,6 +165,32 @@ Full example available in [`getting_started/examples/`](getting_started/examples
 
 The example demonstrates the adapter pattern with conversation history management.
 
+## Deployment
+
+### AWS Fargate
+
+Production-ready deployment with ECS Fargate and Application Load Balancer:
+
+```bash
+cd deploy/strands_aws_fargate
+
+# Build wheels for private dependencies
+./build-wheels.sh
+
+# Build Docker image
+docker build -t tac-strands-server:latest -f Dockerfile .
+
+# Deploy to AWS (see deploy/strands_aws_fargate/README.md for full guide)
+aws cloudformation deploy --template-file cloudformation.yaml --stack-name TACStack ...
+```
+
+See [`deploy/strands_aws_fargate/README.md`](deploy/strands_aws_fargate/README.md) for complete deployment guide with:
+- CloudFormation infrastructure setup
+- Docker multi-stage builds
+- ALB configuration
+- Architecture diagrams
+- Production best practices
+
 ## Development
 
 ### Setup

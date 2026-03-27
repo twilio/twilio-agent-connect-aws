@@ -40,6 +40,15 @@ getting_started/
     ├── strands_agents.py
     ├── bedrock.py
     └── bedrock_agentcore.py
+
+deploy/
+└── strands_aws_fargate/    # AWS Fargate deployment
+    ├── Dockerfile          # Multi-stage Docker build
+    ├── cloudformation.yaml # ECS Fargate + ALB infrastructure
+    ├── README.md           # Deployment guide
+    ├── build-wheels.sh     # Build wheels for private dependencies
+    ├── requirements.txt    # Production dependencies
+    └── strands_server.py   # Production server entry point
 ```
 
 ## Code Conventions
