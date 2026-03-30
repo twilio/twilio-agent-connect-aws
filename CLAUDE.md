@@ -27,13 +27,15 @@ src/tac_aws/
 ├── __init__.py         # Package exports
 ├── connectors/         # AWS agent connectors (combines runtime + channels)
 │   ├── __init__.py
-│   └── strands_connector.py     # StrandsConnector (Strands SDK integration)
+│   ├── strands_connector.py     # StrandsConnector (Strands SDK integration)
+│   └── bedrock_agentcore_connector.py     # BedrockAgentCoreConnector (Agent Core)
 └── tools/              # LLM tools for Strands
     └── strands.py               # Memory tool for Strands agents
 
 getting_started/
 └── examples/           # FastAPI server examples
-    └── strands_agents.py
+    ├── strands_agents.py
+    └── bedrock_agentcore_agents.py
 
 deploy/
 └── strands_aws_fargate/    # AWS Fargate deployment
@@ -91,6 +93,16 @@ Connectors combine agent runtime integration with multi-channel conversation man
 - Enables SessionManager usage and context-aware agent configuration
 - Provides `voice` and `sms` channel instances for server integration
 - Handles conversation history through Strands' built-in message management
+
+**BedrockAgentCoreConnector:**
+- AWS Bedrock Agent Core integration for pre-deployed agents
+- Accepts `tac: TAC`, `invoke_fn: Callable`, and optional channel configs
+- User provides invoke function that receives context, user_message, and memory_context
+- Invoke function calls `agentcore_client.invoke_agent_runtime()` and returns response object
+- Connector parses response (sync way) and routes to channels
+- Uses `runtimeSessionId` (conversation_id) for conversation continuity
+- Bedrock Agent Core manages conversation history server-side (no per-conversation instances needed)
+- Memory context passed to user's invoke function on every message
 
 ### Server
 
@@ -192,6 +204,48 @@ def create_agent(context: ConversationSession) -> Agent:
         agent_id=context.conversation_id,
         name=f"Agent-{context.channel}"
     )
+```
+
+### Bedrock Agent Core with TAC Server
+
+```python
+import boto3
+import json
+from tac import TAC, TACConfig
+from tac.models.session import ConversationSession
+from tac.server import TACFastAPIServer
+from tac_aws.connectors import BedrockAgentCoreConnector
+
+# Create TAC instance
+tac = TAC(config=TACConfig.from_env())
+
+# Create Bedrock Agent Core client
+agentcore_client = boto3.client("bedrock-agentcore", region_name="us-east-1")
+
+# Define invoke function
+def invoke_agent(
+    context: ConversationSession,
+    user_message: str,
+    memory_context: str | None,
+) -> dict:
+    full_prompt = user_message
+    if memory_context:
+        full_prompt = f"{memory_context}\n\nUser: {user_message}"
+
+    payload = json.dumps({"prompt": full_prompt}).encode("utf-8")
+
+    return agentcore_client.invoke_agent_runtime(
+        agentRuntimeArn="arn:aws:bedrock-agentcore:us-east-1:123:agent-runtime/...",
+        runtimeSessionId=context.conversation_id,
+        payload=payload,
+    )
+
+# Create connector with invoke function
+connector = BedrockAgentCoreConnector(tac=tac, invoke_fn=invoke_agent)
+
+# TAC Server uses connector's channels for HTTP routing
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+server.start()
 ```
 
 ## Testing

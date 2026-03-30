@@ -27,6 +27,18 @@ class TestPackageImports:
 
         assert StrandsConnector is not None
 
+    def test_bedrock_connector_import(self) -> None:
+        """Test that BedrockAgentCoreConnector can be imported from package root."""
+        from tac_aws import BedrockAgentCoreConnector
+
+        assert BedrockAgentCoreConnector is not None
+
+    def test_bedrock_connector_direct_import(self) -> None:
+        """Test that BedrockAgentCoreConnector can be imported from connectors module."""
+        from tac_aws.connectors import BedrockAgentCoreConnector
+
+        assert BedrockAgentCoreConnector is not None
+
     def test_memory_tool_import(self) -> None:
         """Test that create_memory_tool can be imported."""
         from tac_aws.tools import create_memory_tool
@@ -48,6 +60,7 @@ class TestPackageImports:
         # Check __all__ contains expected exports
         assert hasattr(tac_aws, "__all__")
         assert "StrandsConnector" in tac_aws.__all__
+        assert "BedrockAgentCoreConnector" in tac_aws.__all__
         assert "__version__" in tac_aws.__all__
 
     def test_connectors_module_exports(self) -> None:
@@ -56,6 +69,7 @@ class TestPackageImports:
 
         assert hasattr(connectors, "__all__")
         assert "StrandsConnector" in connectors.__all__
+        assert "BedrockAgentCoreConnector" in connectors.__all__
 
     def test_tools_module_exports(self) -> None:
         """Test that tools module exports are correct."""

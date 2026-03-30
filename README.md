@@ -8,10 +8,12 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
 ## Features
 
 - **StrandsConnector** - AWS Strands SDK integration with TAC
-- Per-conversation agent isolation
+  - Per-conversation agent isolation
+  - Context-aware agent factories
+- **BedrockAgentCoreConnector** - AWS Bedrock AgentCore integration with TAC
+  - Invoke pre-deployed agents via API
 - Multi-channel support (SMS + Voice)
 - Automatic memory injection
-- Context-aware agent factories
 
 ## Installation
 
@@ -24,17 +26,27 @@ pip install tac-aws
 ### With Strands SDK
 
 ```bash
-# Install TAC AWS with Strands SDK
-pip install tac-aws strands-agents
+# Install TAC AWS with Strands SDK connector
+pip install tac-aws[strands]
 
 # For server support (adds FastAPI/Uvicorn via TAC)
-pip install tac[server] tac-aws strands-agents
+pip install tac-aws[strands,server]
+```
+
+### With Bedrock AgentCore
+
+```bash
+# Install TAC AWS with Bedrock AgentCore connector
+pip install tac-aws[agentcore]
+
+# For server support
+pip install tac-aws[agentcore,server]
 ```
 
 ### Development
 
 ```bash
-# Install with development tools (pytest, ruff, mypy)
+# Install with development tools (includes all connectors)
 pip install tac-aws[dev]
 ```
 
@@ -94,15 +106,16 @@ TWILIO_TAC_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
 
 ## Examples
 
-Full example available in [`getting_started/examples/`](getting_started/examples/):
+Full examples available in [`getting_started/examples/`](getting_started/examples/):
 
 - `strands_agents.py` - Strands SDK with StrandsConnector and TAC Server
+- `bedrock_agentcore_agents.py` - Bedrock AgentCore with BedrockAgentCoreConnector and TAC Server
 
-The example demonstrates the connector pattern with per-conversation agent isolation and automatic resource management.
+The examples demonstrate the connector pattern with per-conversation agent isolation and automatic resource management.
 
 ## Deployment
 
-See [`deploy/strands_aws_fargate/README.md`](deploy/strands_aws_fargate/README.md) for AWS Fargate deployment guide.
+See [`deploy/README.md`](deploy/README.md) for production deployment guides.
 
 ## Development
 
@@ -154,14 +167,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 MIT License - see [LICENSE](LICENSE) file for details.
 
-## Related Projects
-
-- [Twilio Agent Connect (TAC)](https://github.com/twilio-innovation/twilio-agent-connect-python) - Core TAC framework
-- [AWS Strands SDK](https://strandsagents.com/) - Multi-provider agent framework
-
-## Support
-
-For issues and questions:
-- TAC AWS Issues: [GitHub Issues](https://github.com/twilio-innovation/aws-twilio-agent-connect-python/issues)
-- TAC Core Issues: [TAC GitHub Issues](https://github.com/twilio-innovation/twilio-agent-connect-python/issues)
-- Twilio Support: [Twilio Help Center](https://support.twilio.com/)

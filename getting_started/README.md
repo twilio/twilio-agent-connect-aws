@@ -4,11 +4,24 @@ Quick start guide for using TAC AWS with AWS agent runtimes.
 
 ## Installation
 
-```bash
-# For FastAPI server
-pip install tac-aws[server] strands-agents
+### For Strands SDK
 
-# For development (includes all AWS SDKs)
+```bash
+# With TAC server support
+pip install tac-aws[strands,server]
+```
+
+### For Bedrock AgentCore
+
+```bash
+# With TAC server support
+pip install tac-aws[agentcore,server]
+```
+
+### For Development
+
+```bash
+# Includes all connectors and development tools
 pip install tac-aws[dev]
 ```
 
@@ -30,51 +43,40 @@ TWILIO_TAC_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
 
 ## Examples
 
-See [`examples/`](examples/) for complete working example:
+See [`examples/`](examples/) for complete working examples:
 
 - `strands_agents.py` - Strands SDK with TAC Server
+- `bedrock_agentcore_agents.py` - Bedrock AgentCore with TAC Server
 
 ## Quick Example
 
 ```python
 from strands import Agent
 from tac import TAC, TACConfig
+from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
-from tac_aws.adapters import StrandsAdapter
-from tac_aws.handlers import OmniChannelHandler
+from tac_aws.connectors import StrandsConnector
 
 # Create TAC instance
 tac = TAC(config=TACConfig.from_env())
 
-# Create agent factory and adapter
-def create_agent() -> Agent:
-    return Agent(model="amazon.nova-pro-v1:0", system_prompt="You are helpful.")
+# Agent factory receives conversation context
+def create_agent(context: ConversationSession) -> Agent:
+    return Agent(
+        model="amazon.nova-pro-v1:0",
+        system_prompt="You are helpful."
+    )
 
-adapter = StrandsAdapter(agent_factory=create_agent)
+# Create connector (combines agent runtime + channel management)
+connector = StrandsConnector(tac=tac, agent_factory=create_agent)
 
-# Create channel handler
-handler = OmniChannelHandler(tac=tac, adapter=adapter)
-
-# TAC Server uses handler's channels for HTTP routing
-server = TACFastAPIServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
+# TAC Server uses connector's channels for HTTP routing
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
 server.start()
 ```
 
-That's it! TAC AWS handles:
+Connectors handle:
 - Multi-channel support (SMS + Voice)
 - Memory retrieval and injection
-- Conversation history management
+- Conversation management
 - Response routing
-
-## Production Deployment
-
-For production deployments on AWS Fargate with CloudFormation, see:
-
-**[`../deploy/strands_aws_fargate/README.md`](../deploy/strands_aws_fargate/README.md)**
-
-The deployment guide includes:
-- ECS Fargate + ALB infrastructure
-- Docker build process
-- Complete CloudFormation templates
-- Architecture diagrams
-- Production configuration
