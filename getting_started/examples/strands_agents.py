@@ -1,5 +1,5 @@
 """
-TAC Server with Strands Adapter
+TAC Server with Strands Connector
 
 Install: pip install tac[server] strands-agents
 """
@@ -8,18 +8,25 @@ from dotenv import load_dotenv
 from strands import Agent
 from tac import TAC
 from tac.core.config import TACConfig
+from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
 
-from tac_aws.adapters import StrandsAdapter
-from tac_aws.handlers import OmniChannelHandler
+from tac_aws.connectors import StrandsConnector
 
 load_dotenv()
 
 tac = TAC(config=TACConfig.from_env())
 
 
-def create_agent() -> Agent:
-    """Factory creates one agent per conversation."""
+def create_agent(context: ConversationSession) -> Agent:
+    """
+    Factory creates one agent per conversation.
+
+    Receives conversation context to enable SessionManager and context-aware configuration.
+
+    Args:
+        context: ConversationSession with conversation_id, channel, customer_id, etc.
+    """
     return Agent(
         model="amazon.nova-pro-v1:0",
         system_prompt=(
@@ -29,13 +36,11 @@ def create_agent() -> Agent:
     )
 
 
-adapter = StrandsAdapter(agent_factory=create_agent)
+# Connector creates channels and registers message processing
+connector = StrandsConnector(tac=tac, agent_factory=create_agent)
 
-# Handler creates channels and registers message processing
-handler = OmniChannelHandler(tac=tac, adapter=adapter)
-
-# TAC Server uses handler's channels for HTTP routing
-server = TACFastAPIServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
+# TAC Server uses connector's channels for HTTP routing
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
 
 if __name__ == "__main__":
     server.start()

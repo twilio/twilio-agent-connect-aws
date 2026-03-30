@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-TAC AWS is an open-source library providing AWS-specific integrations for Twilio Agent Connect (TAC). It contains adapters for AWS Strands SDK and multi-channel conversation handlers.
+TAC AWS is an open-source library providing AWS-specific integrations for Twilio Agent Connect (TAC). It contains connectors that combine agent runtime integration with multi-channel conversation management.
 
 **Key Architecture**: TAC AWS is a separate package that depends on TAC as an external dependency. It does NOT contain TAC source code - it imports from the `tac` package.
 
@@ -25,21 +25,15 @@ make check             # All checks (lint + type-check + test)
 ```
 src/tac_aws/
 ├── __init__.py         # Package exports
-├── adapters/           # AWS adapter implementations
+├── connectors/         # AWS agent connectors (combines runtime + channels)
 │   ├── __init__.py
-│   ├── base.py                  # BaseAgentAdapter interface
-│   └── strands_adapter.py       # Strands SDK
-├── handlers/           # Multi-channel conversation management
-│   ├── __init__.py
-│   └── omni.py                  # OmniChannelHandler (conversation logic)
+│   └── strands_connector.py     # StrandsConnector (Strands SDK integration)
 └── tools/              # LLM tools for Strands
     └── strands.py               # Memory tool for Strands agents
 
 getting_started/
 └── examples/           # FastAPI server examples
-    ├── strands_agents.py
-    ├── bedrock.py
-    └── bedrock_agentcore.py
+    └── strands_agents.py
 
 deploy/
 └── strands_aws_fargate/    # AWS Fargate deployment
@@ -79,44 +73,32 @@ dependencies = [
 
 ## Key Concepts
 
-### Adapters
+### Connectors
 
-All adapters implement `BaseAgentAdapter`:
-
-```python
-from tac_aws.adapters import BaseAgentAdapter
-
-class MyAdapter(BaseAgentAdapter):
-    async def run_async(self, message: str, conversation_id: str, **kwargs) -> str:
-        # Call agent SDK
-        pass
-
-    async def stream_async(self, message: str, conversation_id: str, **kwargs):
-        # Stream from agent SDK
-        yield "chunk"
-```
-
-**Available Adapters:**
-- `StrandsAdapter` - Wraps `strands.Agent` with per-conversation agent instances
-
-### Handlers
-
-**OmniChannelHandler:**
-- Manages conversation history per session
+Connectors combine agent runtime integration with multi-channel conversation management. They provide a unified interface that:
+- Creates and manages per-conversation agent instances
+- Creates Voice and SMS channels
 - Injects TAC memory context using `MemoryPromptBuilder`
-- Invokes agent adapter with conversation history
-- Routes responses to appropriate channel (Voice/SMS)
-- Accepts `tac: TAC`, `adapter: BaseAgentAdapter`, and optional `voice` and `sms` channels
-- Registers itself with TAC via `on_message_ready()` callback
+- Routes responses to appropriate channels
+- Registers with TAC via `on_message_ready()` callback
+
+**Available Connectors:**
+
+**StrandsConnector:**
+- AWS Strands SDK integration with per-conversation agent management
+- Accepts `tac: TAC`, `agent_factory: Callable[[ConversationSession], Agent]`, and optional channel configs
+- Agent factory receives `ConversationSession` context with conversation_id, channel, customer_id, etc.
+- Enables SessionManager usage and context-aware agent configuration
+- Provides `voice` and `sms` channel instances for server integration
+- Handles conversation history through Strands' built-in message management
 
 ### Server
 
 TAC AWS uses `TACFastAPIServer` from the core TAC package (`tac.server`):
 - FastAPI-based server with TAC integration
-- Accepts voice and SMS channel instances
+- Accepts voice and SMS channel instances from connector
 - Handles HTTP routes (SMS, Voice, WebSocket, CI webhooks)
-- OmniChannelHandler creates channels and manages conversation logic
-- Clean separation: handler manages conversation, TACFastAPIServer handles HTTP
+- Clean separation: connector manages conversation, TACFastAPIServer handles HTTP
 
 ## Import Patterns
 
@@ -130,8 +112,7 @@ from tac.models.tac import TACMemoryResponse
 from tac.server import TACFastAPIServer
 
 # TAC AWS imports - local package
-from tac_aws.adapters import BaseAgentAdapter, StrandsAdapter
-from tac_aws.handlers import OmniChannelHandler
+from tac_aws.connectors import StrandsConnector
 ```
 
 ### Incorrect Imports (DO NOT DO)
@@ -151,28 +132,66 @@ from src.tac.adapters import BaseAgentAdapter
 ```python
 from strands import Agent
 from tac import TAC, TACConfig
+from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
-from tac_aws.adapters import StrandsAdapter
-from tac_aws.handlers import OmniChannelHandler
+from tac_aws.connectors import StrandsConnector
 
 # Create TAC instance
 tac = TAC(config=TACConfig.from_env())
 
-# Create agent factory and adapter
-def create_agent() -> Agent:
+# Agent factory receives conversation context
+def create_agent(context: ConversationSession) -> Agent:
     return Agent(
         model="amazon.nova-pro-v1:0",
         system_prompt="You are a helpful assistant."
     )
 
-adapter = StrandsAdapter(agent_factory=create_agent)
+# Create connector (combines agent runtime + channel management)
+connector = StrandsConnector(tac=tac, agent_factory=create_agent)
 
-# Create channel handler (manages conversation logic)
-handler = OmniChannelHandler(tac=tac, adapter=adapter)
-
-# TAC Server uses handler's channels for HTTP routing
-server = TACFastAPIServer(tac=tac, voice_channel=handler.voice, sms_channel=handler.sms)
+# TAC Server uses connector's channels for HTTP routing
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
 server.start()
+```
+
+### Using SessionManager for Persistence
+
+```python
+from strands import Agent
+from strands.session.file import FileSessionManager
+from tac.models.session import ConversationSession
+
+def create_agent(context: ConversationSession) -> Agent:
+    """Agent factory with SessionManager for conversation persistence."""
+    return Agent(
+        model="amazon.nova-pro-v1:0",
+        system_prompt="You are a helpful assistant.",
+        session_manager=FileSessionManager(
+            session_id=context.conversation_id,
+            base_path="./sessions"
+        )
+    )
+
+connector = StrandsConnector(tac=tac, agent_factory=create_agent)
+```
+
+### Context-Aware Agent Configuration
+
+```python
+def create_agent(context: ConversationSession) -> Agent:
+    """Customize agent behavior based on conversation context."""
+    # Different prompts for different channels
+    if context.channel == "voice":
+        prompt = "You are a helpful voice assistant. Keep responses concise."
+    else:  # SMS
+        prompt = "You are a helpful SMS assistant. Use short messages."
+
+    return Agent(
+        model="amazon.nova-pro-v1:0",
+        system_prompt=prompt,
+        agent_id=context.conversation_id,
+        name=f"Agent-{context.channel}"
+    )
 ```
 
 ## Testing
@@ -181,7 +200,7 @@ Tests should:
 - Import from `tac_aws` package (local)
 - Import from `tac` package (external dependency)
 - Use pytest fixtures for mocking AWS clients
-- Test adapter implementations
+- Test connector implementations
 - Test server initialization and routing
 
 ## Updating TAC Dependency
@@ -201,8 +220,8 @@ sed -i '' 's/@{old_hash}/@{new_hash}/g' pyproject.toml
 
 1. **Don't import from internal tac_aws paths for TAC classes** - use `from tac.X import Y`
 2. **Don't copy TAC source code** - TAC is a dependency, not vendored
-3. **Don't forget TYPE_CHECKING guards** - for boto3 type hints
-4. **Remember both servers use adapter pattern** - no @app.entrypoint decorator
+3. **Don't forget TYPE_CHECKING guards** - for boto3 and strands type hints
+4. **Connectors manage both agent runtime and channels** - don't create separate channel instances
 
 ## Related Documentation
 

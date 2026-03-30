@@ -1,12 +1,9 @@
 """AWS integrations for Twilio Agent Connect (TAC).
 
-This package provides AWS-specific adapters and handlers for TAC:
+This package provides AWS-specific connectors for TAC:
 
-Adapters:
-    - StrandsAdapter: AWS Strands SDK integration with per-conversation agents
-
-Handlers:
-    - OmniChannelHandler: Multi-channel message processing with adapter integration
+Connectors:
+    - StrandsConnector: AWS Strands SDK integration with multi-channel support
 
 Tools:
     - create_memory_tool: Strands tool for Twilio Memory retrieval
@@ -14,16 +11,11 @@ Tools:
 
 __version__ = "0.1.0"
 
-# Import adapters
-from tac_aws.adapters import StrandsAdapter
-
-# Import handlers
-from tac_aws.handlers import OmniChannelHandler
+# Import connectors
+from tac_aws.connectors import StrandsConnector
 
 __all__ = [
     "__version__",
-    # Adapters
-    "StrandsAdapter",
-    # Handlers
-    "OmniChannelHandler",
+    # Connectors
+    "StrandsConnector",
 ]
