@@ -13,19 +13,14 @@ Prerequisites:
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING
 
 import boto3
 from dotenv import load_dotenv
 from tac import TAC
 from tac.core.config import TACConfig
-from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
 
 from tac_aws.connectors import BedrockConnector
-
-if TYPE_CHECKING:
-    from mypy_boto3_bedrock_agent_runtime.type_defs import InvokeAgentResponseTypeDef
 
 load_dotenv()
 
@@ -45,27 +40,16 @@ if not agent_id:
 # Create Bedrock Agent Runtime client
 bedrock_client = boto3.client("bedrock-agent-runtime", region_name=region)
 
-
-def invoke_agent(
-    context: ConversationSession,
-    user_message: str,
-    memory_context: str | None,
-) -> InvokeAgentResponseTypeDef:
-    """Invoke Bedrock Agent with full control over parameters."""
-    full_message = user_message
-    if memory_context:
-        full_message = f"{memory_context}\n\nUser: {user_message}"
-
-    return bedrock_client.invoke_agent(  # type: ignore[no-any-return]
-        agentId=agent_id,
-        agentAliasId=agent_alias_id,
-        sessionId=context.conversation_id,
-        inputText=full_message,
-    )
-
-
-# Create connector with invoke function
-connector = BedrockConnector(tac=tac, invoke_fn=invoke_agent)
+# Simple config-based approach (recommended)
+# sessionId and inputText are auto-injected by the connector
+connector = BedrockConnector(
+    tac=tac,
+    bedrock_client=bedrock_client,
+    config={
+        "agentId": agent_id,
+        "agentAliasId": agent_alias_id,
+    },
+)
 
 # TAC Server uses connector's channels for HTTP routing
 server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
