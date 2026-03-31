@@ -1,6 +1,6 @@
-# TAC Strands Server - AWS Fargate Deployment
+# TAC AgentCore Server - AWS Fargate Deployment
 
-Complete guide for deploying Twilio Agent Connect (TAC) with Strands agent framework on AWS Fargate.
+Complete guide for deploying Twilio Agent Connect (TAC) with AWS Bedrock AgentCore on AWS Fargate.
 
 ## Table of Contents
 
@@ -15,11 +15,11 @@ Complete guide for deploying Twilio Agent Connect (TAC) with Strands agent frame
 
 This deployment runs a voice and SMS AI agent using:
 - **Twilio** - Voice/SMS communication platform
-- **AWS Bedrock** - LLM inference (Amazon Nova Pro)
-- **Strands** - Agent orchestration framework
+- **AWS Bedrock AgentCore** - Managed agent runtime with built-in memory and observability
+- **AWS Bedrock** - LLM inference (Amazon Nova Pro, Claude, etc.)
 - **TAC (Twilio Agent Connect)** - Integration middleware
 
-The system handles incoming calls and SMS messages, routes them through an AI agent powered by AWS Bedrock, and manages conversation state using Twilio's Maestro (Conversations API) and Memory services.
+The system handles incoming calls and SMS messages, routes them through an AI agent deployed on AgentCore Runtime, and manages conversation state using Twilio's Maestro (Conversations API) and Memory services.
 
 ---
 
@@ -46,11 +46,16 @@ graph TB
                 Subnet2[📍 Subnet 2<br/>10.0.2.0/24<br/>us-east-1b]
             end
 
-            ECS[📦 ECS Fargate Task<br/>TAC Server<br/>512 CPU / 1GB RAM<br/>Port 8000]
+            ECS[📦 ECS Fargate Task<br/>TAC Server<br/>BedrockAgentCoreConnector<br/>512 CPU / 1GB RAM<br/>Port 8000]
         end
 
-        Bedrock[🤖 AWS Bedrock<br/>Amazon Nova Pro<br/>Strands Agent]
-        Logs[📊 CloudWatch Logs<br/>/ecs/tac-server-alb]
+        subgraph AgentCore["🤖 Bedrock AgentCore Runtime"]
+            Agent[🧠 AgentCore Agent<br/>Strands / LangGraph /<br/>OpenAI / Google ADK]
+            AgentMemory[💾 Agent Memory<br/>Session Manager]
+        end
+
+        Bedrock[🤖 AWS Bedrock<br/>Amazon Nova Pro / Claude<br/>Foundation Models]
+        Logs[📊 CloudWatch Logs<br/>/ecs/tac-agentcore-server]
     end
 
     Customer -->|1. Call/SMS| Phone
@@ -59,10 +64,12 @@ graph TB
     ALB -->|4. Forward to| ECS
     ECS -->|5. Create Conversation| Maestro
     ECS -->|6. Retrieve Profile| Memory
-    ECS -->|7. LLM Inference| Bedrock
-    ECS -->|8. Write Logs| Logs
-    ECS -->|9. WebSocket Audio<br/>or SMS Response| Phone
-    Phone -->|10. Response| Customer
+    ECS -->|7. Invoke AgentCore| Agent
+    Agent -->|8. Session State| AgentMemory
+    Agent -->|9. LLM Inference| Bedrock
+    ECS -->|10. Write Logs| Logs
+    ECS -->|11. WebSocket Audio<br/>or SMS Response| Phone
+    Phone -->|12. Response| Customer
 
     style Customer fill:#e1f5ff
     style Twilio fill:#f0f0f0
@@ -70,6 +77,9 @@ graph TB
     style AWS fill:#fff4e6
     style VPC fill:#e8f5e9
     style ECS fill:#fff9c4
+    style AgentCore fill:#f3e5f5
+    style Agent fill:#e1bee7
+    style AgentMemory fill:#f8bbd0
     style Bedrock fill:#f3e5f5
     style Logs fill:#e3f2fd
 ```
@@ -82,14 +92,15 @@ graph TB
 
 | Service | Purpose |
 |---------|---------|
+| **Bedrock AgentCore Runtime** | Managed agent hosting with built-in memory and observability |
 | **ECS Fargate** | Container runtime for TAC server |
 | **Application Load Balancer** | Stable DNS endpoint, health checks, WebSocket support |
-| **AWS Bedrock** | LLM inference - Amazon Nova Pro (pay-per-token) |
+| **AWS Bedrock** | LLM inference - Amazon Nova Pro, Claude, etc. (pay-per-token) |
 | **VPC** | Network isolation (10.0.0.0/16) |
 | **Internet Gateway** | Internet connectivity |
 | **Security Groups** | Firewall rules |
 | **CloudWatch Logs** | Application logs (7-day retention) |
-| **IAM Roles** | AWS permissions management (Bedrock access) |
+| **IAM Roles** | AWS permissions management (Bedrock, AgentCore access) |
 
 ### Optional Services (HTTPS Layer)
 
@@ -105,10 +116,17 @@ graph TB
 
 ### Prerequisites
 
-**Required:**
+**Part 1 - Agent Deployment:**
 - AWS CLI configured with appropriate credentials
+- Python 3.10+ (Python 3.13 recommended)
+- pip or uv package manager
+- AWS account with:
+  - Bedrock model access (Amazon Nova Pro)
+  - IAM permissions for AgentCore, S3, CloudWatch
+  - Region: us-east-1 (or your preferred region)
+
+**Part 2 - TAC Server Deployment:**
 - Docker installed
-- Python 3.10+ with `uv` package manager
 - AWS ECR repository (to store your Docker image)
 - HTTPS endpoint (choose one):
   - **ngrok** - For testing and development
@@ -124,37 +142,89 @@ graph TB
 - Auth Token & API Keys: Twilio Console → Account → API Keys & Tokens
 - Conversation Service SID: Twilio Console → Conversation Orchestrator → Configuration
 
+### Part 1: Deploy Agent to AgentCore
+
+The `agent/` folder contains a simple Strands agent ready for deployment.
+
+**Step 1: Install AgentCore CLI**
+
+```bash
+cd agentcore_aws_fargate/agent
+
+pip install bedrock-agentcore-starter-toolkit
+```
+
+**Step 2: Configure Agent for Deployment**
+
+```bash
+agentcore configure --entrypoint agent.py --name simpleagent --non-interactive
+```
+
+**Step 3: Deploy to AWS AgentCore**
+
+```bash
+agentcore launch
+```
+
+**Expected output:**
+```
+✅ Deployment completed successfully
+   Agent ARN: arn:aws:bedrock-agentcore:us-east-1:ACCOUNT:runtime/simpleagent-XXX
+```
+
+**Step 4: Test Deployed Agent**
+
+```bash
+agentcore invoke '{"prompt": "Hello"}'
+```
+
+**Expected response:**
+```
+Response:
+Hello! It's nice to have you here. I'm here to help with whatever you might
+need. Whether you have a question, need assistance with a topic, or just want to
+chat, feel free to let me know how I can assist you. What's on your mind today?
+```
+
+**Step 5: Get Agent ARN**
+
+Save the **Agent ARN** from the deployment output - you'll need it for the TAC server configuration in Part 2.
+
+Example: `arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/simpleagent-XXX`
+
+### Part 2: Deploy TAC Server on Fargate
+
 ### Step 0: Build and Publish Docker Image
 
 **1. Build wheels:**
 
 ```bash
-cd strands_aws_fargate
+cd agentcore_aws_fargate
 ./build-wheels.sh
 ```
 
 **2. Build Docker image:**
 
 ```bash
-docker build -t tac-strands-server:latest -f Dockerfile .
+docker build -t tac-agentcore-server:latest -f Dockerfile .
 ```
 
 **3. Publish to AWS ECR:**
 
 Publish your Docker image to AWS ECR. You'll need the ECR image URI for Step 1.
 
-Example URI format: `123456789012.dkr.ecr.us-east-1.amazonaws.com/tac-strands-server:latest`
+Example URI format: `123456789012.dkr.ecr.us-east-1.amazonaws.com/tac-agentcore-server:latest`
 
 ### Step 1: Deploy CloudFormation Stack
 
 Deploy the infrastructure first:
 
 ```bash
-cd strands_aws_fargate
+cd agentcore_aws_fargate
 
 aws cloudformation deploy \
   --template-file cloudformation.yaml \
-  --stack-name TACStack \
+  --stack-name TACAgentCoreStack \
   --parameter-overrides \
     ImageURI=YOUR_ECR_URI:latest \
     TwilioTacAuthToken=YOUR_AUTH_TOKEN \
@@ -163,6 +233,7 @@ aws cloudformation deploy \
     TwilioTacPhoneNumber=YOUR_PHONE_NUMBER \
     TwilioTacConversationServiceSid=YOUR_CONVERSATION_SERVICE_SID \
     TwilioTacVoicePublicDomain=YOUR_HTTPS_DOMAIN \
+    BedrockAgentCoreAgentArn=YOUR_AGENT_ARN \
   --capabilities CAPABILITY_IAM \
   --region us-east-1
 ```
@@ -171,7 +242,7 @@ aws cloudformation deploy \
 
 ```bash
 aws cloudformation describe-stacks \
-  --stack-name TACStack \
+  --stack-name TACAgentCoreStack \
   --query 'Stacks[0].Outputs[?OutputKey==`LoadBalancerDNS`].OutputValue' \
   --output text \
   --region us-east-1
@@ -181,7 +252,7 @@ aws cloudformation describe-stacks \
 
 ### Step 3: Connect HTTPS Endpoint to ALB
 
-Point your HTTPS endpoint to the ALB DNS from Step 2.
+Point your HTTPS endpoint to the ALB DNS from Step 3.
 
 For example, if using ngrok:
 ```bash
