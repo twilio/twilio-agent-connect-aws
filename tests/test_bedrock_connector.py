@@ -53,6 +53,116 @@ class TestBedrockConnector:
             MockSMS.assert_called_once_with(tac=mock_tac, config=sms_config)
             assert connector is not None
 
+    def test_initialization_with_config(self, mock_tac: MagicMock) -> None:
+        """Test connector initialization with config-based approach."""
+        mock_client = MagicMock()
+        config = {
+            "agentId": "AGENT123",
+            "agentAliasId": "TSTALIASID",
+            "sessionId": "",
+        }
+
+        with patch("tac_aws.connectors.bedrock_connector.VoiceChannel"), patch(
+            "tac_aws.connectors.bedrock_connector.SMSChannel"
+        ):
+            connector = BedrockConnector(
+                tac=mock_tac,
+                bedrock_client=mock_client,
+                config=config,
+            )
+
+            mock_tac.on_message_ready.assert_called_once()
+            assert connector.tac == mock_tac
+            assert connector.invoke_fn is not None
+
+    def test_initialization_validation_both_patterns(self, mock_tac: MagicMock) -> None:
+        """Test that providing both invoke_fn and config raises error."""
+        mock_client = MagicMock()
+        mock_invoke_fn = MagicMock()
+        config = {"agentId": "AGENT123", "agentAliasId": "TSTALIASID", "sessionId": ""}
+
+        with patch("tac_aws.connectors.bedrock_connector.VoiceChannel"), patch(
+            "tac_aws.connectors.bedrock_connector.SMSChannel"
+        ):
+            with pytest.raises(ValueError, match="Cannot use both invoke_fn and config"):
+                BedrockConnector(
+                    tac=mock_tac,
+                    bedrock_client=mock_client,
+                    config=config,
+                    invoke_fn=mock_invoke_fn,
+                )
+
+    def test_initialization_validation_neither_pattern(self, mock_tac: MagicMock) -> None:
+        """Test that providing neither invoke_fn nor config raises error."""
+        with patch("tac_aws.connectors.bedrock_connector.VoiceChannel"), patch(
+            "tac_aws.connectors.bedrock_connector.SMSChannel"
+        ):
+            with pytest.raises(ValueError, match="Must provide either invoke_fn OR"):
+                BedrockConnector(tac=mock_tac)
+
+    @pytest.mark.asyncio
+    async def test_handle_message_with_config_based_invoke(
+        self,
+        mock_tac: MagicMock,
+        mock_conversation_session: MagicMock,
+    ) -> None:
+        """Test that config-based approach correctly invokes agent."""
+        mock_client = MagicMock()
+        mock_response: InvokeAgentResponseTypeDef = {
+            "completion": [
+                {"chunk": {"bytes": b"Hello "}},
+                {"chunk": {"bytes": b"world!"}},
+            ],
+            "contentType": "text/plain",
+            "sessionId": "session123",
+            "ResponseMetadata": {},
+        }
+        mock_client.invoke_agent.return_value = mock_response
+
+        config = {
+            "agentId": "AGENT123",
+            "agentAliasId": "TSTALIASID",
+            "sessionId": "",
+            "enableTrace": False,
+        }
+
+        with patch("tac_aws.connectors.bedrock_connector.VoiceChannel") as MockVoice, patch(
+            "tac_aws.connectors.bedrock_connector.SMSChannel"
+        ):
+            mock_voice = AsyncMock()
+            MockVoice.return_value = mock_voice
+
+            connector = BedrockConnector(
+                tac=mock_tac,
+                bedrock_client=mock_client,
+                config=config,
+            )
+
+            mock_conversation_session.channel = "voice"
+            mock_conversation_session.conversation_id = "conv123"
+
+            await connector._handle_message(
+                user_message="Test message",
+                context=mock_conversation_session,
+                memory_response=None,
+            )
+
+            # Verify invoke_agent was called with merged config
+            mock_client.invoke_agent.assert_called_once()
+            call_kwargs = mock_client.invoke_agent.call_args[1]
+            assert call_kwargs["agentId"] == "AGENT123"
+            assert call_kwargs["agentAliasId"] == "TSTALIASID"
+            assert call_kwargs["sessionId"] == "conv123"  # Auto-injected
+            assert call_kwargs["inputText"] == "Test message"  # Auto-injected
+            assert call_kwargs["enableTrace"] is False
+
+            # Verify response was sent to voice channel
+            mock_voice.send_response.assert_called_once_with(
+                "conv123",
+                "Hello world!",
+                role="assistant",
+            )
+
     @pytest.mark.asyncio
     async def test_handle_message_calls_invoke_fn(
         self,

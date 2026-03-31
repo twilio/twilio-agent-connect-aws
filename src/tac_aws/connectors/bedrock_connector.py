@@ -14,7 +14,11 @@ from tac.models.session import ConversationSession
 from tac.models.tac import TACMemoryResponse
 
 if TYPE_CHECKING:
-    from mypy_boto3_bedrock_agent_runtime.type_defs import InvokeAgentResponseTypeDef
+    from mypy_boto3_bedrock_agent_runtime.client import AgentsforBedrockRuntimeClient
+    from mypy_boto3_bedrock_agent_runtime.type_defs import (
+        InvokeAgentRequestTypeDef,
+        InvokeAgentResponseTypeDef,
+    )
 
 logger = get_logger(__name__)
 
@@ -23,16 +27,22 @@ class BedrockConnector:
     """
     Connector for AWS Bedrock Agents with multi-channel support.
 
-    Invokes agents via user-provided function that receives conversation context.
-    Users create the bedrock-agent-runtime client and define invoke logic.
+    Supports two usage patterns:
+    1. Simple config-based (recommended for most users)
+    2. Custom invoke function (for advanced use cases needing dynamic behavior)
 
     Args:
         tac: TAC instance for channel integration
-        invoke_fn: Function to invoke agent. Receives:
+        bedrock_client: AWS Bedrock Agent Runtime client (required if using config)
+        config: Static configuration dict for invoke_agent() call (InvokeAgentRequestTypeDef).
+            Required fields agentId, agentAliasId will be used. sessionId and inputText
+            are auto-injected by connector. (required if using config pattern)
+        invoke_fn: Custom function to invoke agent. Receives:
             - context: ConversationSession with conversation_id, channel, etc.
             - user_message: The user's message text
             - memory_context: Optional memory context string (from TAC memory)
             Returns: InvokeAgentResponseTypeDef from client.invoke_agent()
+            (required if not using config pattern)
         sms_config: Optional SMS channel configuration (SMSChannelConfig or dict)
         voice_config: Optional Voice channel configuration (VoiceChannelConfig or dict)
 
@@ -40,7 +50,32 @@ class BedrockConnector:
         voice: VoiceChannel instance for voice conversations
         sms: SMSChannel instance for SMS conversations
 
-    Example:
+    Example (Simple - Recommended):
+        ```python
+        import boto3
+        from tac import TAC, TACConfig
+        from tac.server import TACFastAPIServer
+        from tac_aws.connectors import BedrockConnector
+
+        tac = TAC(config=TACConfig.from_env())
+        client = boto3.client("bedrock-agent-runtime", region_name="us-east-1")
+
+        # Simple config-based approach
+        connector = BedrockConnector(
+            tac=tac,
+            bedrock_client=client,
+            config={
+                "agentId": "AGENT123",
+                "agentAliasId": "TSTALIASID",
+                "enableTrace": False,  # Optional parameters
+            }
+        )
+
+        server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+        server.start()
+        ```
+
+    Example (Advanced - Custom Logic):
         ```python
         import boto3
         from tac import TAC, TACConfig
@@ -49,33 +84,30 @@ class BedrockConnector:
         from tac_aws.connectors import BedrockConnector
 
         tac = TAC(config=TACConfig.from_env())
-
-        # Create Bedrock Agent Runtime client
         client = boto3.client("bedrock-agent-runtime", region_name="us-east-1")
 
-        # Define invoke function
+        # Custom invoke function for dynamic behavior
         def invoke_agent(
             context: ConversationSession,
             user_message: str,
             memory_context: str | None
-        ) -> dict:
-            # Prepend memory context if available
+        ):
+            # Dynamic agent selection based on channel
+            agent_id = "VOICE_AGENT" if context.channel == "voice" else "SMS_AGENT"
+
             full_message = user_message
             if memory_context:
                 full_message = f"{memory_context}\\n\\nUser: {user_message}"
 
-            # Invoke Bedrock Agent
             return client.invoke_agent(
-                agentId="AGENT123",
+                agentId=agent_id,
                 agentAliasId="TSTALIASID",
                 sessionId=context.conversation_id,
                 inputText=full_message
             )
 
-        # Create connector
         connector = BedrockConnector(tac=tac, invoke_fn=invoke_agent)
 
-        # Use connector's channels for server
         server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
         server.start()
         ```
@@ -84,7 +116,10 @@ class BedrockConnector:
     def __init__(
         self,
         tac: TAC,
-        invoke_fn: Callable[[ConversationSession, str, str | None], InvokeAgentResponseTypeDef],
+        bedrock_client: AgentsforBedrockRuntimeClient | None = None,
+        config: InvokeAgentRequestTypeDef | dict[str, Any] | None = None,
+        invoke_fn: Callable[[ConversationSession, str, str | None], InvokeAgentResponseTypeDef]
+        | None = None,
         sms_config: SMSChannelConfig | dict[str, Any] | None = None,
         voice_config: VoiceChannelConfig | dict[str, Any] | None = None,
     ) -> None:
@@ -93,12 +128,35 @@ class BedrockConnector:
 
         Args:
             tac: TAC instance
-            invoke_fn: Function to invoke agent that returns response object
+            bedrock_client: AWS Bedrock Agent Runtime client (required if using config)
+            config: Static invoke_agent config dict (required if using config pattern)
+            invoke_fn: Custom invoke function (required if not using config pattern)
             sms_config: Optional SMS channel configuration
             voice_config: Optional Voice channel configuration
+
+        Raises:
+            ValueError: If both invoke_fn and config are provided, or neither are provided
         """
         self.tac = tac
-        self.invoke_fn = invoke_fn
+
+        # Validate: Either invoke_fn OR (bedrock_client + config)
+        if invoke_fn is not None:
+            if bedrock_client is not None or config is not None:
+                raise ValueError(
+                    "Cannot use both invoke_fn and config-based approach. "
+                    "Provide either invoke_fn OR (bedrock_client + config)."
+                )
+            self.invoke_fn = invoke_fn
+            logger.debug("BedrockConnector initialized with custom invoke_fn")
+        elif bedrock_client is not None and config is not None:
+            # Build invoke function from config
+            self.invoke_fn = self._build_invoke_fn_from_config(bedrock_client, config)
+            logger.debug("BedrockConnector initialized with config-based approach")
+        else:
+            raise ValueError(
+                "Must provide either invoke_fn OR (bedrock_client + config). "
+                "Got neither or incomplete config parameters."
+            )
 
         # Create channels
         self.voice = VoiceChannel(tac=tac, config=voice_config)
@@ -107,7 +165,42 @@ class BedrockConnector:
         # Register callbacks with TAC
         self.tac.on_message_ready(self._handle_message)
 
-        logger.debug("BedrockConnector initialized")
+    def _build_invoke_fn_from_config(
+        self,
+        client: AgentsforBedrockRuntimeClient,
+        base_config: InvokeAgentRequestTypeDef | dict[str, Any],
+    ) -> Callable[[ConversationSession, str, str | None], InvokeAgentResponseTypeDef]:
+        """
+        Build an invoke function from static config.
+
+        Args:
+            client: Bedrock Agent Runtime client
+            base_config: Base configuration for invoke_agent
+
+        Returns:
+            Function that invokes agent with merged config
+        """
+
+        def invoke_with_config(
+            context: ConversationSession,
+            user_message: str,
+            memory_context: str | None,
+        ) -> InvokeAgentResponseTypeDef:
+            # Build full message with memory context
+            full_message = user_message
+            if memory_context:
+                full_message = f"{memory_context}\n\nUser: {user_message}"
+
+            # Merge base config with auto-injected values
+            merged_config: dict[str, Any] = {
+                **base_config,
+                "sessionId": context.conversation_id,
+                "inputText": full_message,
+            }
+
+            return client.invoke_agent(**merged_config)
+
+        return invoke_with_config
 
     async def _handle_message(
         self,

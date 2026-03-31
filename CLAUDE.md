@@ -218,10 +218,11 @@ def create_agent(context: ConversationSession) -> Agent:
 
 ### Bedrock Agent with TAC Server
 
+**Simple config-based approach (recommended):**
+
 ```python
 import boto3
 from tac import TAC, TACConfig
-from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
 from tac_aws.connectors import BedrockConnector
 
@@ -231,27 +232,54 @@ tac = TAC(config=TACConfig.from_env())
 # Create Bedrock Agent Runtime client
 client = boto3.client("bedrock-agent-runtime", region_name="us-east-1")
 
-# Define invoke function
+# Simple config - sessionId and inputText auto-injected
+connector = BedrockConnector(
+    tac=tac,
+    bedrock_client=client,
+    config={
+        "agentId": "AGENT123",
+        "agentAliasId": "TSTALIASID",
+    }
+)
+
+# TAC Server uses connector's channels for HTTP routing
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+server.start()
+```
+
+**Advanced - custom invoke function (for dynamic behavior):**
+
+```python
+import boto3
+from tac import TAC, TACConfig
+from tac.models.session import ConversationSession
+from tac.server import TACFastAPIServer
+from tac_aws.connectors import BedrockConnector
+
+tac = TAC(config=TACConfig.from_env())
+client = boto3.client("bedrock-agent-runtime", region_name="us-east-1")
+
+# Custom invoke function for dynamic logic
 def invoke_agent(
     context: ConversationSession,
     user_message: str,
     memory_context: str | None
 ):
+    # Dynamic agent selection based on channel
+    agent_id = "VOICE_AGENT" if context.channel == "voice" else "SMS_AGENT"
+
     full_message = user_message
     if memory_context:
         full_message = f"{memory_context}\n\nUser: {user_message}"
 
     return client.invoke_agent(
-        agentId="AGENT123",
+        agentId=agent_id,
         agentAliasId="TSTALIASID",
         sessionId=context.conversation_id,
         inputText=full_message
     )
 
-# Create connector
 connector = BedrockConnector(tac=tac, invoke_fn=invoke_agent)
-
-# TAC Server uses connector's channels for HTTP routing
 server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
 server.start()
 ```
