@@ -74,7 +74,10 @@ Full examples available in [`getting_started/examples/`](getting_started/example
 
 ## Deployment
 
-See [`deploy/README.md`](deploy/README.md) for production deployment guides.
+See [`deploy/README.md`](deploy/README.md) for production deployment guides:
+- **Strands AWS Fargate** - Deploy Strands SDK agents
+- **Bedrock Agents AWS Fargate** - Deploy console-created Bedrock agents
+- **Bedrock AgentCore AWS Fargate** - Deploy custom agent code to AgentCore runtime
 
 ## Development
 

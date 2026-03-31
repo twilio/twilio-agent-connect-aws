@@ -40,8 +40,9 @@ getting_started/
     └── bedrock_agentcore_agents.py
 
 deploy/
-├── strands_aws_fargate/    # Strands AWS Fargate deployment
-└── agentcore_aws_fargate/  # AgentCore AWS Fargate deployment
+├── strands_aws_fargate/      # Strands AWS Fargate deployment
+├── bedrock_aws_fargate/      # Bedrock Agents AWS Fargate deployment
+└── agentcore_aws_fargate/    # AgentCore AWS Fargate deployment
 ```
 
 ## Code Conventions
