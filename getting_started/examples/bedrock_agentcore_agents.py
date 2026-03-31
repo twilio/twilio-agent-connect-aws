@@ -1,20 +1,22 @@
 """
-TAC Server with Bedrock Agent Core Connector
-
-Install: pip install tac[server] tac-aws boto3
+TAC Server with AWS Bedrock AgentCore Connector
 
 Prerequisites:
-- Deploy an agent to AWS Bedrock Agent Core
-- Set required TAC environment variables (see README.md)
-- Configure AWS credentials (IAM permission: bedrock-agentcore:InvokeAgentRuntime)
+    pip install tac-aws[agentcore,server]
+
+Environment Variables:
+    BEDROCK_AGENTCORE_AGENT_ARN - AgentCore runtime ARN
+    AWS_REGION - AWS Region (default: us-east-1)
 """
 
+from __future__ import annotations
+
 import json
+import os
+from typing import TYPE_CHECKING
 
 import boto3
 from dotenv import load_dotenv
-from mypy_boto3_bedrock_agentcore.client import BedrockAgentCoreClient
-from mypy_boto3_bedrock_agentcore.type_defs import InvokeAgentRuntimeResponseTypeDef
 from tac import TAC
 from tac.core.config import TACConfig
 from tac.models.session import ConversationSession
@@ -22,36 +24,41 @@ from tac.server import TACFastAPIServer
 
 from tac_aws.connectors import BedrockAgentCoreConnector
 
+if TYPE_CHECKING:
+    from mypy_boto3_bedrock_agentcore.type_defs import InvokeAgentRuntimeResponseTypeDef
+
 load_dotenv()
 
 tac = TAC(config=TACConfig.from_env())
 
-# Create Bedrock Agent Core client
-agentcore_client: BedrockAgentCoreClient = boto3.client("bedrock-agentcore", region_name="us-east-1")
+agent_arn = os.getenv("BEDROCK_AGENTCORE_AGENT_ARN")
+region = os.getenv("AWS_REGION", "us-east-1")
+
+if not agent_arn:
+    raise ValueError("BEDROCK_AGENTCORE_AGENT_ARN environment variable is required")
+
+agentcore_client = boto3.client("bedrock-agentcore", region_name=region)
+
 
 def invoke_agent(
     context: ConversationSession,
     user_message: str,
     memory_context: str | None,
 ) -> InvokeAgentRuntimeResponseTypeDef:
-    """Invoke agent with full control over parameters."""
-    full_prompt = user_message
+    full_message = user_message
     if memory_context:
-        full_prompt = f"{memory_context}\n\nUser: {user_message}"
+        full_message = f"{memory_context}\n\nUser: {user_message}"
 
-    payload = json.dumps({"prompt": full_prompt}).encode("utf-8")
+    payload = json.dumps({"prompt": full_message}).encode("utf-8")
 
-    return agentcore_client.invoke_agent_runtime(
-        agentRuntimeArn="arn:aws:bedrock-agentcore:us-east-1:123456789012:agent-runtime/YOUR_RUNTIME_ID",
+    return agentcore_client.invoke_agent_runtime(  # type: ignore[no-any-return]
+        agentRuntimeArn=agent_arn,
         runtimeSessionId=context.conversation_id,
         payload=payload,
     )
 
 
-# Create connector with your invoke function
 connector = BedrockAgentCoreConnector(tac=tac, invoke_fn=invoke_agent)
-
-# TAC Server uses connector's channels for HTTP routing
 server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
 
 if __name__ == "__main__":

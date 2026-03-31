@@ -1,7 +1,8 @@
 """
-TAC Server with Strands Connector
+TAC Server with AWS Strands Connector
 
-Install: pip install tac[server] strands-agents
+Prerequisites:
+    pip install tac-aws[strands,server]
 """
 
 from dotenv import load_dotenv
@@ -19,27 +20,13 @@ tac = TAC(config=TACConfig.from_env())
 
 
 def create_agent(context: ConversationSession) -> Agent:
-    """
-    Factory creates one agent per conversation.
-
-    Receives conversation context to enable SessionManager and context-aware configuration.
-
-    Args:
-        context: ConversationSession with conversation_id, channel, customer_id, etc.
-    """
     return Agent(
         model="amazon.nova-pro-v1:0",
-        system_prompt=(
-            "You are a helpful assistant. Remember everything the user tells you "
-            "in this conversation and refer back to it when asked. Be concise and friendly."
-        ),
+        system_prompt="You are a helpful assistant. Be concise and friendly.",
     )
 
 
-# Connector creates channels and registers message processing
 connector = StrandsConnector(tac=tac, agent_factory=create_agent)
-
-# TAC Server uses connector's channels for HTTP routing
 server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
 
 if __name__ == "__main__":

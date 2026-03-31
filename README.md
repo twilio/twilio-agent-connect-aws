@@ -3,43 +3,39 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twilio-innovation/twilio-agent-connect-python), enabling seamless integration with AWS Strands SDK.
+AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twilio-innovation/twilio-agent-connect-python), enabling seamless integration with AWS agent services.
 
 ## Features
 
-- **StrandsConnector** - AWS Strands SDK integration with TAC
-  - Per-conversation agent isolation
+- **StrandsConnector** - AWS Strands SDK integration
+  - Per-conversation agent isolation with SessionManager support
   - Context-aware agent factories
-- **BedrockAgentCoreConnector** - AWS Bedrock AgentCore integration with TAC
-  - Invoke pre-deployed agents via API
+- **BedrockConnector** - AWS Bedrock Agents integration
+  - Connect console-created agents to Twilio
+  - Managed agent service with action groups and knowledge bases
+- **BedrockAgentCoreConnector** - AWS Bedrock AgentCore integration
+  - Deploy custom agent code (Strands, LangGraph, OpenAI SDK)
+  - Managed runtime with built-in memory
 - Multi-channel support (SMS + Voice)
-- Automatic memory injection
+- Automatic TAC memory injection
 
 ## Installation
-
-### Basic Installation
-
-```bash
-pip install tac-aws
-```
 
 ### With Strands SDK
 
 ```bash
-# Install TAC AWS with Strands SDK connector
-pip install tac-aws[strands]
-
-# For server support (adds FastAPI/Uvicorn via TAC)
 pip install tac-aws[strands,server]
+```
+
+### With Bedrock Agents
+
+```bash
+pip install tac-aws[bedrock,server]
 ```
 
 ### With Bedrock AgentCore
 
 ```bash
-# Install TAC AWS with Bedrock AgentCore connector
-pip install tac-aws[agentcore]
-
-# For server support
 pip install tac-aws[agentcore,server]
 ```
 
@@ -48,42 +44,6 @@ pip install tac-aws[agentcore,server]
 ```bash
 # Install with development tools (includes all connectors)
 pip install tac-aws[dev]
-```
-
-
-## Quick Start
-
-### Example: Strands SDK with TAC Server
-
-```python
-from dotenv import load_dotenv
-from strands import Agent
-from tac import TAC, TACConfig
-from tac.models.session import ConversationSession
-from tac.server import TACFastAPIServer
-from tac_aws.connectors import StrandsConnector
-
-load_dotenv()
-
-# Create TAC instance
-tac = TAC(config=TACConfig.from_env())
-
-# Agent factory receives conversation context (one agent per conversation)
-def create_agent(context: ConversationSession) -> Agent:
-    return Agent(
-        model="amazon.nova-pro-v1:0",
-        system_prompt=(
-            "You are a helpful assistant. Remember everything the user tells you "
-            "in this conversation and refer back to it when asked. Be concise and friendly."
-        ),
-    )
-
-# Create connector (combines agent runtime + channel management)
-connector = StrandsConnector(tac=tac, agent_factory=create_agent)
-
-# TAC Server uses connector's channels for HTTP routing
-server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
-server.start()
 ```
 
 ## Configuration
@@ -108,10 +68,9 @@ TWILIO_TAC_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
 
 Full examples available in [`getting_started/examples/`](getting_started/examples/):
 
-- `strands_agents.py` - Strands SDK with StrandsConnector and TAC Server
-- `bedrock_agentcore_agents.py` - Bedrock AgentCore with BedrockAgentCoreConnector and TAC Server
-
-The examples demonstrate the connector pattern with per-conversation agent isolation and automatic resource management.
+- **`strands_agents.py`** - Strands SDK with per-conversation agent management
+- **`bedrock_agents.py`** - AWS Bedrock Agents (console-created agents)
+- **`bedrock_agentcore_agents.py`** - AWS Bedrock AgentCore (custom agent code deployment)
 
 ## Deployment
 

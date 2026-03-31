@@ -12,30 +12,48 @@ Deploy Strands SDK-based agents to AWS Fargate with Application Load Balancer.
 
 **Includes:**
 - ECS Fargate + ALB infrastructure
-- Docker build process
+- Docker multi-stage build
 - Complete CloudFormation templates
 - Architecture diagrams with Mermaid
-- Production configuration
 - Multi-stage Docker build for private dependencies
 
 **Best for:**
-- Production Strands agents
+- Production Strands agents with per-conversation management
 - Scalable multi-channel deployments (SMS + Voice)
-- AWS-native infrastructure
 
-## Deployment Options
+### AWS Fargate with Bedrock AgentCore
+
+Deploy Bedrock AgentCore-based agents to AWS Fargate with Application Load Balancer.
+
+**Guide:** [`agentcore_aws_fargate/README.md`](agentcore_aws_fargate/README.md)
+
+**Includes:**
+- Agent deployment to Bedrock AgentCore runtime
+- TAC Server on ECS Fargate + ALB infrastructure
+- Docker multi-stage build
+- Complete CloudFormation templates
+- Architecture diagrams with Mermaid
+- Agent deployment guide with AgentCore CLI
+
+**Best for:**
+- Custom agent code deployments (Strands, LangGraph, OpenAI SDK)
+- Managed agent runtime with built-in memory
+- Pre-deployed agents invoked via API
+
+## Deployment Architecture
 
 ### Strands Connector
+TAC Server runs on Fargate and creates per-conversation agent instances using the Strands SDK. Each conversation gets its own agent with isolated state.
 
-Use the Strands AWS Fargate deployment for agents built with the Strands SDK. The deployment includes everything needed to run a production TAC Server with StrandsConnector.
+### Bedrock Agents Connector
+Create agents in AWS Bedrock Console (no deployment needed). TAC Server on Fargate invokes agents via `invoke_agent()` API. Agents are fully managed by AWS.
 
 ### Bedrock AgentCore Connector
-
-For Bedrock AgentCore deployments, agents are deployed directly to AWS AgentCore runtime endpoints. The connector invokes these pre-deployed agents via `invoke_agent_runtime()` API calls - no separate TAC server deployment to AgentCore is needed. You can deploy the TAC Server with BedrockAgentCoreConnector using similar patterns to the Strands Fargate deployment.
+Deploy custom agent code to Bedrock AgentCore runtime. TAC Server on Fargate invokes pre-deployed agents via `invoke_agent_runtime()` API. AgentCore manages runtime and memory.
 
 ## Getting Started
 
-1. Choose your connector type (Strands or Bedrock AgentCore)
+1. Choose your connector type
 2. Follow the appropriate deployment guide
 3. Configure environment variables
 4. Deploy infrastructure
