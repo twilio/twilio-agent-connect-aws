@@ -162,6 +162,7 @@ Resources:
                   - bedrock:InvokeModelWithResponseStream
                   - bedrock-agentcore:InvokeAgentRuntime
                   - bedrock-agentcore:GetAgentRuntime
+                  - bedrock-agentcore:*
                 Resource: '*'
 
   # ECS Task Definition
@@ -207,6 +208,8 @@ Resources:
               Value: prod
             - Name: TWILIO_TAC_VOICE_PUBLIC_DOMAIN
               Value: !Ref TwilioTacVoicePublicDomain
+            - Name: TWILIO_TAC_LOG_LEVEL
+              Value: DEBUG
             - Name: AWS_REGION
               Value: !Ref AWS::Region
             - Name: BEDROCK_AGENTCORE_AGENT_ARN

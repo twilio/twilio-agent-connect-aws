@@ -8,10 +8,10 @@ echo "Building wheels for tac-aws and twilio-agent-connect..."
 
 # Configuration
 TAC_AWS_REPO="https://github.com/twilio-innovation/aws-twilio-agent-connect-python.git"
-TAC_AWS_COMMIT="e0c17a266e897e337357a90478e074e98b5a9a86"
+TAC_AWS_COMMIT="aab3d25912b920d3a3171f9b37a891b569781b3f"
 
 TAC_REPO="https://github.com/twilio-innovation/twilio-agent-connect-python.git"
-TAC_COMMIT="a7cb2106fac5057dad11286b1fece56a00e6b703"
+TAC_COMMIT="5f3533b89f3d9d8d55b90e07ce009fd1956d961a"
 
 WHEELS_DIR="$(pwd)/wheels"
 BUILD_DIR="/tmp/tac-wheels-build"
