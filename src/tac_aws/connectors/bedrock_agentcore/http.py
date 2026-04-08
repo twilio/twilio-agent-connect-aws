@@ -63,11 +63,26 @@ async def parse_streaming_response(
                     break
                 if line:
                     line_str = line.decode("utf-8") if isinstance(line, bytes) else line
-                    # Parse "data: " prefixed lines
+                    # Parse "data: " prefixed lines (SSE format)
                     if line_str.startswith("data: "):
                         chunk_text = line_str[6:]  # Remove "data: " prefix
                         if chunk_text and chunk_text != "[DONE]":
-                            yield chunk_text
+                            # Try to parse as JSON (agent may return structured response)
+                            try:
+                                data = json.loads(chunk_text)
+                                # Extract token from {"type": "text", "token": "..."}
+                                if isinstance(data, dict) and data.get("type") == "text":
+                                    token = data.get("token", "")
+                                    if token:
+                                        yield token
+                                # Fallback: yield entire data if structure is different
+                                elif isinstance(data, dict) and "text" in data:
+                                    yield str(data["text"])
+                                else:
+                                    yield chunk_text
+                            except json.JSONDecodeError:
+                                # Not JSON, yield raw text (backward compatibility)
+                                yield chunk_text
 
     # Handle application/json (buffered chunks)
     elif content_type == "application/json":
