@@ -187,9 +187,16 @@ async def handle_interrupt(
     ws = agent_connections[session_id]
     try:
         # Send interrupt message to agent
+        # Extract utterance - handle both dict and Pydantic model
+        utterance = ""
+        if hasattr(interrupt_data, "utterance_until_interrupt"):
+            utterance = interrupt_data.utterance_until_interrupt or ""
+        elif isinstance(interrupt_data, dict):
+            utterance = interrupt_data.get("utterance_until_interrupt", "")
+
         payload = {
             "type": "interrupt",
-            "utterance_until_interrupt": interrupt_data.get("utterance_until_interrupt", ""),
+            "utterance_until_interrupt": utterance,
         }
         await ws.send(json.dumps(payload))
         logger.info(f"Sent interrupt to agent for session {session_id}")
