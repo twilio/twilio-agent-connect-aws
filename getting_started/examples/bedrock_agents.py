@@ -46,7 +46,7 @@ connector = BedrockConnector(
     }
 )
 
-server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms])
 
 if __name__ == "__main__":
     server.start()

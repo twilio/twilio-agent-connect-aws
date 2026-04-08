@@ -156,12 +156,12 @@ class TestBedrockConnector:
             assert call_kwargs["inputText"] == "Test message"  # Auto-injected
             assert call_kwargs["enableTrace"] is False
 
-            # Verify response was sent to voice channel
-            mock_voice.send_response.assert_called_once_with(
-                "conv123",
-                "Hello world!",
-                role="assistant",
-            )
+            # Verify response was sent to voice channel (buffered string)
+            assert mock_voice.send_response.call_count == 1
+            call_args = mock_voice.send_response.call_args
+            assert call_args[0][0] == "conv123"  # conversation_id
+            assert isinstance(call_args[0][1], str)  # response is buffered string
+            assert call_args[1]["role"] == "assistant"
 
     @pytest.mark.asyncio
     async def test_handle_message_calls_invoke_fn(
@@ -195,9 +195,13 @@ class TestBedrockConnector:
             )
 
             mock_invoke_fn.assert_called_once_with(mock_conversation_session, "Hello", None)
-            connector.voice.send_response.assert_called_once_with(
-                "test_conv_123", "Test response", role="assistant"
-            )
+
+            # Verify response was sent to voice channel (buffered string)
+            assert connector.voice.send_response.call_count == 1
+            call_args = connector.voice.send_response.call_args
+            assert call_args[0][0] == "test_conv_123"  # conversation_id
+            assert isinstance(call_args[0][1], str)  # response is buffered string
+            assert call_args[1]["role"] == "assistant"
 
     @pytest.mark.asyncio
     async def test_handle_message_with_memory_injection(

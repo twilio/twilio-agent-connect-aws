@@ -106,13 +106,17 @@ Connectors combine agent runtime integration with multi-channel conversation man
 
 **BedrockAgentCoreConnector:**
 - AWS Bedrock Agent Core integration for custom agent code deployment
-- Accepts `tac: TAC`, `invoke_fn: Callable`, and optional channel configs
-- User provides invoke function that receives context, user_message, and memory_context
-- Invoke function calls `agentcore_client.invoke_agent_runtime()` and returns response object
-- Connector parses response and routes to channels
+- **Base functionality**: `invoke_fn` (required) - HTTP invocation for both voice and SMS
+- **Voice optimization**: `websocket_factory` (optional) - WebSocket for low latency (~50ms vs ~200ms)
+- **Two different clients**:
+  - `boto3.client("bedrock-agentcore")` - provides `invoke_agent_runtime()` for HTTP (required)
+  - `AgentCoreRuntimeClient` (from bedrock-agentcore) - provides `generate_ws_connection()` for WebSocket (optional)
+- **Voice channel**: WebSocket (if websocket_factory provided) or HTTP streaming (base)
+- **SMS channel**: HTTP invocation with response buffering
 - Uses `runtimeSessionId` (conversation_id) for conversation continuity
 - Deploy custom agent code (Strands, LangGraph, OpenAI SDK, etc.)
-- Memory context passed to user's invoke function on every message
+- Memory context passed to user's factories on every message
+- Supports session manager for voice channel (task cancellation on interrupts)
 
 ### Server
 
@@ -172,7 +176,7 @@ def create_agent(context: ConversationSession) -> Agent:
 connector = StrandsConnector(tac=tac, agent_factory=create_agent)
 
 # TAC Server uses connector's channels for HTTP routing
-server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms])
 server.start()
 ```
 
@@ -243,7 +247,7 @@ connector = BedrockConnector(
 )
 
 # TAC Server uses connector's channels for HTTP routing
-server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms])
 server.start()
 ```
 
@@ -280,49 +284,99 @@ def invoke_agent(
     )
 
 connector = BedrockConnector(tac=tac, invoke_fn=invoke_agent)
-server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms])
 server.start()
 ```
 
 ### Bedrock Agent Core with TAC Server
 
+Uses dual-runtime pattern for maximum flexibility:
+- **HTTP invocation** (required): For both voice and SMS channels
+- **WebSocket streaming** (optional): For voice channel low-latency optimization (~50ms vs ~200ms)
+
+Users control all parameters via factory functions:
+- `factory`: Creates WebSocket connection (called once per session for pooling)
+- `payload_fn`: Builds WebSocket message payload (called every message)
+- `http`: Invokes agent via HTTP (used by both channels)
+
 ```python
 import boto3
 import json
+import websockets
+from bedrock_agentcore.runtime import AgentCoreRuntimeClient
 from tac import TAC, TACConfig
+from tac.channels.voice import VoiceChannelConfig
 from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
+from tac.session import ThreadSafeSessionManager
 from tac_aws.connectors import BedrockAgentCoreConnector
+from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocketConfig
 
 # Create TAC instance
 tac = TAC(config=TACConfig.from_env())
+AGENT_ARN = "arn:aws:bedrock-agentcore:us-east-1:123:agent-runtime/..."
 
-# Create Bedrock Agent Core client
-agentcore_client = boto3.client("bedrock-agentcore", region_name="us-east-1")
+# WebSocket: AgentCoreRuntimeClient provides generate_ws_connection()
+agentcore_client = AgentCoreRuntimeClient(region="us-east-1")
 
-# Define invoke function
-def invoke_agent(
+async def create_websocket(context: ConversationSession):
+    """WebSocket factory - creates connection (called once per session for pooling)."""
+    ws_url, headers = agentcore_client.generate_ws_connection(
+        runtime_arn=AGENT_ARN,
+        session_id=context.conversation_id,
+    )
+    return await websockets.connect(ws_url, additional_headers=headers)
+
+def build_websocket_payload(
     context: ConversationSession,
     user_message: str,
     memory_context: str | None,
-) -> dict:
+):
+    """Build WebSocket message payload (called every message)."""
+    payload = {"type": "prompt", "voicePrompt": user_message}
+    if memory_context:
+        payload["memoryContext"] = memory_context
+    return payload
+
+# HTTP: boto3 client provides invoke_agent_runtime()
+agentcore_http_client = boto3.client("bedrock-agentcore", region_name="us-east-1")
+
+def invoke_agent_http(
+    context: ConversationSession,
+    user_message: str,
+    memory_context: str | None,
+):
+    """HTTP invocation for both channels."""
     full_prompt = user_message
     if memory_context:
         full_prompt = f"{memory_context}\n\nUser: {user_message}"
 
     payload = json.dumps({"prompt": full_prompt}).encode("utf-8")
 
-    return agentcore_client.invoke_agent_runtime(
-        agentRuntimeArn="arn:aws:bedrock-agentcore:us-east-1:123:agent-runtime/...",
+    return agentcore_http_client.invoke_agent_runtime(
+        agentRuntimeArn=AGENT_ARN,
         runtimeSessionId=context.conversation_id,
         payload=payload,
     )
 
-# Create connector with invoke function
-connector = BedrockAgentCoreConnector(tac=tac, invoke_fn=invoke_agent)
+# Create connector
+connector = BedrockAgentCoreConnector(
+    tac=tac,
+    runtime=RuntimeConfig(
+        http=invoke_agent_http,  # Required: HTTP streaming for both channels
+        websocket=WebSocketConfig(  # Optional: WebSocket optimization for voice
+            factory=create_websocket,
+            payload_fn=build_websocket_payload,
+        ),
+    ),
+    voice_config=VoiceChannelConfig(
+        session_manager=ThreadSafeSessionManager(),
+        auto_retrieve_memory=True,
+    ),
+)
 
 # TAC Server uses connector's channels for HTTP routing
-server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms])
 server.start()
 ```
 
