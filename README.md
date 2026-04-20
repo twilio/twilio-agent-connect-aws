@@ -54,14 +54,15 @@ TAC AWS requires TAC environment variables. See [TAC Configuration](https://gith
 
 ```bash
 # Twilio Configuration
+TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_API_KEY=your_api_key          # Starts with SK
-TWILIO_API_TOKEN=your_api_token      # Secret for API key
+TWILIO_API_SECRET=your_api_secret    # Secret for API key
 TWILIO_PHONE_NUMBER=+1234567890
-TWILIO_CONVERSATION_SERVICE_SID=conv_configuration_xxx
+TWILIO_CONVERSATION_CONFIGURATION_ID=conv_configuration_xxx
 
 # Server Configuration (for Voice)
-TWILIO_TAC_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
+TWILIO_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
 ```
 
 ## Examples

@@ -6,29 +6,33 @@ Parameters:
     Type: String
     Description: Docker image URI from central ECR
 
-  TwilioTacAuthToken:
+  TwilioAccountSid:
+    Type: String
+    Description: Twilio Account SID
+
+  TwilioAuthToken:
     Type: String
     Description: Twilio Auth Token
     NoEcho: true
 
-  TwilioTacApiKey:
+  TwilioApiKey:
     Type: String
     Description: Twilio API Key
 
-  TwilioTacApiToken:
+  TwilioApiSecret:
     Type: String
-    Description: Twilio API Token
+    Description: Twilio API Secret
     NoEcho: true
 
-  TwilioTacPhoneNumber:
+  TwilioPhoneNumber:
     Type: String
     Description: Twilio Phone Number
 
-  TwilioTacConversationServiceSid:
+  TwilioConversationConfigurationId:
     Type: String
-    Description: Twilio Conversation Service SID
+    Description: Twilio Conversation Configuration ID
 
-  TwilioTacVoicePublicDomain:
+  TwilioVoicePublicDomain:
     Type: String
     Description: Public domain for voice WebSocket (leave empty for initial deployment, update with ALB DNS after stack creation)
 
@@ -187,20 +191,22 @@ Resources:
               awslogs-region: !Ref AWS::Region
               awslogs-stream-prefix: tac
           Environment:
-            - Name: TWILIO_TAC_AUTH_TOKEN
-              Value: !Ref TwilioTacAuthToken
-            - Name: TWILIO_TAC_API_KEY
-              Value: !Ref TwilioTacApiKey
-            - Name: TWILIO_TAC_API_TOKEN
-              Value: !Ref TwilioTacApiToken
-            - Name: TWILIO_TAC_PHONE_NUMBER
-              Value: !Ref TwilioTacPhoneNumber
-            - Name: TWILIO_TAC_CONVERSATION_SERVICE_SID
-              Value: !Ref TwilioTacConversationServiceSid
-            - Name: TWILIO_TAC_ENVIRONMENT
+            - Name: TWILIO_ACCOUNT_SID
+              Value: !Ref TwilioAccountSid
+            - Name: TWILIO_AUTH_TOKEN
+              Value: !Ref TwilioAuthToken
+            - Name: TWILIO_API_KEY
+              Value: !Ref TwilioApiKey
+            - Name: TWILIO_API_SECRET
+              Value: !Ref TwilioApiSecret
+            - Name: TWILIO_PHONE_NUMBER
+              Value: !Ref TwilioPhoneNumber
+            - Name: TWILIO_CONVERSATION_CONFIGURATION_ID
+              Value: !Ref TwilioConversationConfigurationId
+            - Name: TWILIO_ENVIRONMENT
               Value: prod
-            - Name: TWILIO_TAC_VOICE_PUBLIC_DOMAIN
-              Value: !Ref TwilioTacVoicePublicDomain
+            - Name: TWILIO_VOICE_PUBLIC_DOMAIN
+              Value: !Ref TwilioVoicePublicDomain
 
   # Security Groups
   ALBSecurityGroup:

@@ -112,7 +112,7 @@ class StrandsConnector:
         user_message: str,
         context: ConversationSession,
         memory_response: TACMemoryResponse | None,
-    ) -> None:
+    ) -> str | None:
         """
         Handler that processes messages through Strands agent and routes responses.
 
@@ -173,13 +173,11 @@ class StrandsConnector:
             # Send error response
             error_msg = "I encountered an error processing your message. Please try again."
             if context.channel == "voice" and self.voice:
-                await self.voice.send_response(
-                    context.conversation_id, error_msg, role="assistant"
-                )
+                await self.voice.send_response(context.conversation_id, error_msg, role="assistant")
             elif context.channel == "sms" and self.sms:
-                await self.sms.send_response(
-                    context.conversation_id, error_msg, role="assistant"
-                )
+                await self.sms.send_response(context.conversation_id, error_msg, role="assistant")
+
+        return None
 
     def _handle_conversation_ended(self, context: ConversationSession) -> None:
         """

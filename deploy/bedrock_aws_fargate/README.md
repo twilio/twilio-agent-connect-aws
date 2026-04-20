@@ -170,12 +170,13 @@ aws cloudformation deploy \
   --stack-name TACBedrockStack \
   --parameter-overrides \
     ImageURI=YOUR_ECR_URI:latest \
-    TwilioTacAuthToken=YOUR_AUTH_TOKEN \
-    TwilioTacApiKey=YOUR_API_KEY \
-    TwilioTacApiToken=YOUR_API_TOKEN \
-    TwilioTacPhoneNumber=YOUR_PHONE_NUMBER \
-    TwilioTacConversationServiceSid=YOUR_CONVERSATION_SERVICE_SID \
-    TwilioTacVoicePublicDomain=YOUR_HTTPS_DOMAIN \
+    TwilioAccountSid=YOUR_ACCOUNT_SID \
+    TwilioAuthToken=YOUR_AUTH_TOKEN \
+    TwilioApiKey=YOUR_API_KEY \
+    TwilioApiSecret=YOUR_API_SECRET \
+    TwilioPhoneNumber=YOUR_PHONE_NUMBER \
+    TwilioConversationConfigurationId=YOUR_CONVERSATION_CONFIGURATION_ID \
+    TwilioVoicePublicDomain=YOUR_HTTPS_DOMAIN \
     BedrockAgentId=YOUR_BEDROCK_AGENT_ID \
     BedrockAgentAliasId=TSTALIASID \
   --capabilities CAPABILITY_IAM \

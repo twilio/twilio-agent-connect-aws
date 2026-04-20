@@ -167,9 +167,7 @@ async def handle_http_message(
     elif context.channel == "sms" and sms_channel:
         # SMS: buffer complete response then send
         response_text = "".join([chunk async for chunk in response_stream])
-        await sms_channel.send_response(
-            context.conversation_id, response_text, role="assistant"
-        )
+        await sms_channel.send_response(context.conversation_id, response_text, role="assistant")
     else:
         logger.error(
             f"No channel handler for {context.channel}",

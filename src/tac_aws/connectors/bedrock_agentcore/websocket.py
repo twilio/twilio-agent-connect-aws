@@ -44,9 +44,7 @@ async def handle_websocket_message(
         voice_channel: Voice channel instance
     """
     # Get or create WebSocket connection for this session
-    agent_ws = await get_or_create_agent_ws(
-        websocket_factory, agent_connections, context
-    )
+    agent_ws = await get_or_create_agent_ws(websocket_factory, agent_connections, context)
 
     # Build payload via user's payload function
     payload = websocket_payload_fn(context, user_message, memory_context)
@@ -56,9 +54,7 @@ async def handle_websocket_message(
 
     # Stream response to voice channel
     response_stream = stream_from_websocket(agent_ws)
-    await voice_channel.send_response(
-        context.conversation_id, response_stream, role="assistant"
-    )
+    await voice_channel.send_response(context.conversation_id, response_stream, role="assistant")
 
 
 async def get_or_create_agent_ws(
@@ -169,7 +165,9 @@ async def handle_conversation_ended(
 
 
 async def handle_interrupt(
-    agent_connections: dict[str, WebSocketClientProtocol], context: ConversationSession, interrupt_data: dict[str, Any]
+    agent_connections: dict[str, WebSocketClientProtocol],
+    context: ConversationSession,
+    interrupt_data: dict[str, Any],
 ) -> None:
     """
     Forward interrupt to agent via WebSocket.

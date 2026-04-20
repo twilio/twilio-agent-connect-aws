@@ -33,11 +33,11 @@ class RuntimeConfig(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
-    http: Callable[
-        [ConversationSession, str, str | None], InvokeAgentRuntimeResponseTypeDef
-    ] = Field(
-        ...,
-        description="Function to invoke agent via HTTP (required for both channels)",
+    http: Callable[[ConversationSession, str, str | None], InvokeAgentRuntimeResponseTypeDef] = (
+        Field(
+            ...,
+            description="Function to invoke agent via HTTP (required for both channels)",
+        )
     )
     websocket: WebSocketConfig | None = Field(
         None,
@@ -46,7 +46,9 @@ class RuntimeConfig(BaseModel):
 
     @field_validator("websocket", mode="before")
     @classmethod
-    def validate_websocket(cls, v: dict[str, Any] | WebSocketConfig | None) -> WebSocketConfig | None:
+    def validate_websocket(
+        cls, v: dict[str, Any] | WebSocketConfig | None
+    ) -> WebSocketConfig | None:
         """Convert dict to WebSocketConfig if needed."""
         if v is None:
             return None

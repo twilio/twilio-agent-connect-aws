@@ -37,14 +37,15 @@ Create a `.env` file with your credentials. See [`examples/.env.example`](exampl
 
 ```bash
 # Twilio Configuration
-TWILIO_TAC_AUTH_TOKEN=your_auth_token
-TWILIO_TAC_API_KEY=your_api_key
-TWILIO_TAC_API_TOKEN=your_api_token
-TWILIO_TAC_PHONE_NUMBER=+1234567890
-TWILIO_TAC_CONVERSATION_SERVICE_SID=conv_configuration_xxx
+TWILIO_ACCOUNT_SID=your_account_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+TWILIO_API_KEY=your_api_key
+TWILIO_API_SECRET=your_api_secret
+TWILIO_PHONE_NUMBER=+1234567890
+TWILIO_CONVERSATION_CONFIGURATION_ID=conv_configuration_xxx
 
 # Voice Channel
-TWILIO_TAC_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.app
+TWILIO_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.app
 ```
 
 ### AWS Service Specific

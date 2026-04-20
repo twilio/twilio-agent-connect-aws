@@ -154,7 +154,9 @@ class BedrockAgentCoreConnector:
         # Store runtime config
         self.invoke_fn = runtime_config.http
         self.websocket_config = runtime_config.websocket
-        self.agent_connections: dict[str, WebSocketClientProtocol] = {}  # WebSocket pool: session_id -> connection
+        self.agent_connections: dict[
+            str, WebSocketClientProtocol
+        ] = {}  # WebSocket pool: session_id -> connection
 
         if self.websocket_config:
             logger.info("BedrockAgentCoreConnector: WebSocket enabled for voice channel")
@@ -176,7 +178,7 @@ class BedrockAgentCoreConnector:
         user_message: str,
         context: ConversationSession,
         memory_response: TACMemoryResponse | None,
-    ) -> None:
+    ) -> str | None:
         """
         Process incoming message and route response to appropriate channel.
 
@@ -229,13 +231,11 @@ class BedrockAgentCoreConnector:
             # Send error response
             error_msg = "I encountered an error processing your message. Please try again."
             if context.channel == "voice" and self.voice:
-                await self.voice.send_response(
-                    context.conversation_id, error_msg, role="assistant"
-                )
+                await self.voice.send_response(context.conversation_id, error_msg, role="assistant")
             elif context.channel == "sms" and self.sms:
-                await self.sms.send_response(
-                    context.conversation_id, error_msg, role="assistant"
-                )
+                await self.sms.send_response(context.conversation_id, error_msg, role="assistant")
+
+        return None
 
     async def _handle_conversation_ended(self, context: ConversationSession) -> None:
         """
