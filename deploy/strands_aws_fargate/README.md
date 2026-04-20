@@ -115,14 +115,16 @@ graph TB
   - **CloudFront** - For production with AWS-provided HTTPS domain
   - **Route53 + ACM** - For production with custom domain
 - Twilio account with:
+  - Account SID
   - Auth Token
   - API Key and Secret
   - Phone number
-  - Conversation Service SID from Conversation Orchestrator
+  - Conversation Configuration ID from Conversation Orchestrator
 
 **Where to find Twilio credentials:**
+- Account SID: Twilio Console → Account Dashboard (top section)
 - Auth Token & API Keys: Twilio Console → Account → API Keys & Tokens
-- Conversation Service SID: Twilio Console → Conversation Orchestrator → Configuration
+- Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration
 
 ### Step 0: Build and Publish Docker Image
 
