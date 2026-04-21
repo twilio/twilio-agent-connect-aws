@@ -8,6 +8,74 @@ TAC AWS is an open-source library providing AWS-specific integrations for Twilio
 
 **Key Architecture**: TAC AWS is a separate package that depends on TAC as an external dependency. It does NOT contain TAC source code - it imports from the `tac` package.
 
+## Understanding TAC and Twilio Platform Services
+
+TAC (Twilio Agent Connect) is middleware that integrates with several Twilio platform services to enable context-aware AI agents. Understanding these services is essential for using TAC AWS effectively.
+
+### Conversation Orchestrator
+
+**What it is**: Conversation Orchestrator organizes your voice calls, SMS messages, and WhatsApp messages into conversations. It observes traffic from your Twilio account, links it to customer profiles, and makes it available for AI agents and analytics.
+
+**How TAC uses it**: TAC initializes a `ConversationClient` that interacts with Conversation Orchestrator APIs to:
+- Create and manage conversations
+- Track participants across channels
+- List conversation history (communications)
+- Link channel IDs (call IDs, message IDs) to conversations
+- Retrieve conversation configuration (including memory store ID)
+
+**In TAC AWS**: Connectors use TAC's conversation management to route messages to the appropriate agent instance per conversation. The conversation_id from Orchestrator becomes the session identifier for agent runtimes.
+
+### Conversation Memory
+
+**What it is**: Conversation Memory provides agents with real-time, contextual data about customers. It stores and retrieves key facts, conversation history, preferences, and insights across different channels. This allows agents to build on previous conversations rather than treating every interaction as isolated.
+
+**Key capabilities**:
+- **Observations**: Facts and preferences extracted from conversations (e.g., "prefers window seats", "allergic to peanuts")
+- **Summaries**: Conversation summaries that provide quick context
+- **Sessions**: Historical session data
+- **Profile lookup**: Find customer profiles by phone/email
+
+**How TAC uses it**: TAC initializes a `MemoryClient` (using the memory_store_id from Conversation Orchestrator configuration) that:
+- Retrieves memories via `retrieve_memory()` with optional semantic search
+- Looks up profiles by phone/email when profile_id isn't available
+- Provides memory context to your agent callback via `TACMemoryResponse`
+- Falls back to Conversation Orchestrator's communication history if Memory API fails
+
+**In TAC AWS**: Connectors inject memory context into agent prompts using `MemoryPromptBuilder`. This context is passed to your agent factory functions, allowing agents to access customer history and preferences automatically.
+
+### Conversation Intelligence
+
+**What it is**: Conversation Intelligence analyzes conversations using language operators to extract insights, detect sentiment, generate summaries, and more. It processes conversations asynchronously and sends results via webhooks.
+
+**How TAC uses it**: TAC includes an `OperatorResultProcessor` that:
+- Processes Conversation Intelligence webhook events
+- Filters events by configuration ID and operator SID
+- Automatically creates observations or summaries in Conversation Memory based on CI results
+- Handles multiple operator results per event
+
+**In TAC AWS**: TACFastAPIServer provides optional `/ci-webhook` endpoint for receiving Conversation Intelligence events. Connectors don't directly interact with CI, but they benefit from the observations and summaries that CI creates in Memory.
+
+### Knowledge
+
+**What it is**: Knowledge provides semantic search capabilities over knowledge bases (FAQs, product documentation, company policies, etc.). It enables agents to ground responses in authoritative source material.
+
+**How TAC uses it**: TAC optionally initializes a `KnowledgeClient` that:
+- Searches knowledge bases with semantic queries
+- Returns relevant chunks with relevance scores
+- Provides a `create_knowledge_tool()` for LLM function calling
+
+**In TAC AWS**: You can use TAC's knowledge tools directly in your agent implementations (Strands agents can use `@function_tool` decorated knowledge tools). Knowledge search results can supplement agent context alongside memory.
+
+### How It All Works Together
+
+1. **Conversation starts**: Customer sends SMS or calls → Conversation Orchestrator creates a conversation
+2. **TAC retrieves context**: TAC uses conversation_id and profile_id to fetch memories from Conversation Memory
+3. **Memory is injected**: TAC provides memory context to your agent (via callback or MemoryPromptBuilder)
+4. **Agent responds**: Your agent (Strands, Bedrock, etc.) processes user message with full context
+5. **Conversation continues**: Subsequent messages in the same conversation maintain context
+6. **Intelligence analyzes**: Conversation Intelligence processes the conversation and creates new observations/summaries
+7. **Memory grows**: Future conversations benefit from richer customer profiles
+
 ## Development Commands
 
 ```bash
