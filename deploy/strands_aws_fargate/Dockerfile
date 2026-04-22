@@ -11,7 +11,7 @@ COPY strands_aws_fargate/wheels/*.whl /app/wheels/
 COPY strands_aws_fargate/requirements.txt /app/requirements.txt
 
 # Install the git-sourced packages from wheels first (without dependencies)
-RUN pip install --no-cache-dir --no-deps /app/wheels/twilio_agent_connect-0.0.2-py3-none-any.whl /app/wheels/tac_aws-0.1.0-py3-none-any.whl
+RUN pip install --no-cache-dir --no-deps /app/wheels/twilio_agent_connect-0.0.3-py3-none-any.whl /app/wheels/tac_aws-0.1.0-py3-none-any.whl
 
 # Install all other dependencies
 RUN pip install --no-cache-dir -r requirements.txt
