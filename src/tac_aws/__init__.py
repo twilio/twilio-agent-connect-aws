@@ -10,7 +10,7 @@ Tools:
     - create_memory_tool: Strands tool for Twilio Memory retrieval
 """
 
-__version__ = "0.1.0"
+from tac_aws._version import __version__
 
 # Import connectors
 from tac_aws.connectors import BedrockAgentCoreConnector, StrandsConnector

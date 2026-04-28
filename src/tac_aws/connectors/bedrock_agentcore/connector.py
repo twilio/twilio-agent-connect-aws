@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from tac import PartnerConnector
 from tac.adapters import MemoryPromptBuilder
 from tac.channels.sms import SMSChannel, SMSChannelConfig
 from tac.channels.voice import VoiceChannel, VoiceChannelConfig
@@ -11,6 +12,8 @@ from tac.core.logging import get_logger
 from tac.core.tac import TAC
 from tac.models.session import ConversationSession
 from tac.models.tac import TACMemoryResponse
+
+from tac_aws._version import __version__ as _tac_aws_version
 
 from . import http, websocket
 from .config import RuntimeConfig
@@ -144,6 +147,7 @@ class BedrockAgentCoreConnector:
             voice_config: Optional Voice channel configuration
         """
         self.tac = tac
+        self.tac.register_partner_connector(PartnerConnector.AWS_AGENTCORE, _tac_aws_version)
 
         # Convert dict to RuntimeConfig if needed
         if isinstance(runtime, dict):
