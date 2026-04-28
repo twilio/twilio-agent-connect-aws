@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+from tac import PartnerConnector
 from tac.adapters import MemoryPromptBuilder
 from tac.channels.sms import SMSChannel, SMSChannelConfig
 from tac.channels.voice import VoiceChannel, VoiceChannelConfig
@@ -12,6 +13,8 @@ from tac.core.logging import get_logger
 from tac.core.tac import TAC
 from tac.models.session import ConversationSession
 from tac.models.tac import TACMemoryResponse
+
+from tac_aws._version import __version__ as _tac_aws_version
 
 if TYPE_CHECKING:
     from mypy_boto3_bedrock_agent_runtime.client import AgentsforBedrockRuntimeClient
@@ -138,6 +141,7 @@ class BedrockConnector:
             ValueError: If both invoke_fn and config are provided, or neither are provided
         """
         self.tac = tac
+        self.tac.register_partner_connector(PartnerConnector.AWS_BEDROCK, _tac_aws_version)
 
         # Validate: Either invoke_fn OR (bedrock_client + config)
         if invoke_fn is not None:

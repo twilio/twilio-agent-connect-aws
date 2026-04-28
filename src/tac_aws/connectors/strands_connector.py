@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
+from tac import PartnerConnector
 from tac.adapters import MemoryPromptBuilder
 from tac.channels.sms import SMSChannel, SMSChannelConfig
 from tac.channels.voice import VoiceChannel, VoiceChannelConfig
@@ -12,6 +13,8 @@ from tac.core.logging import get_logger
 from tac.core.tac import TAC
 from tac.models.session import ConversationSession
 from tac.models.tac import TACMemoryResponse
+
+from tac_aws._version import __version__ as _tac_aws_version
 
 if TYPE_CHECKING:
     from strands import Agent
@@ -89,6 +92,7 @@ class StrandsConnector:
             voice_config: Optional Voice channel configuration
         """
         self.tac = tac
+        self.tac.register_partner_connector(PartnerConnector.AWS_STRANDS, _tac_aws_version)
         self.agent_factory = agent_factory
 
         # Per-conversation agent management (from adapter)
