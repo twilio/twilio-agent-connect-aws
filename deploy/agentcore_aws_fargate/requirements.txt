@@ -153,3 +153,4 @@ websockets==13.1
     #   uvicorn
 yarl==1.23.0
     # via aiohttp
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
