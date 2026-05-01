@@ -58,6 +58,9 @@ Deploy Bedrock AgentCore-based agents to AWS Fargate with Application Load Balan
 - Managed agent runtime with built-in memory
 - Pre-deployed agents invoked via API
 
+**Real-world example:**
+- [AWS Sample: Bedrock AgentCore + TAC Reference Implementation](https://github.com/aws-samples/sample-bedrock-agentcore-twilio-agent-connect-reference)
+
 ## Deployment Architecture
 
 ### Strands Connector
