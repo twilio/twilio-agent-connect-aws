@@ -1,9 +1,33 @@
-# TAC AWS - AWS Integrations for Twilio Agent Connect
+<div align="center">
+  <div>
+    <img src="logo.svg" alt="TAC AWS Logo" width="120" height="120">
+  </div>
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  <h1>
+    TAC AWS
+  </h1>
 
-AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twilio-innovation/twilio-agent-connect-python), enabling seamless integration with AWS agent services.
+  <h2>
+    AWS integrations for Twilio Agent Connect — connect AWS agent services to Twilio's communication channels.
+  </h2>
+
+  <div align="center">
+    <a href="https://github.com/twilio/aws-twilio-agent-connect-python"><img alt="Python SDK" src="https://img.shields.io/badge/Python-3.10+-3776AB.svg"/></a>
+    <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg"/></a>
+    <a href="getting_started/examples/"><img alt="Getting Started" src="https://img.shields.io/badge/Getting%20Started-Examples-F22F46.svg"/></a>
+  </div>
+  
+  <p>
+    <a href="https://www.twilio.com/docs/platform/tac/overview">Documentation</a>
+    ◆ <a href="https://github.com/twilio/twilio-agent-connect-python">Python SDK</a>
+    ◆ <a href="getting_started/examples/">Examples</a>
+    ◆ <a href="deploy/">Deployment</a>
+  </p>
+</div>
+
+AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twilio/twilio-agent-connect-python), enabling seamless integration with AWS agent services like Strands, Bedrock Agents, and Bedrock AgentCore.
+
+---
 
 ## Features
 
@@ -48,7 +72,7 @@ pip install tac-aws[dev]
 
 ## Configuration
 
-TAC AWS requires TAC environment variables. See [TAC Configuration](https://github.com/twilio-innovation/twilio-agent-connect-python#configuration) for details.
+TAC AWS requires TAC environment variables. See [TAC Configuration](https://github.com/twilio/twilio-agent-connect-python#configuration) for details.
 
 ### Required Environment Variables
 
@@ -86,7 +110,7 @@ See [`deploy/README.md`](deploy/README.md) for production deployment guides:
 
 ```bash
 # Clone repository
-git clone https://github.com/twilio-innovation/aws-twilio-agent-connect-python.git
+git clone https://github.com/twilio/aws-twilio-agent-connect-python.git
 cd aws-twilio-agent-connect-python
 
 # Install dependencies

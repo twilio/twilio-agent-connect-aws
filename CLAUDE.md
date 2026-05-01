@@ -128,7 +128,7 @@ TAC AWS depends on TAC from GitHub (locked to specific commit):
 
 ```toml
 dependencies = [
-    "tac @ git+https://github.com/twilio-innovation/twilio-agent-connect-python.git@{commit_hash}",
+    "tac @ git+https://github.com/twilio/twilio-agent-connect-python.git@{commit_hash}",
 ]
 ```
 
@@ -479,6 +479,6 @@ sed -i '' 's/@{old_hash}/@{new_hash}/g' pyproject.toml
 
 ## Related Documentation
 
-- TAC Core: [CLAUDE.md](https://github.com/twilio-innovation/twilio-agent-connect-python/blob/main/CLAUDE.md)
+- TAC Core: [CLAUDE.md](https://github.com/twilio/twilio-agent-connect-python/blob/main/CLAUDE.md)
 - AWS Strands: [strandsagents.com/docs](https://strandsagents.com/docs)
 - AWS Bedrock: [docs.aws.amazon.com/bedrock](https://docs.aws.amazon.com/bedrock/)
