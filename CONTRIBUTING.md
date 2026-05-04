@@ -1,6 +1,6 @@
-# Contributing to `twilio-agent-connect-aws-python`
+# Contributing to `twilio-agent-connect-aws`
 
-We'd love for you to contribute to our source code and to make `twilio-agent-connect-aws-python` even better than it is today! Here are the guidelines we'd like you to follow:
+We'd love for you to contribute to our source code and to make `twilio-agent-connect-aws` even better than it is today! Here are the guidelines we'd like you to follow:
 
 - [Code of Conduct](#code-of-conduct)
 - [Question or Problem?](#got-an-apiproduct-question-or-problem)
@@ -58,7 +58,7 @@ If your issue appears to be a bug, and hasn't been reported, open a new issue. H
 
 Before you submit your Pull Request (PR) consider the following:
 
-1. Search [GitHub](https://github.com/twilio/twilio-agent-connect-aws-python/pulls) for an open or closed PR that relates to your submission. You don't want to duplicate effort.
+1. Search [GitHub](https://github.com/twilio/twilio-agent-connect-aws/pulls) for an open or closed PR that relates to your submission. You don't want to duplicate effort.
 
 2. Fork the repo and create a new branch from `main`:
 
@@ -104,4 +104,4 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 - **Formatting** - Code must pass `make format` (ruff format — line length 100). Run `make format` to auto-fix.
 - **Python Version** - Target Python 3.10+. Use modern syntax (type unions with `|`, etc.).
 
-[github]: https://github.com/twilio/twilio-agent-connect-aws-python
+[github]: https://github.com/twilio/twilio-agent-connect-aws
