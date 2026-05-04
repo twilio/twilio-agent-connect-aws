@@ -2,7 +2,7 @@
 TAC Server with Bedrock AgentCore Connector (Dual Runtime: HTTP + WebSocket)
 
 Dependencies are managed via pyproject.toml.
-Requires: tac-aws[server]>=0.1.0, bedrock-agentcore>=1.4.8
+Requires: aws-twilio-agent-connect[server]>=0.1.0, bedrock-agentcore>=1.4.8
 
 This server demonstrates the dual-runtime pattern:
 - HTTP: Required for both voice and SMS (fallback for voice, primary for SMS)

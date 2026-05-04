@@ -4,7 +4,7 @@
 -include Makefile.local
 
 help:
-	@echo "TAC AWS Development Commands:"
+	@echo "aws-twilio-agent-connect Development Commands:"
 	@echo "  make sync        - Install dependencies (uses uv)"
 	@echo "  make dev-setup   - Complete dev environment setup"
 	@echo "  make format      - Format code with ruff"

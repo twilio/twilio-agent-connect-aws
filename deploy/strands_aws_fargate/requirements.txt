@@ -178,7 +178,7 @@ starlette==1.0.0
     #   mcp
     #   sse-starlette
 strands-agents==1.33.0
-    # via tac-aws
+    # via aws-twilio-agent-connect
 twilio==9.10.4
     # via twilio-agent-connect
 typing-extensions==4.15.0

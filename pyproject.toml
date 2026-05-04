@@ -1,5 +1,5 @@
 [project]
-name = "tac-aws"
+name = "aws-twilio-agent-connect"
 version = "0.1.0"
 description = "AWS integrations for Twilio Agent Connect (TAC) - adapters and servers for AWS agent runtimes"
 readme = "README.md"

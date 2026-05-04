@@ -1,6 +1,6 @@
-# TAC AWS Deployment Guide
+# aws-twilio-agent-connect Deployment Guide
 
-Production deployment options for TAC AWS connectors.
+Production deployment options for aws-twilio-agent-connect connectors.
 
 ## Available Deployments
 

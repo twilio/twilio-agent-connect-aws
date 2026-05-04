@@ -48,26 +48,26 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
 ### With Strands SDK
 
 ```bash
-pip install tac-aws[strands,server]
+pip install aws-twilio-agent-connect[strands,server]
 ```
 
 ### With Bedrock Agents
 
 ```bash
-pip install tac-aws[bedrock,server]
+pip install aws-twilio-agent-connect[bedrock,server]
 ```
 
 ### With Bedrock AgentCore
 
 ```bash
-pip install tac-aws[agentcore,server]
+pip install aws-twilio-agent-connect[agentcore,server]
 ```
 
 ### Development
 
 ```bash
 # Install with development tools (includes all connectors)
-pip install tac-aws[dev]
+pip install aws-twilio-agent-connect[dev]
 ```
 
 ## Configuration

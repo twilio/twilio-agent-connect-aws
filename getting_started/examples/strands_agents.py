@@ -2,7 +2,7 @@
 TAC Server with AWS Strands Connector
 
 Prerequisites:
-    pip install tac-aws[strands,server]
+    pip install aws-twilio-agent-connect[strands,server]
 """
 
 from dotenv import load_dotenv
