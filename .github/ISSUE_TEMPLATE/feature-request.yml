@@ -1,5 +1,5 @@
 name: Feature Request
-description: Suggest an idea for aws-twilio-agent-connect-python
+description: Suggest an idea for twilio-agent-connect-aws
 title: "[Feature Request]: "
 labels: "type: community enhancement"
 body:
@@ -8,13 +8,13 @@ body:
       label: Preflight Checklist
       description: Please ensure you've completed all of the following.
       options:
-        - label: I have read the [Contributing Guidelines](https://github.com/twilio/aws-twilio-agent-connect-python/blob/main/CONTRIBUTING.md) for this project.
+        - label: I have read the [Contributing Guidelines](https://github.com/twilio/twilio-agent-connect-aws/blob/main/CONTRIBUTING.md) for this project.
           required: true
-        - label: I agree to follow the [Code of Conduct](https://github.com/twilio/aws-twilio-agent-connect-python/blob/main/CODE_OF_CONDUCT.md) that this project adheres to.
+        - label: I agree to follow the [Code of Conduct](https://github.com/twilio/twilio-agent-connect-aws/blob/main/CODE_OF_CONDUCT.md) that this project adheres to.
           required: true
-        - label: I have searched the [issue tracker](https://github.com/twilio/aws-twilio-agent-connect-python/issues) for a feature request that matches the one I want to file, without success.
+        - label: I have searched the [issue tracker](https://github.com/twilio/twilio-agent-connect-aws/issues) for a feature request that matches the one I want to file, without success.
           required: true
-        - label: This is not a general Twilio feature request or bug report. It is a feature request for the aws-twilio-agent-connect-python package.
+        - label: This is not a general Twilio feature request or bug report. It is a feature request for the twilio-agent-connect-aws package.
           required: true
   - type: textarea
     attributes:
