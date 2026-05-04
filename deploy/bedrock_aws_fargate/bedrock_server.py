@@ -2,7 +2,7 @@
 TAC Server with AWS Bedrock Agent Connector
 
 Dependencies are managed via pyproject.toml.
-Requires: tac-aws[server]>=0.1.0
+Requires twilio-agent-connect-aws[bedrock,server] version 0.1.0 or later.
 
 Prerequisites:
 - Deploy an agent to AWS Bedrock Agent
