@@ -1,10 +1,10 @@
 <div align="center">
   <div>
-    <img src="logo.svg" alt="AWS Twilio Agent Connect Logo" width="120" height="120">
+    <img src="logo.svg" alt="Twilio Agent Connect AWS Logo" width="120" height="120">
   </div>
 
   <h1>
-    AWS Twilio Agent Connect
+    Twilio Agent Connect AWS
   </h1>
 
   <h2>

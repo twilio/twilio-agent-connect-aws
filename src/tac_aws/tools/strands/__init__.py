@@ -1,4 +1,4 @@
-"""Strands-specific tool implementations for AWS Twilio Agent Connect."""
+"""Strands-specific tool implementations for Twilio Agent Connect AWS."""
 
 from tac_aws.tools.strands.memory import create_memory_tool
 
