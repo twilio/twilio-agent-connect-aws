@@ -1,10 +1,10 @@
 <div align="center">
   <div>
-    <img src="logo.svg" alt="TAC AWS Logo" width="120" height="120">
+    <img src="logo.svg" alt="AWS Twilio Agent Connect Logo" width="120" height="120">
   </div>
 
   <h1>
-    TAC AWS
+    AWS Twilio Agent Connect
   </h1>
 
   <h2>
@@ -72,7 +72,7 @@ pip install aws-twilio-agent-connect[dev]
 
 ## Configuration
 
-TAC AWS requires TAC environment variables. See [TAC Configuration](https://github.com/twilio/twilio-agent-connect-python#configuration) for details.
+aws-twilio-agent-connect requires TAC environment variables. See [TAC Configuration](https://github.com/twilio/twilio-agent-connect-python#configuration) for details.
 
 ### Required Environment Variables
 
@@ -141,7 +141,7 @@ make check
 
 ## Dependencies
 
-TAC AWS depends on:
+aws-twilio-agent-connect depends on:
 - **tac** - Core Twilio Agent Connect framework (installed from GitHub)
   - Requires `tac[server]` extra for TAC Server support
 - **strands-agents** (optional) - AWS Strands SDK
