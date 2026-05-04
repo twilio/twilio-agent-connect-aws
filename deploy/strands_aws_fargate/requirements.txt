@@ -2,7 +2,7 @@
 #    uv export --no-hashes --no-emit-project --no-emit-package twilio-agent-connect --extra strands --extra server
 aiohappyeyeballs==2.6.1
     # via aiohttp
-aiohttp==3.13.3
+aiohttp==3.13.4
     # via
     #   aiohttp-retry
     #   twilio
