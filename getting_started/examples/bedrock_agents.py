@@ -2,7 +2,7 @@
 TAC Server with AWS Bedrock Agent Connector
 
 Prerequisites:
-    pip install aws-twilio-agent-connect[bedrock,server]
+    pip install twilio-agent-connect-aws[bedrock,server]
 
 Environment Variables:
     BEDROCK_AGENT_ID - Bedrock Agent ID

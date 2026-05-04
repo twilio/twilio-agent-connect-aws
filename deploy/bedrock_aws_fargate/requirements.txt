@@ -24,7 +24,7 @@ async-timeout==5.0.1 ; python_full_version < '3.11'
 attrs==26.1.0
     # via aiohttp
 boto3==1.42.89
-    # via aws-twilio-agent-connect
+    # via twilio-agent-connect-aws
 botocore==1.42.89
     # via
     #   boto3
@@ -75,7 +75,7 @@ multidict==6.7.1
     #   aiohttp
     #   yarl
 mypy-boto3-bedrock-agent-runtime==1.42.3
-    # via aws-twilio-agent-connect
+    # via twilio-agent-connect-aws
 propcache==0.4.1
     # via
     #   aiohttp

@@ -12,7 +12,7 @@
   </h2>
 
   <div align="center">
-    <a href="https://github.com/twilio/aws-twilio-agent-connect-python"><img alt="Python SDK" src="https://img.shields.io/badge/Python-3.10+-3776AB.svg"/></a>
+    <a href="https://github.com/twilio/twilio-agent-connect-aws-python"><img alt="Python SDK" src="https://img.shields.io/badge/Python-3.10+-3776AB.svg"/></a>
     <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg"/></a>
     <a href="getting_started/examples/"><img alt="Getting Started" src="https://img.shields.io/badge/Getting%20Started-Examples-F22F46.svg"/></a>
   </div>
@@ -48,31 +48,31 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
 ### With Strands SDK
 
 ```bash
-pip install aws-twilio-agent-connect[strands,server]
+pip install twilio-agent-connect-aws[strands,server]
 ```
 
 ### With Bedrock Agents
 
 ```bash
-pip install aws-twilio-agent-connect[bedrock,server]
+pip install twilio-agent-connect-aws[bedrock,server]
 ```
 
 ### With Bedrock AgentCore
 
 ```bash
-pip install aws-twilio-agent-connect[agentcore,server]
+pip install twilio-agent-connect-aws[agentcore,server]
 ```
 
 ### Development
 
 ```bash
 # Install with development tools (includes all connectors)
-pip install aws-twilio-agent-connect[dev]
+pip install twilio-agent-connect-aws[dev]
 ```
 
 ## Configuration
 
-aws-twilio-agent-connect requires TAC environment variables. See [TAC Configuration](https://github.com/twilio/twilio-agent-connect-python#configuration) for details.
+twilio-agent-connect-aws requires TAC environment variables. See [TAC Configuration](https://github.com/twilio/twilio-agent-connect-python#configuration) for details.
 
 ### Required Environment Variables
 
@@ -110,8 +110,8 @@ See [`deploy/README.md`](deploy/README.md) for production deployment guides:
 
 ```bash
 # Clone repository
-git clone https://github.com/twilio/aws-twilio-agent-connect-python.git
-cd aws-twilio-agent-connect-python
+git clone https://github.com/twilio/twilio-agent-connect-aws-python.git
+cd twilio-agent-connect-aws-python
 
 # Install dependencies
 make sync
@@ -141,7 +141,7 @@ make check
 
 ## Dependencies
 
-aws-twilio-agent-connect depends on:
+twilio-agent-connect-aws depends on:
 - **tac** - Core Twilio Agent Connect framework (installed from GitHub)
   - Requires `tac[server]` extra for TAC Server support
 - **strands-agents** (optional) - AWS Strands SDK

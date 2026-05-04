@@ -1,6 +1,6 @@
-# aws-twilio-agent-connect Deployment Guide
+# twilio-agent-connect-aws Deployment Guide
 
-Production deployment options for aws-twilio-agent-connect connectors.
+Production deployment options for twilio-agent-connect-aws connectors.
 
 ## Available Deployments
 

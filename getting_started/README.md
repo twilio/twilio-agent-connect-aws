@@ -1,32 +1,32 @@
-# Getting Started with aws-twilio-agent-connect
+# Getting Started with twilio-agent-connect-aws
 
-Quick start guide for using aws-twilio-agent-connect with AWS agent runtimes.
+Quick start guide for using twilio-agent-connect-aws with AWS agent runtimes.
 
 ## Installation
 
 ### With Strands SDK
 
 ```bash
-pip install aws-twilio-agent-connect[strands,server]
+pip install twilio-agent-connect-aws[strands,server]
 ```
 
 ### With Bedrock Agents
 
 ```bash
-pip install aws-twilio-agent-connect[bedrock,server]
+pip install twilio-agent-connect-aws[bedrock,server]
 ```
 
 ### With Bedrock AgentCore
 
 ```bash
-pip install aws-twilio-agent-connect[agentcore,server]
+pip install twilio-agent-connect-aws[agentcore,server]
 ```
 
 ### Development
 
 ```bash
 # Includes all connectors and development tools
-pip install aws-twilio-agent-connect[dev]
+pip install twilio-agent-connect-aws[dev]
 ```
 
 ## Environment Setup

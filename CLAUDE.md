@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-aws-twilio-agent-connect is an open-source library providing AWS-specific integrations for Twilio Agent Connect (TAC). It contains connectors that combine agent runtime integration with multi-channel conversation management.
+twilio-agent-connect-aws is an open-source library providing AWS-specific integrations for Twilio Agent Connect (TAC). It contains connectors that combine agent runtime integration with multi-channel conversation management.
 
-**Key Architecture**: aws-twilio-agent-connect is a separate package that depends on TAC as an external dependency. It does NOT contain TAC source code - it imports from the `tac` package.
+**Key Architecture**: twilio-agent-connect-aws is a separate package that depends on TAC as an external dependency. It does NOT contain TAC source code - it imports from the `tac` package.
 
 ## Understanding TAC and Twilio Platform Services
 
-TAC (Twilio Agent Connect) is middleware that integrates with several Twilio platform services to enable context-aware AI agents. Understanding these services is essential for using aws-twilio-agent-connect effectively.
+TAC (Twilio Agent Connect) is middleware that integrates with several Twilio platform services to enable context-aware AI agents. Understanding these services is essential for using twilio-agent-connect-aws effectively.
 
 ### Conversation Orchestrator
 
@@ -23,7 +23,7 @@ TAC (Twilio Agent Connect) is middleware that integrates with several Twilio pla
 - Link channel IDs (call IDs, message IDs) to conversations
 - Retrieve conversation configuration (including memory store ID)
 
-**In aws-twilio-agent-connect**: Connectors use TAC's conversation management to route messages to the appropriate agent instance per conversation. The conversation_id from Orchestrator becomes the session identifier for agent runtimes.
+**In twilio-agent-connect-aws**: Connectors use TAC's conversation management to route messages to the appropriate agent instance per conversation. The conversation_id from Orchestrator becomes the session identifier for agent runtimes.
 
 ### Conversation Memory
 
@@ -41,7 +41,7 @@ TAC (Twilio Agent Connect) is middleware that integrates with several Twilio pla
 - Provides memory context to your agent callback via `TACMemoryResponse`
 - Falls back to Conversation Orchestrator's communication history if Memory API fails
 
-**In aws-twilio-agent-connect**: Connectors inject memory context into agent prompts using `MemoryPromptBuilder`. This context is passed to your agent factory functions, allowing agents to access customer history and preferences automatically.
+**In twilio-agent-connect-aws**: Connectors inject memory context into agent prompts using `MemoryPromptBuilder`. This context is passed to your agent factory functions, allowing agents to access customer history and preferences automatically.
 
 ### Conversation Intelligence
 
@@ -53,7 +53,7 @@ TAC (Twilio Agent Connect) is middleware that integrates with several Twilio pla
 - Automatically creates observations or summaries in Conversation Memory based on CI results
 - Handles multiple operator results per event
 
-**In aws-twilio-agent-connect**: TACFastAPIServer provides optional `/ci-webhook` endpoint for receiving Conversation Intelligence events. Connectors don't directly interact with CI, but they benefit from the observations and summaries that CI creates in Memory.
+**In twilio-agent-connect-aws**: TACFastAPIServer provides optional `/ci-webhook` endpoint for receiving Conversation Intelligence events. Connectors don't directly interact with CI, but they benefit from the observations and summaries that CI creates in Memory.
 
 ### Knowledge
 
@@ -64,7 +64,7 @@ TAC (Twilio Agent Connect) is middleware that integrates with several Twilio pla
 - Returns relevant chunks with relevance scores
 - Provides a `create_knowledge_tool()` for LLM function calling
 
-**In aws-twilio-agent-connect**: You can use TAC's knowledge tools directly in your agent implementations (Strands agents can use `@function_tool` decorated knowledge tools). Knowledge search results can supplement agent context alongside memory.
+**In twilio-agent-connect-aws**: You can use TAC's knowledge tools directly in your agent implementations (Strands agents can use `@function_tool` decorated knowledge tools). Knowledge search results can supplement agent context alongside memory.
 
 ### How It All Works Together
 
@@ -124,7 +124,7 @@ deploy/
 
 ### Core Dependency
 
-aws-twilio-agent-connect depends on TAC from GitHub (locked to specific commit):
+twilio-agent-connect-aws depends on TAC from GitHub (locked to specific commit):
 
 ```toml
 dependencies = [
@@ -188,7 +188,7 @@ Connectors combine agent runtime integration with multi-channel conversation man
 
 ### Server
 
-aws-twilio-agent-connect uses `TACFastAPIServer` from the core TAC package (`tac.server`):
+twilio-agent-connect-aws uses `TACFastAPIServer` from the core TAC package (`tac.server`):
 - FastAPI-based server with TAC integration
 - Accepts voice and SMS channel instances from connector
 - Handles HTTP routes (SMS, Voice, WebSocket, CI webhooks)
@@ -205,7 +205,7 @@ from tac.models.session import ConversationSession
 from tac.models.tac import TACMemoryResponse
 from tac.server import TACFastAPIServer
 
-# aws-twilio-agent-connect imports - local package
+# twilio-agent-connect-aws imports - local package
 from tac_aws.connectors import StrandsConnector
 ```
 
@@ -465,7 +465,7 @@ When TAC has new changes, update the commit hash in pyproject.toml:
 # In TAC repo
 git rev-parse HEAD
 
-# In aws-twilio-agent-connect repo
+# In twilio-agent-connect-aws repo
 # Update pyproject.toml with new commit hash
 sed -i '' 's/@{old_hash}/@{new_hash}/g' pyproject.toml
 ```
