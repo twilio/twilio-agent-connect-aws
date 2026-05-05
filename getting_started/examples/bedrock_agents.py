@@ -17,6 +17,8 @@ import os
 import boto3
 from dotenv import load_dotenv
 from tac import TAC
+from tac.channels.sms import SMSChannelConfig
+from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
 from tac.server import TACFastAPIServer
 
@@ -44,6 +46,8 @@ connector = BedrockConnector(
         "agentId": agent_id,
         "agentAliasId": agent_alias_id,
     },
+    voice_config=VoiceChannelConfig(memory_mode="always"),
+    sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
 server = TACFastAPIServer(

@@ -439,7 +439,7 @@ connector = BedrockAgentCoreConnector(
     ),
     voice_config=VoiceChannelConfig(
         session_manager=ThreadSafeSessionManager(),
-        auto_retrieve_memory=True,
+        memory_mode="always",
     ),
 )
 

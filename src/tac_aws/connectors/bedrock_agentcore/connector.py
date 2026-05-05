@@ -120,7 +120,7 @@ class BedrockAgentCoreConnector:
             ),
             voice_config=VoiceChannelConfig(
                 session_manager=ThreadSafeSessionManager(),
-                auto_retrieve_memory=True,
+                memory_mode="always",
             ),
         )
 
@@ -194,7 +194,7 @@ class BedrockAgentCoreConnector:
         Args:
             user_message: The user's message text
             context: Conversation session with metadata
-            memory_response: Retrieved memory context (if auto_retrieve_memory=True)
+            memory_response: Retrieved memory context (if memory_mode="always")
         """
         try:
             # Build memory context if available

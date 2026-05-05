@@ -36,8 +36,8 @@ class TestBedrockConnector:
     def test_initialization_with_channel_configs(self, mock_tac: MagicMock) -> None:
         """Test connector initialization with custom channel configs."""
         mock_invoke_fn = MagicMock()
-        sms_config = {"auto_retrieve_memory": True}
-        voice_config = {"auto_retrieve_memory": False}
+        sms_config = {"memory_mode": "always"}
+        voice_config = {"memory_mode": "never"}
 
         with patch("tac_aws.connectors.bedrock_connector.VoiceChannel") as MockVoice, patch(
             "tac_aws.connectors.bedrock_connector.SMSChannel"

@@ -23,6 +23,7 @@ import websockets
 from bedrock_agentcore.runtime import AgentCoreRuntimeClient
 from dotenv import load_dotenv
 from tac import TAC
+from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
 from tac.models.session import ConversationSession
@@ -122,8 +123,9 @@ connector = BedrockAgentCoreConnector(
     ),
     voice_config=VoiceChannelConfig(
         session_manager=ThreadSafeSessionManager(),
-        auto_retrieve_memory=True,
+        memory_mode="always",
     ),
+    sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
 # Create server

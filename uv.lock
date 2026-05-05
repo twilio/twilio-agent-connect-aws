@@ -2161,7 +2161,7 @@ wheels = [
 [[package]]
 name = "twilio-agent-connect"
 version = "0.0.3"
-source = { git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=a79515d11dd04e61e34036f781f3f2aad0ee0beb#a79515d11dd04e61e34036f781f3f2aad0ee0beb" }
+source = { git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=bd04b122363c29a0d7974b664fa5a7d801577aae#bd04b122363c29a0d7974b664fa5a7d801577aae" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
@@ -2233,9 +2233,9 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0,<1" },
     { name = "strands-agents", marker = "extra == 'dev'", specifier = ">=1.30.0" },
     { name = "strands-agents", marker = "extra == 'strands'", specifier = ">=1.30.0" },
-    { name = "twilio-agent-connect", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=a79515d11dd04e61e34036f781f3f2aad0ee0beb" },
-    { name = "twilio-agent-connect", extras = ["server"], marker = "extra == 'dev'", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=a79515d11dd04e61e34036f781f3f2aad0ee0beb" },
-    { name = "twilio-agent-connect", extras = ["server"], marker = "extra == 'server'", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=a79515d11dd04e61e34036f781f3f2aad0ee0beb" },
+    { name = "twilio-agent-connect", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=bd04b122363c29a0d7974b664fa5a7d801577aae" },
+    { name = "twilio-agent-connect", extras = ["server"], marker = "extra == 'dev'", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=bd04b122363c29a0d7974b664fa5a7d801577aae" },
+    { name = "twilio-agent-connect", extras = ["server"], marker = "extra == 'server'", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=bd04b122363c29a0d7974b664fa5a7d801577aae" },
     { name = "websockets", marker = "extra == 'agentcore'", specifier = ">=13.0,<14" },
     { name = "websockets", marker = "extra == 'dev'", specifier = ">=13.0,<14" },
 ]

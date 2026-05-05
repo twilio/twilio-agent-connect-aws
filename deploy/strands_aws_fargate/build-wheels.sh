@@ -11,7 +11,7 @@ TAC_AWS_REPO="https://github.com/twilio/aws-twilio-agent-connect-python.git"
 TAC_AWS_COMMIT="1e228194caa528fc1d97fb4e4140a7a2b7aa07da"
 
 TAC_REPO="https://github.com/twilio/twilio-agent-connect-python.git"
-TAC_COMMIT="a79515d11dd04e61e34036f781f3f2aad0ee0beb"
+TAC_COMMIT="bd04b122363c29a0d7974b664fa5a7d801577aae"
 
 WHEELS_DIR="$(pwd)/wheels"
 BUILD_DIR="/tmp/tac-wheels-build"
