@@ -2,7 +2,7 @@
 TAC Server with Strands Connector
 
 Dependencies are managed via pyproject.toml.
-Requires twilio-agent-connect-aws[strands,server] version 0.1.0 or later.
+Requires twilio-agent-connect-aws[strands,server] version 1.0.0 or later.
 """
 
 from dotenv import load_dotenv

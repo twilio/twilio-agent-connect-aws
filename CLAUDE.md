@@ -124,11 +124,11 @@ deploy/
 
 ### Core Dependency
 
-twilio-agent-connect-aws depends on TAC from GitHub (locked to specific commit):
+twilio-agent-connect-aws depends on TAC from PyPI:
 
 ```toml
 dependencies = [
-    "tac @ git+https://github.com/twilio/twilio-agent-connect-python.git@{commit_hash}",
+    "twilio-agent-connect>=1.0.0,<2",
 ]
 ```
 
@@ -461,15 +461,16 @@ Tests should:
 
 ## Updating TAC Dependency
 
-When TAC has new changes, update the commit hash in pyproject.toml:
+TAC is now available on PyPI. To update to a new version:
 
 ```bash
-# In TAC repo
-git rev-parse HEAD
+# Update version constraint in pyproject.toml
+# dependencies = [
+#     "twilio-agent-connect>=1.1.0,<2",  # Update version as needed
+# ]
 
-# In twilio-agent-connect-aws repo
-# Update pyproject.toml with new commit hash
-sed -i '' 's/@{old_hash}/@{new_hash}/g' pyproject.toml
+# Sync dependencies
+make sync
 ```
 
 ## Common Pitfalls

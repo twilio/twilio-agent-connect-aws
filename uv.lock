@@ -2160,12 +2160,16 @@ wheels = [
 
 [[package]]
 name = "twilio-agent-connect"
-version = "0.0.3"
-source = { git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=bd04b122363c29a0d7974b664fa5a7d801577aae#bd04b122363c29a0d7974b664fa5a7d801577aae" }
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
     { name = "twilio" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8b/46/00899d8c94e0f21d5490700767a92fa08093c72d9084c0712d5297041c32/twilio_agent_connect-1.0.0.tar.gz", hash = "sha256:a08b8d6c63757436b073d92e2d88cba1e10c796cf61c16509276c6171c13568b", size = 277777, upload-time = "2026-05-05T16:21:58.461Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/43/2b/a4859d8dad192dc066e7e819d3af7033286e6447abc2d3591a19b28b07bd/twilio_agent_connect-1.0.0-py3-none-any.whl", hash = "sha256:564a8da2afd6dd14688f48b3637b3222397b76cfffe25f0d5aa756ebf285f862", size = 115045, upload-time = "2026-05-05T16:21:55.274Z" },
 ]
 
 [package.optional-dependencies]
@@ -2177,7 +2181,7 @@ server = [
 
 [[package]]
 name = "twilio-agent-connect-aws"
-version = "0.1.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "twilio-agent-connect" },
@@ -2233,9 +2237,9 @@ requires-dist = [
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0,<1" },
     { name = "strands-agents", marker = "extra == 'dev'", specifier = ">=1.30.0" },
     { name = "strands-agents", marker = "extra == 'strands'", specifier = ">=1.30.0" },
-    { name = "twilio-agent-connect", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=bd04b122363c29a0d7974b664fa5a7d801577aae" },
-    { name = "twilio-agent-connect", extras = ["server"], marker = "extra == 'dev'", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=bd04b122363c29a0d7974b664fa5a7d801577aae" },
-    { name = "twilio-agent-connect", extras = ["server"], marker = "extra == 'server'", git = "https://github.com/twilio/twilio-agent-connect-python.git?rev=bd04b122363c29a0d7974b664fa5a7d801577aae" },
+    { name = "twilio-agent-connect", specifier = ">=1.0.0,<2" },
+    { name = "twilio-agent-connect", extras = ["server"], marker = "extra == 'dev'", specifier = ">=1.0.0,<2" },
+    { name = "twilio-agent-connect", extras = ["server"], marker = "extra == 'server'", specifier = ">=1.0.0,<2" },
     { name = "websockets", marker = "extra == 'agentcore'", specifier = ">=13.0,<14" },
     { name = "websockets", marker = "extra == 'dev'", specifier = ">=13.0,<14" },
 ]
