@@ -1,4 +1,4 @@
-# Multi-stage build for AWS Twilio Agent Connect deployment
+# Multi-stage build for Twilio Agent Connect AWS deployment
 FROM python:3.13.5 AS builder
 
 # Set working directory

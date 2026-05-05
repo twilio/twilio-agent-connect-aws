@@ -5,7 +5,7 @@ Demonstrates dual-runtime pattern:
 - SMS: HTTP invocation (reliability and simplicity)
 
 Prerequisites:
-  pip install tac-aws[agentcore,server]
+  pip install twilio-agent-connect-aws[agentcore,server]
 
 Environment Variables:
   BEDROCK_AGENTCORE_AGENT_ARN: ARN of deployed AgentCore runtime

@@ -24,11 +24,11 @@ async-timeout==5.0.1 ; python_full_version < '3.11'
 attrs==26.1.0
     # via aiohttp
 bedrock-agentcore==1.6.2
-    # via tac-aws
+    # via twilio-agent-connect-aws
 boto3==1.42.89
     # via
     #   bedrock-agentcore
-    #   tac-aws
+    #   twilio-agent-connect-aws
 botocore==1.42.89
     # via
     #   bedrock-agentcore
@@ -80,7 +80,7 @@ multidict==6.7.1
     #   aiohttp
     #   yarl
 mypy-boto3-bedrock-agentcore==1.42.87
-    # via tac-aws
+    # via twilio-agent-connect-aws
 propcache==0.4.1
     # via
     #   aiohttp
@@ -149,7 +149,7 @@ watchfiles==1.1.1
 websockets==13.1
     # via
     #   bedrock-agentcore
-    #   tac-aws
+    #   twilio-agent-connect-aws
     #   uvicorn
 yarl==1.23.0
     # via aiohttp

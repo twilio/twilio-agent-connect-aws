@@ -1,32 +1,32 @@
-# Getting Started with TAC AWS
+# Getting Started with twilio-agent-connect-aws
 
-Quick start guide for using TAC AWS with AWS agent runtimes.
+Quick start guide for using twilio-agent-connect-aws with AWS agent runtimes.
 
 ## Installation
 
 ### With Strands SDK
 
 ```bash
-pip install tac-aws[strands,server]
+pip install twilio-agent-connect-aws[strands,server]
 ```
 
 ### With Bedrock Agents
 
 ```bash
-pip install tac-aws[bedrock,server]
+pip install twilio-agent-connect-aws[bedrock,server]
 ```
 
 ### With Bedrock AgentCore
 
 ```bash
-pip install tac-aws[agentcore,server]
+pip install twilio-agent-connect-aws[agentcore,server]
 ```
 
 ### Development
 
 ```bash
 # Includes all connectors and development tools
-pip install tac-aws[dev]
+pip install twilio-agent-connect-aws[dev]
 ```
 
 ## Environment Setup
