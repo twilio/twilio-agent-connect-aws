@@ -373,6 +373,7 @@ import json
 import websockets
 from bedrock_agentcore.runtime import AgentCoreRuntimeClient
 from tac import TAC, TACConfig
+from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
@@ -441,6 +442,7 @@ connector = BedrockAgentCoreConnector(
         session_manager=ThreadSafeSessionManager(),
         memory_mode="always",
     ),
+    sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
 # TAC Server uses connector's channels for HTTP routing

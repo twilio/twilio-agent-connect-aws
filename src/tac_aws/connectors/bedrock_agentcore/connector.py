@@ -60,6 +60,7 @@ class BedrockAgentCoreConnector:
         from bedrock_agentcore.runtime import AgentCoreRuntimeClient
         from tac import TAC, TACConfig
         from tac.models.session import ConversationSession
+        from tac.channels.sms import SMSChannelConfig
         from tac.channels.voice import VoiceChannelConfig
         from tac.server import TACFastAPIServer
         from tac.session import ThreadSafeSessionManager
@@ -122,6 +123,7 @@ class BedrockAgentCoreConnector:
                 session_manager=ThreadSafeSessionManager(),
                 memory_mode="always",
             ),
+            sms_config=SMSChannelConfig(memory_mode="always"),
         )
 
         # Use connector's channels for server
