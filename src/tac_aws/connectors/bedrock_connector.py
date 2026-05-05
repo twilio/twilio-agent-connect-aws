@@ -221,7 +221,7 @@ class BedrockConnector:
         Args:
             user_message: The user's message text
             context: Conversation session with metadata
-            memory_response: Retrieved memory (if auto_retrieve_memory=True)
+            memory_response: Retrieved memory (if memory_mode="always")
         """
         try:
             # Build memory context if available

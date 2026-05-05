@@ -2,12 +2,14 @@
 TAC Server with Strands Connector
 
 Dependencies are managed via pyproject.toml.
-Requires twilio-agent-connect-aws[strands,server] version 0.1.0 or later.
+Requires twilio-agent-connect-aws[strands,server] version 1.0.0 or later.
 """
 
 from dotenv import load_dotenv
 from strands import Agent
 from tac import TAC
+from tac.channels.sms import SMSChannelConfig
+from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
 from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
@@ -38,7 +40,12 @@ def create_agent(context: ConversationSession) -> Agent:
 
 
 # Connector creates channels and registers message processing
-connector = StrandsConnector(tac=tac, agent_factory=create_agent)
+connector = StrandsConnector(
+    tac=tac,
+    agent_factory=create_agent,
+    voice_config=VoiceChannelConfig(memory_mode="always"),
+    sms_config=SMSChannelConfig(memory_mode="always"),
+)
 
 # TAC Server uses connector's channels for HTTP routing
 server = TACFastAPIServer(

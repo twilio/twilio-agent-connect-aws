@@ -2,7 +2,7 @@
 TAC Server with Bedrock AgentCore Connector (Dual Runtime: HTTP + WebSocket)
 
 Dependencies are managed via pyproject.toml.
-Requires twilio-agent-connect-aws[agentcore,server] version 0.1.0 or later.
+Requires twilio-agent-connect-aws[agentcore,server] version 1.0.0 or later.
 
 This server demonstrates the dual-runtime pattern:
 - HTTP: Required for both voice and SMS (fallback for voice, primary for SMS)
@@ -18,6 +18,7 @@ import websockets
 from bedrock_agentcore.runtime import AgentCoreRuntimeClient
 from dotenv import load_dotenv
 from tac import TAC
+from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
 from tac.models.session import ConversationSession
@@ -127,8 +128,9 @@ connector = BedrockAgentCoreConnector(
     ),
     voice_config=VoiceChannelConfig(
         session_manager=ThreadSafeSessionManager(),
-        auto_retrieve_memory=True,  # Automatically fetch memory context
+        memory_mode="always",  # Automatically fetch memory context
     ),
+    sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
 # ═══════════════════════════════════════════════════════════════

@@ -8,6 +8,8 @@ Prerequisites:
 from dotenv import load_dotenv
 from strands import Agent
 from tac import TAC
+from tac.channels.sms import SMSChannelConfig
+from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
 from tac.models.session import ConversationSession
 from tac.server import TACFastAPIServer
@@ -26,7 +28,12 @@ def create_agent(context: ConversationSession) -> Agent:
     )
 
 
-connector = StrandsConnector(tac=tac, agent_factory=create_agent)
+connector = StrandsConnector(
+    tac=tac,
+    agent_factory=create_agent,
+    voice_config=VoiceChannelConfig(memory_mode="always"),
+    sms_config=SMSChannelConfig(memory_mode="always"),
+)
 server = TACFastAPIServer(
     tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
 )

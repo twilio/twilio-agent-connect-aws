@@ -38,8 +38,8 @@ class TestStrandsConnector:
         self, mock_tac: MagicMock, mock_agent_factory: MagicMock
     ) -> None:
         """Test connector initialization with custom channel configs."""
-        sms_config = {"auto_retrieve_memory": True}
-        voice_config = {"auto_retrieve_memory": False}
+        sms_config = {"memory_mode": "always"}
+        voice_config = {"memory_mode": "never"}
 
         with patch("tac_aws.connectors.strands_connector.VoiceChannel") as MockVoice, patch(
             "tac_aws.connectors.strands_connector.SMSChannel"

@@ -60,6 +60,7 @@ class BedrockAgentCoreConnector:
         from bedrock_agentcore.runtime import AgentCoreRuntimeClient
         from tac import TAC, TACConfig
         from tac.models.session import ConversationSession
+        from tac.channels.sms import SMSChannelConfig
         from tac.channels.voice import VoiceChannelConfig
         from tac.server import TACFastAPIServer
         from tac.session import ThreadSafeSessionManager
@@ -120,8 +121,9 @@ class BedrockAgentCoreConnector:
             ),
             voice_config=VoiceChannelConfig(
                 session_manager=ThreadSafeSessionManager(),
-                auto_retrieve_memory=True,
+                memory_mode="always",
             ),
+            sms_config=SMSChannelConfig(memory_mode="always"),
         )
 
         # Use connector's channels for server
@@ -194,7 +196,7 @@ class BedrockAgentCoreConnector:
         Args:
             user_message: The user's message text
             context: Conversation session with metadata
-            memory_response: Retrieved memory context (if auto_retrieve_memory=True)
+            memory_response: Retrieved memory context (if memory_mode="always")
         """
         try:
             # Build memory context if available
