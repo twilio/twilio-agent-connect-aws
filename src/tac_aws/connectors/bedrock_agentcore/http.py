@@ -46,28 +46,44 @@ async def parse_streaming_response(
 
     # Handle text/event-stream (most common for streaming agents)
     if "text/event-stream" in content_type:
-        if hasattr(streaming_body, "iter_lines"):
+        if not hasattr(streaming_body, "iter_chunks"):
+            raise AttributeError(
+                "Streaming body does not support iter_chunks. "
+                "Expected boto3 StreamingBody from bedrock-agentcore client."
+            )
 
-            def read_line() -> bytes | None:
-                """Read a single line from the stream (blocking operation)."""
-                try:
-                    line: bytes = next(streaming_body.iter_lines(chunk_size=1024))
-                    return line
-                except StopIteration:
-                    return None
+        # Use iter_chunks to avoid splitting JSON mid-object
+        chunks_iter = streaming_body.iter_chunks(chunk_size=1024)
 
-            while True:
-                # Run blocking read in thread pool to avoid blocking event loop
-                line = await asyncio.to_thread(read_line)
-                if line is None:
-                    break
-                if line:
-                    line_str = line.decode("utf-8") if isinstance(line, bytes) else line
-                    # Parse "data: " prefixed lines (SSE format)
-                    if line_str.startswith("data: "):
-                        chunk_text = line_str[6:]  # Remove "data: " prefix
+        def read_chunk() -> bytes | None:
+            """Read next chunk from the iterator (blocking operation)."""
+            try:
+                return next(chunks_iter)
+            except StopIteration:
+                return None
+
+        buffer = b""
+        while True:
+            # Run blocking read in thread pool to avoid blocking event loop
+            chunk = await asyncio.to_thread(read_chunk)
+            if chunk is None:
+                break
+
+            buffer += chunk
+            # Normalize CRLF to LF to handle both \r\n\r\n and \n\n delimiters
+            buffer = buffer.replace(b"\r\n", b"\n")
+
+            # Process complete SSE events (separated by double newlines)
+            while b"\n\n" in buffer:
+                event, buffer = buffer.split(b"\n\n", 1)
+                event_str = event.decode("utf-8")
+
+                # Parse "data: " lines
+                for line in event_str.split("\n"):
+                    if line.startswith("data: "):
+                        chunk_text = line[6:]  # Remove "data: " prefix
                         if chunk_text and chunk_text != "[DONE]":
-                            # Try to parse as JSON (agent may return structured response)
+                            # Try to parse as JSON
                             try:
                                 data = json.loads(chunk_text)
                                 # Extract token from {"type": "text", "token": "..."}
@@ -81,8 +97,28 @@ async def parse_streaming_response(
                                 else:
                                     yield chunk_text
                             except json.JSONDecodeError:
-                                # Not JSON, yield raw text (backward compatibility)
+                                # Not JSON, yield raw text
                                 yield chunk_text
+
+        # Process any remaining buffer content (final event without trailing \n\n)
+        if buffer:
+            event_str = buffer.decode("utf-8")
+            for line in event_str.split("\n"):
+                if line.startswith("data: "):
+                    chunk_text = line[6:]
+                    if chunk_text and chunk_text != "[DONE]":
+                        try:
+                            data = json.loads(chunk_text)
+                            if isinstance(data, dict) and data.get("type") == "text":
+                                token = data.get("token", "")
+                                if token:
+                                    yield token
+                            elif isinstance(data, dict) and "text" in data:
+                                yield str(data["text"])
+                            else:
+                                yield chunk_text
+                        except json.JSONDecodeError:
+                            yield chunk_text
 
     # Handle application/json (buffered chunks)
     elif content_type == "application/json":
@@ -166,7 +202,10 @@ async def handle_http_message(
         )
     elif context.channel == "sms" and sms_channel:
         # SMS: buffer complete response then send
-        response_text = "".join([chunk async for chunk in response_stream])
+        chunks = []
+        async for chunk in response_stream:
+            chunks.append(chunk)
+        response_text = "".join(chunks)
         await sms_channel.send_response(context.conversation_id, response_text, role="assistant")
     else:
         logger.error(

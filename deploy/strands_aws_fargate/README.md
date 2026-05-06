@@ -133,8 +133,8 @@ graph TB
 **1. Build Docker image:**
 
 ```bash
-cd strands_aws_fargate
-docker build -t tac-strands-server:latest -f Dockerfile .
+# From the strands_aws_fargate directory
+docker build -t tac-strands-server:latest .
 ```
 
 **2. Publish to AWS ECR:**
@@ -145,11 +145,9 @@ Example URI format: `123456789012.dkr.ecr.us-east-1.amazonaws.com/tac-strands-se
 
 ### Step 1: Deploy CloudFormation Stack
 
-Deploy the infrastructure first:
+Deploy the infrastructure (from the strands_aws_fargate directory):
 
 ```bash
-cd strands_aws_fargate
-
 aws cloudformation deploy \
   --template-file cloudformation.yaml \
   --stack-name TACStack \

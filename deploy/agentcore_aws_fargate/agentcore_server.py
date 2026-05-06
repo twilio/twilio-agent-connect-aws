@@ -1,13 +1,18 @@
-"""
-TAC Server with Bedrock AgentCore Connector (Dual Runtime: HTTP + WebSocket)
+"""TAC Server with AWS Bedrock AgentCore Connector.
 
-Dependencies are managed via pyproject.toml.
-Requires twilio-agent-connect-aws[agentcore,server] version 1.0.0 or later.
+Demonstrates dual-runtime pattern:
+- Voice: WebSocket streaming (~50ms latency)
+- SMS: HTTP invocation (reliability and simplicity)
 
-This server demonstrates the dual-runtime pattern:
-- HTTP: Required for both voice and SMS (fallback for voice, primary for SMS)
-- WebSocket: Optional for voice channel low-latency streaming (~50ms vs ~200ms)
+Prerequisites:
+  pip install twilio-agent-connect-aws[agentcore,server]
+
+Environment Variables:
+  BEDROCK_AGENTCORE_AGENT_ARN: ARN of deployed AgentCore runtime
+  AWS_REGION (optional): Defaults to us-east-1
 """
+
+from __future__ import annotations
 
 import json
 import os
@@ -29,7 +34,6 @@ from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocket
 from tac_aws.server import TACAWSFastAPIServer
 
 if TYPE_CHECKING:
-    from mypy_boto3_bedrock_agentcore.client import BedrockAgentCoreClient
     from mypy_boto3_bedrock_agentcore.type_defs import InvokeAgentRuntimeResponseTypeDef
     from websockets.client import WebSocketClientProtocol
 
@@ -38,29 +42,22 @@ load_dotenv()
 # Initialize TAC
 tac = TAC(config=TACConfig.from_env())
 
-# Get AgentCore agent ARN from environment
-agent_arn = os.getenv("BEDROCK_AGENTCORE_AGENT_ARN")
-if not agent_arn:
-    raise ValueError(
-        "BEDROCK_AGENTCORE_AGENT_ARN environment variable is required. "
-        "Set it to your deployed agent ARN (e.g., arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/agent-xxx)"
-    )
-
-# AWS Configuration
+# Get AgentCore configuration
+agent_arn = os.environ["BEDROCK_AGENTCORE_AGENT_ARN"]
 region = os.getenv("AWS_REGION", "us-east-1")
 
-# ═══════════════════════════════════════════════════════════════
-# 1. WebSocket Configuration (Low-Latency Voice Optimization)
-# ═══════════════════════════════════════════════════════════════
-agentcore_runtime_client = AgentCoreRuntimeClient(region=region)
+# Voice: WebSocket (uses AgentCoreRuntimeClient for generate_ws_connection)
+agentcore_client = AgentCoreRuntimeClient(region=region)
 
 
-async def create_websocket(context: ConversationSession) -> "WebSocketClientProtocol":
-    """Create WebSocket connection for low-latency streaming.
-
-    Called once per session and reused via connection pooling in the connector.
+async def create_websocket(context: ConversationSession) -> WebSocketClientProtocol:
     """
-    ws_url, headers = agentcore_runtime_client.generate_ws_connection(
+    WebSocket factory for voice channel.
+
+    Called once per session for connection pooling.
+    Uses AgentCoreRuntimeClient to generate authenticated WebSocket URL.
+    """
+    ws_url, headers = agentcore_client.generate_ws_connection(
         runtime_arn=agent_arn,
         session_id=context.conversation_id,
     )
@@ -73,22 +70,19 @@ def build_websocket_payload(
     user_message: str,
     memory_context: str | None,
 ) -> dict[str, Any]:
-    """Build WebSocket message payload.
-
-    Called for every message sent via WebSocket.
     """
-    payload: dict[str, Any] = {
-        "type": "prompt",
-        "voicePrompt": user_message,
-    }
+    Build WebSocket message payload.
+
+    Called for every message - user controls payload format.
+    This example uses AgentCore's expected format with 'voicePrompt'.
+    """
+    payload: dict[str, Any] = {"type": "prompt", "voicePrompt": user_message}
     if memory_context:
         payload["memoryContext"] = memory_context
     return payload
 
 
-# ═══════════════════════════════════════════════════════════════
-# 2. HTTP Configuration (Required for SMS, Fallback for Voice)
-# ═══════════════════════════════════════════════════════════════
+# SMS: HTTP (uses boto3 client for invoke_agent_runtime)
 agentcore_http_client = boto3.client("bedrock-agentcore", region_name=region)
 
 
@@ -96,50 +90,47 @@ def invoke_agent_http(
     context: ConversationSession,
     user_message: str,
     memory_context: str | None,
-) -> "InvokeAgentRuntimeResponseTypeDef":
-    """HTTP invocation for SMS channel and voice fallback.
-
-    Returns streaming response that will be parsed by the connector.
+) -> InvokeAgentRuntimeResponseTypeDef:
     """
-    full_prompt = user_message
+    HTTP invocation for both channels (required).
+
+    Used for SMS channel and as fallback for voice channel.
+    User controls all invoke_agent_runtime() parameters.
+    """
+    full_message = user_message
     if memory_context:
-        full_prompt = f"{memory_context}\n\nUser: {user_message}"
+        full_message = f"{memory_context}\n\nUser: {user_message}"
 
-    payload = json.dumps({"prompt": full_prompt}).encode("utf-8")
+    payload = json.dumps({"prompt": full_message}).encode("utf-8")
 
-    return agentcore_http_client.invoke_agent_runtime(
+    response: InvokeAgentRuntimeResponseTypeDef = agentcore_http_client.invoke_agent_runtime(
         agentRuntimeArn=agent_arn,
         runtimeSessionId=context.conversation_id,
         payload=payload,
     )
+    return response
 
 
-# ═══════════════════════════════════════════════════════════════
-# 3. Create Connector with Dual Runtime Configuration
-# ═══════════════════════════════════════════════════════════════
+# Create connector
 connector = BedrockAgentCoreConnector(
     tac=tac,
     runtime=RuntimeConfig(
-        http=invoke_agent_http,  # Required: HTTP streaming
-        websocket=WebSocketConfig(  # Optional: Low-latency WebSocket streaming
+        http=invoke_agent_http,  # Required: HTTP streaming for both channels
+        websocket=WebSocketConfig(  # Optional: WebSocket optimization for voice
             factory=create_websocket,
             payload_fn=build_websocket_payload,
         ),
     ),
     voice_config=VoiceChannelConfig(
         session_manager=ThreadSafeSessionManager(),
-        memory_mode="always",  # Automatically fetch memory context
+        memory_mode="always",
     ),
     sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
-# ═══════════════════════════════════════════════════════════════
-# 4. Start TAC FastAPI Server
-# ═══════════════════════════════════════════════════════════════
+# Create server
 server = TACAWSFastAPIServer(
-    tac=tac,
-    voice_channel=connector.voice,
-    messaging_channels=[connector.sms],
+    tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
 )
 
 if __name__ == "__main__":
