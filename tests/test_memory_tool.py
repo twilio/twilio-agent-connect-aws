@@ -40,9 +40,7 @@ class TestMemoryTool:
     """Test suite for Strands memory tool."""
 
     @pytest.mark.asyncio
-    async def test_create_memory_tool_returns_callable(
-        self, mock_memory_client: MagicMock
-    ) -> None:
+    async def test_create_memory_tool_returns_callable(self, mock_memory_client: MagicMock) -> None:
         """Test that create_memory_tool returns a callable tool."""
         tool = create_memory_tool(mock_memory_client)
 
@@ -165,14 +163,10 @@ class TestMemoryTool:
         await tool(profile_id="prof_123")
 
         # Verify model_dump was called with correct flags
-        mock_memory_response.model_dump.assert_called_once_with(
-            by_alias=True, exclude_none=True
-        )
+        mock_memory_response.model_dump.assert_called_once_with(by_alias=True, exclude_none=True)
 
     @pytest.mark.asyncio
-    async def test_multiple_memory_clients(
-        self, mock_memory_response: MagicMock
-    ) -> None:
+    async def test_multiple_memory_clients(self, mock_memory_response: MagicMock) -> None:
         """Test that different tools use their respective memory clients."""
         client1 = MagicMock()
         client1.retrieve_memory = AsyncMock(return_value=mock_memory_response)

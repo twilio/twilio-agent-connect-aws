@@ -86,6 +86,7 @@ class TestPackageImports:
         # TACAWSFastAPIServer is conditionally exported if server deps are available
         try:
             from tac_aws.server import TACAWSFastAPIServer  # noqa: F401
+
             assert "TACAWSFastAPIServer" in tac_aws.__all__
         except ImportError:
             pass  # Server deps not installed, skip check
