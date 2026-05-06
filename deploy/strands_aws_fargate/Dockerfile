@@ -1,14 +1,17 @@
-# Multi-stage build for Twilio Agent Connect AWS deployment
+# Multi-stage build for AWS Twilio Agent Connect deployment
 FROM python:3.13.5 AS builder
 
 # Set working directory
 WORKDIR /app
 
+# Dependency versions (twilio-agent-connect-aws always uses latest)
+ARG PYTHON_DOTENV_VERSION=1.0.0
+
 # Install dependencies from PyPI
+# Note: strands-agents version is managed by twilio-agent-connect-aws
 RUN pip install --no-cache-dir \
     'twilio-agent-connect-aws[strands,server]' \
-    'python-dotenv>=1.0.0' \
-    'strands-agents>=1.0.0'
+    "python-dotenv==${PYTHON_DOTENV_VERSION}"
 
 # Final stage
 FROM python:3.13.5
@@ -28,7 +31,7 @@ COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY deploy/strands_aws_fargate/strands_server.py ./
+COPY strands_server.py ./
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \

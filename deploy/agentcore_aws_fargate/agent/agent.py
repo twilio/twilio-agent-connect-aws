@@ -8,10 +8,10 @@ logger = logging.getLogger(__name__)
 agent = Agent(
     model="us.amazon.nova-pro-v1:0",  # Use cross-region inference profile
     system_prompt=(
-        "You are a helpful voice assistant. Respond naturally in plain text. "
+        "You are a helpful assistant. Respond naturally in plain text. "
         "IMPORTANT: Never use markdown formatting - no asterisks, no bold, no italics, no code blocks. "
         "Just respond with plain conversational text. "
-        "Be concise and direct."
+        "Be helpful and provide complete, informative responses."
     )
 )
 app = BedrockAgentCoreApp()

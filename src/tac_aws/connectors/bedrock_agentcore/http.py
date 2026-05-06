@@ -46,43 +46,51 @@ async def parse_streaming_response(
 
     # Handle text/event-stream (most common for streaming agents)
     if "text/event-stream" in content_type:
-        if hasattr(streaming_body, "iter_lines"):
-
-            def read_line() -> bytes | None:
-                """Read a single line from the stream (blocking operation)."""
+        if hasattr(streaming_body, "iter_chunks"):
+            # Use iter_chunks to avoid splitting JSON mid-object
+            def read_chunk() -> bytes | None:
+                """Read chunks from the stream (blocking operation)."""
                 try:
-                    line: bytes = next(streaming_body.iter_lines(chunk_size=1024))
-                    return line
+                    chunk: bytes = next(streaming_body.iter_chunks(chunk_size=1024))
+                    return chunk
                 except StopIteration:
                     return None
 
+            buffer = b""
             while True:
                 # Run blocking read in thread pool to avoid blocking event loop
-                line = await asyncio.to_thread(read_line)
-                if line is None:
+                chunk = await asyncio.to_thread(read_chunk)
+                if chunk is None:
                     break
-                if line:
-                    line_str = line.decode("utf-8") if isinstance(line, bytes) else line
-                    # Parse "data: " prefixed lines (SSE format)
-                    if line_str.startswith("data: "):
-                        chunk_text = line_str[6:]  # Remove "data: " prefix
-                        if chunk_text and chunk_text != "[DONE]":
-                            # Try to parse as JSON (agent may return structured response)
-                            try:
-                                data = json.loads(chunk_text)
-                                # Extract token from {"type": "text", "token": "..."}
-                                if isinstance(data, dict) and data.get("type") == "text":
-                                    token = data.get("token", "")
-                                    if token:
-                                        yield token
-                                # Fallback: yield entire data if structure is different
-                                elif isinstance(data, dict) and "text" in data:
-                                    yield str(data["text"])
-                                else:
+
+                buffer += chunk
+
+                # Process complete SSE events (separated by double newlines)
+                while b"\n\n" in buffer:
+                    event, buffer = buffer.split(b"\n\n", 1)
+                    event_str = event.decode("utf-8")
+
+                    # Parse "data: " lines
+                    for line in event_str.split("\n"):
+                        if line.startswith("data: "):
+                            chunk_text = line[6:]  # Remove "data: " prefix
+                            if chunk_text and chunk_text != "[DONE]":
+                                # Try to parse as JSON
+                                try:
+                                    data = json.loads(chunk_text)
+                                    # Extract token from {"type": "text", "token": "..."}
+                                    if isinstance(data, dict) and data.get("type") == "text":
+                                        token = data.get("token", "")
+                                        if token:
+                                            yield token
+                                    # Fallback: yield entire data if structure is different
+                                    elif isinstance(data, dict) and "text" in data:
+                                        yield str(data["text"])
+                                    else:
+                                        yield chunk_text
+                                except json.JSONDecodeError:
+                                    # Not JSON, yield raw text
                                     yield chunk_text
-                            except json.JSONDecodeError:
-                                # Not JSON, yield raw text (backward compatibility)
-                                yield chunk_text
 
     # Handle application/json (buffered chunks)
     elif content_type == "application/json":
@@ -166,7 +174,10 @@ async def handle_http_message(
         )
     elif context.channel == "sms" and sms_channel:
         # SMS: buffer complete response then send
-        response_text = "".join([chunk async for chunk in response_stream])
+        chunks = []
+        async for chunk in response_stream:
+            chunks.append(chunk)
+        response_text = "".join(chunks)
         await sms_channel.send_response(context.conversation_id, response_text, role="assistant")
     else:
         logger.error(

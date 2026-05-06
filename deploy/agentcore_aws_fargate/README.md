@@ -153,7 +153,8 @@ The `agent/` folder contains a simple Strands agent ready for deployment.
 **Step 1: Install Dependencies**
 
 ```bash
-cd agentcore_aws_fargate/agent
+# From the agentcore_aws_fargate/agent directory
+cd agent
 
 # Create virtual environment (optional)
 python -m venv .venv
@@ -221,8 +222,8 @@ Example: `arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/simpleagent-X
 **1. Build Docker image:**
 
 ```bash
-cd agentcore_aws_fargate
-docker build -t tac-agentcore-server:latest -f Dockerfile .
+# From the agentcore_aws_fargate directory
+docker build -t tac-agentcore-server:latest .
 ```
 
 **2. Publish to AWS ECR:**
@@ -233,11 +234,9 @@ Example URI format: `123456789012.dkr.ecr.us-east-1.amazonaws.com/tac-agentcore-
 
 ### Step 1: Deploy CloudFormation Stack
 
-Deploy the infrastructure first:
+Deploy the infrastructure (from the agentcore_aws_fargate directory):
 
 ```bash
-cd agentcore_aws_fargate
-
 aws cloudformation deploy \
   --template-file cloudformation.yaml \
   --stack-name TACAgentCoreStack \

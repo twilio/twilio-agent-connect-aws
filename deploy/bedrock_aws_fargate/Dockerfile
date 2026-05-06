@@ -4,12 +4,14 @@ FROM python:3.13.5 AS builder
 # Set working directory
 WORKDIR /app
 
+# Dependency versions (twilio-agent-connect-aws always uses latest)
+ARG PYTHON_DOTENV_VERSION=1.0.0
+
 # Install dependencies from PyPI
+# Note: boto3 and type stubs are managed by twilio-agent-connect-aws
 RUN pip install --no-cache-dir \
     'twilio-agent-connect-aws[bedrock,server]' \
-    'python-dotenv>=1.0.0' \
-    'boto3>=1.42.0' \
-    'mypy-boto3-bedrock-agent-runtime>=1.42.0'
+    "python-dotenv==${PYTHON_DOTENV_VERSION}"
 
 # Final stage
 FROM python:3.13.5
@@ -29,7 +31,7 @@ COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY deploy/bedrock_aws_fargate/bedrock_server.py ./
+COPY bedrock_server.py ./
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
