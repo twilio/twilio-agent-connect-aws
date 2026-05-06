@@ -11,7 +11,6 @@ from tac_aws.connectors import BedrockAgentCoreConnector
 
 if TYPE_CHECKING:
     from mypy_boto3_bedrock_agentcore.type_defs import InvokeAgentRuntimeResponseTypeDef
-    from tac.models.session import ConversationSession
 
 
 class TestBedrockAgentCoreConnector:
@@ -21,8 +20,9 @@ class TestBedrockAgentCoreConnector:
         """Test connector initialization with HTTP runtime."""
         mock_invoke_fn = MagicMock()
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
         ):
             connector = BedrockAgentCoreConnector(
                 tac=mock_tac,
@@ -42,11 +42,10 @@ class TestBedrockAgentCoreConnector:
         sms_config = {"memory_mode": "always"}
         voice_config = {"memory_mode": "never"}
 
-        with patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"
-        ) as MockVoice, patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
-        ) as MockSMS:
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel") as mock_voice,
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel") as mock_sms,
+        ):
             connector = BedrockAgentCoreConnector(
                 tac=mock_tac,
                 runtime={"http": mock_invoke_fn},
@@ -55,8 +54,8 @@ class TestBedrockAgentCoreConnector:
             )
 
             # Verify channels created with configs
-            MockVoice.assert_called_once_with(tac=mock_tac, config=voice_config)
-            MockSMS.assert_called_once_with(tac=mock_tac, config=sms_config)
+            mock_voice.assert_called_once_with(tac=mock_tac, config=voice_config)
+            mock_sms.assert_called_once_with(tac=mock_tac, config=sms_config)
             assert connector is not None
 
     @pytest.mark.asyncio
@@ -83,9 +82,11 @@ class TestBedrockAgentCoreConnector:
         }
         mock_invoke_fn.return_value = mock_response
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
-        ), patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"):
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"),
+        ):
             connector = BedrockAgentCoreConnector(
                 tac=mock_tac,
                 runtime={"http": mock_invoke_fn},
@@ -100,9 +101,7 @@ class TestBedrockAgentCoreConnector:
             )
 
             # Verify invoke function was called with correct parameters
-            mock_invoke_fn.assert_called_once_with(
-                mock_conversation_session, "Hello", None
-            )
+            mock_invoke_fn.assert_called_once_with(mock_conversation_session, "Hello", None)
 
             # Verify response was sent to voice channel (streaming with AsyncGenerator)
             from collections.abc import AsyncGenerator
@@ -137,12 +136,14 @@ class TestBedrockAgentCoreConnector:
         }
         mock_invoke_fn.return_value = mock_response
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
-        ), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"
-        ) as MockMemoryBuilder:
-            MockMemoryBuilder.build = MagicMock(return_value="Memory context")
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
+            patch(
+                "tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"
+            ) as mock_memory_builder,
+        ):
+            mock_memory_builder.build = MagicMock(return_value="Memory context")
 
             connector = BedrockAgentCoreConnector(
                 tac=mock_tac,
@@ -158,7 +159,7 @@ class TestBedrockAgentCoreConnector:
             )
 
             # Verify memory was built
-            MockMemoryBuilder.build.assert_called_once_with(
+            mock_memory_builder.build.assert_called_once_with(
                 mock_memory_response, mock_conversation_session
             )
 
@@ -191,9 +192,11 @@ class TestBedrockAgentCoreConnector:
         }
         mock_invoke_fn.return_value = mock_response
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
-        ), patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"):
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"),
+        ):
             connector = BedrockAgentCoreConnector(
                 tac=mock_tac,
                 runtime={"http": mock_invoke_fn},
@@ -223,9 +226,11 @@ class TestBedrockAgentCoreConnector:
         # Make invoke function raise an error
         mock_invoke_fn = MagicMock(side_effect=Exception("Test error"))
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
-        ), patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"):
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"),
+        ):
             connector = BedrockAgentCoreConnector(
                 tac=mock_tac,
                 runtime={"http": mock_invoke_fn},
@@ -250,8 +255,9 @@ class TestBedrockAgentCoreConnector:
         mock_ws_factory = AsyncMock()
         mock_payload_fn = MagicMock()
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
         ):
             from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocketConfig
 
@@ -294,9 +300,11 @@ class TestBedrockAgentCoreConnector:
         mock_ws.__aiter__ = MagicMock(return_value=iter([]))
         mock_ws_factory.return_value = mock_ws
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
-        ), patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"):
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"),
+        ):
             from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocketConfig
 
             connector = BedrockAgentCoreConnector(
@@ -346,9 +354,11 @@ class TestBedrockAgentCoreConnector:
         mock_ws.state.name = "OPEN"
         mock_ws_factory.return_value = mock_ws
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
-        ), patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"):
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"),
+        ):
             from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocketConfig
 
             connector = BedrockAgentCoreConnector(
@@ -390,8 +400,9 @@ class TestBedrockAgentCoreConnector:
         mock_ws.state = MagicMock()
         mock_ws.state.name = "OPEN"
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
         ):
             from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocketConfig
 
@@ -433,8 +444,9 @@ class TestBedrockAgentCoreConnector:
         mock_ws = MagicMock()
         mock_ws.send = AsyncMock()
 
-        with patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"), patch(
-            "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
+        with (
+            patch("tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"),
+            patch("tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"),
         ):
             from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocketConfig
 

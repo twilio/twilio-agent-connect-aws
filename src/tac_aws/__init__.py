@@ -21,6 +21,7 @@ from tac_aws.connectors import BedrockAgentCoreConnector, StrandsConnector
 # Import server utilities (optional, requires tac[server])
 try:
     from tac_aws.server import TACAWSFastAPIServer
+
     _has_server = True
 except ImportError:
     _has_server = False

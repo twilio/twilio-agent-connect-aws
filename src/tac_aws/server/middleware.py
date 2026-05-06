@@ -46,8 +46,7 @@ class ALBForwardedHeadersMiddleware:
             # Force X-Forwarded-Proto to https for public domain
             # This is needed because ngrok forwards to ALB via http, but Twilio signs with https
             host_value = next(
-                (v.decode() for k, v in headers if k.lower() == b"x-forwarded-host"),
-                ""
+                (v.decode() for k, v in headers if k.lower() == b"x-forwarded-host"), ""
             )
             if host_value == self.public_domain:
                 # Remove existing X-Forwarded-Proto and add https
