@@ -10,8 +10,7 @@ import pytest
 from tac_aws.connectors import StrandsConnector
 
 if TYPE_CHECKING:
-    from tac.models.session import ConversationSession
-    from tac.models.tac import TACMemoryResponse
+    pass
 
 
 class TestStrandsConnector:
@@ -41,9 +40,9 @@ class TestStrandsConnector:
         sms_config = {"memory_mode": "always"}
         voice_config = {"memory_mode": "never"}
 
-        with patch("tac_aws.connectors.strands_connector.VoiceChannel") as MockVoice, patch(
+        with patch("tac_aws.connectors.strands_connector.VoiceChannel") as mock_voice, patch(
             "tac_aws.connectors.strands_connector.SMSChannel"
-        ) as MockSMS:
+        ) as mock_sms:
             connector = StrandsConnector(
                 tac=mock_tac,
                 agent_factory=mock_agent_factory,
@@ -52,8 +51,8 @@ class TestStrandsConnector:
             )
 
             # Verify channels created with configs
-            MockVoice.assert_called_once_with(tac=mock_tac, config=voice_config)
-            MockSMS.assert_called_once_with(tac=mock_tac, config=sms_config)
+            mock_voice.assert_called_once_with(tac=mock_tac, config=voice_config)
+            mock_sms.assert_called_once_with(tac=mock_tac, config=sms_config)
             assert connector is not None
 
     @pytest.mark.asyncio
@@ -141,8 +140,8 @@ class TestStrandsConnector:
             "tac_aws.connectors.strands_connector.SMSChannel"
         ), patch(
             "tac_aws.connectors.strands_connector.MemoryPromptBuilder"
-        ) as MockMemoryBuilder:
-            MockMemoryBuilder.build = MagicMock(return_value="Memory context")
+        ) as mock_memory_builder:
+            mock_memory_builder.build = MagicMock(return_value="Memory context")
 
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)
             connector.voice.send_response = AsyncMock()
@@ -155,7 +154,7 @@ class TestStrandsConnector:
             )
 
             # Verify memory was built and injected
-            MockMemoryBuilder.build.assert_called_once_with(
+            mock_memory_builder.build.assert_called_once_with(
                 mock_memory_response, mock_conversation_session
             )
 

@@ -10,7 +10,7 @@ import pytest
 from tac_aws.tools.strands import create_memory_tool
 
 if TYPE_CHECKING:
-    from tac.context.memory import MemoryClient
+    pass
 
 
 @pytest.fixture

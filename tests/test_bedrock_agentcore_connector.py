@@ -11,7 +11,6 @@ from tac_aws.connectors import BedrockAgentCoreConnector
 
 if TYPE_CHECKING:
     from mypy_boto3_bedrock_agentcore.type_defs import InvokeAgentRuntimeResponseTypeDef
-    from tac.models.session import ConversationSession
 
 
 class TestBedrockAgentCoreConnector:
@@ -44,9 +43,9 @@ class TestBedrockAgentCoreConnector:
 
         with patch(
             "tac_aws.connectors.bedrock_agentcore.connector.VoiceChannel"
-        ) as MockVoice, patch(
+        ) as mock_voice, patch(
             "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
-        ) as MockSMS:
+        ) as mock_sms:
             connector = BedrockAgentCoreConnector(
                 tac=mock_tac,
                 runtime={"http": mock_invoke_fn},
@@ -55,8 +54,8 @@ class TestBedrockAgentCoreConnector:
             )
 
             # Verify channels created with configs
-            MockVoice.assert_called_once_with(tac=mock_tac, config=voice_config)
-            MockSMS.assert_called_once_with(tac=mock_tac, config=sms_config)
+            mock_voice.assert_called_once_with(tac=mock_tac, config=voice_config)
+            mock_sms.assert_called_once_with(tac=mock_tac, config=sms_config)
             assert connector is not None
 
     @pytest.mark.asyncio
@@ -141,8 +140,8 @@ class TestBedrockAgentCoreConnector:
             "tac_aws.connectors.bedrock_agentcore.connector.SMSChannel"
         ), patch(
             "tac_aws.connectors.bedrock_agentcore.connector.MemoryPromptBuilder"
-        ) as MockMemoryBuilder:
-            MockMemoryBuilder.build = MagicMock(return_value="Memory context")
+        ) as mock_memory_builder:
+            mock_memory_builder.build = MagicMock(return_value="Memory context")
 
             connector = BedrockAgentCoreConnector(
                 tac=mock_tac,
@@ -158,7 +157,7 @@ class TestBedrockAgentCoreConnector:
             )
 
             # Verify memory was built
-            MockMemoryBuilder.build.assert_called_once_with(
+            mock_memory_builder.build.assert_called_once_with(
                 mock_memory_response, mock_conversation_session
             )
 

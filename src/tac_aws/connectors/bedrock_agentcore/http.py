@@ -58,7 +58,8 @@ async def parse_streaming_response(
         def read_chunk() -> bytes | None:
             """Read next chunk from the iterator (blocking operation)."""
             try:
-                return next(chunks_iter)
+                chunk: bytes = next(chunks_iter)
+                return chunk
             except StopIteration:
                 return None
 
