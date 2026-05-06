@@ -153,7 +153,7 @@ The `agent/` folder contains a simple Strands agent ready for deployment.
 **Step 1: Install Dependencies**
 
 ```bash
-# From the agentcore_aws_fargate/agent directory
+# From the agentcore_aws_fargate directory
 cd agent
 
 # Create virtual environment (optional)

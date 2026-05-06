@@ -46,51 +46,79 @@ async def parse_streaming_response(
 
     # Handle text/event-stream (most common for streaming agents)
     if "text/event-stream" in content_type:
-        if hasattr(streaming_body, "iter_chunks"):
-            # Use iter_chunks to avoid splitting JSON mid-object
-            def read_chunk() -> bytes | None:
-                """Read chunks from the stream (blocking operation)."""
-                try:
-                    chunk: bytes = next(streaming_body.iter_chunks(chunk_size=1024))
-                    return chunk
-                except StopIteration:
-                    return None
+        if not hasattr(streaming_body, "iter_chunks"):
+            raise AttributeError(
+                "Streaming body does not support iter_chunks. "
+                "Expected boto3 StreamingBody from bedrock-agentcore client."
+            )
 
-            buffer = b""
-            while True:
-                # Run blocking read in thread pool to avoid blocking event loop
-                chunk = await asyncio.to_thread(read_chunk)
-                if chunk is None:
-                    break
+        # Use iter_chunks to avoid splitting JSON mid-object
+        chunks_iter = streaming_body.iter_chunks(chunk_size=1024)
 
-                buffer += chunk
+        def read_chunk() -> bytes | None:
+            """Read next chunk from the iterator (blocking operation)."""
+            try:
+                return next(chunks_iter)
+            except StopIteration:
+                return None
 
-                # Process complete SSE events (separated by double newlines)
-                while b"\n\n" in buffer:
-                    event, buffer = buffer.split(b"\n\n", 1)
-                    event_str = event.decode("utf-8")
+        buffer = b""
+        while True:
+            # Run blocking read in thread pool to avoid blocking event loop
+            chunk = await asyncio.to_thread(read_chunk)
+            if chunk is None:
+                break
 
-                    # Parse "data: " lines
-                    for line in event_str.split("\n"):
-                        if line.startswith("data: "):
-                            chunk_text = line[6:]  # Remove "data: " prefix
-                            if chunk_text and chunk_text != "[DONE]":
-                                # Try to parse as JSON
-                                try:
-                                    data = json.loads(chunk_text)
-                                    # Extract token from {"type": "text", "token": "..."}
-                                    if isinstance(data, dict) and data.get("type") == "text":
-                                        token = data.get("token", "")
-                                        if token:
-                                            yield token
-                                    # Fallback: yield entire data if structure is different
-                                    elif isinstance(data, dict) and "text" in data:
-                                        yield str(data["text"])
-                                    else:
-                                        yield chunk_text
-                                except json.JSONDecodeError:
-                                    # Not JSON, yield raw text
+            buffer += chunk
+            # Normalize CRLF to LF to handle both \r\n\r\n and \n\n delimiters
+            buffer = buffer.replace(b"\r\n", b"\n")
+
+            # Process complete SSE events (separated by double newlines)
+            while b"\n\n" in buffer:
+                event, buffer = buffer.split(b"\n\n", 1)
+                event_str = event.decode("utf-8")
+
+                # Parse "data: " lines
+                for line in event_str.split("\n"):
+                    if line.startswith("data: "):
+                        chunk_text = line[6:]  # Remove "data: " prefix
+                        if chunk_text and chunk_text != "[DONE]":
+                            # Try to parse as JSON
+                            try:
+                                data = json.loads(chunk_text)
+                                # Extract token from {"type": "text", "token": "..."}
+                                if isinstance(data, dict) and data.get("type") == "text":
+                                    token = data.get("token", "")
+                                    if token:
+                                        yield token
+                                # Fallback: yield entire data if structure is different
+                                elif isinstance(data, dict) and "text" in data:
+                                    yield str(data["text"])
+                                else:
                                     yield chunk_text
+                            except json.JSONDecodeError:
+                                # Not JSON, yield raw text
+                                yield chunk_text
+
+        # Process any remaining buffer content (final event without trailing \n\n)
+        if buffer:
+            event_str = buffer.decode("utf-8")
+            for line in event_str.split("\n"):
+                if line.startswith("data: "):
+                    chunk_text = line[6:]
+                    if chunk_text and chunk_text != "[DONE]":
+                        try:
+                            data = json.loads(chunk_text)
+                            if isinstance(data, dict) and data.get("type") == "text":
+                                token = data.get("token", "")
+                                if token:
+                                    yield token
+                            elif isinstance(data, dict) and "text" in data:
+                                yield str(data["text"])
+                            else:
+                                yield chunk_text
+                        except json.JSONDecodeError:
+                            yield chunk_text
 
     # Handle application/json (buffered chunks)
     elif content_type == "application/json":

@@ -61,7 +61,7 @@ async def create_websocket(context: ConversationSession) -> WebSocketClientProto
         runtime_arn=agent_arn,
         session_id=context.conversation_id,
     )
-    ws = await websockets.connect(ws_url, extra_headers=headers)
+    ws = await websockets.connect(ws_url, additional_headers=headers)
     return ws
 
 
