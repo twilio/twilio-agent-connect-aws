@@ -12,6 +12,7 @@
   </h2>
 
   <div align="center">
+    <a href="https://pypi.org/project/twilio-agent-connect-aws/"><img alt="PyPI" src="https://img.shields.io/pypi/v/twilio-agent-connect-aws.svg"/></a>
     <a href="https://github.com/twilio/twilio-agent-connect-aws"><img alt="Python SDK" src="https://img.shields.io/badge/Python-3.10+-3776AB.svg"/></a>
     <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg"/></a>
     <a href="getting_started/examples/"><img alt="Getting Started" src="https://img.shields.io/badge/Getting%20Started-Examples-F22F46.svg"/></a>
