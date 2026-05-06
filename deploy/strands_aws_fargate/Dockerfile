@@ -4,17 +4,11 @@ FROM python:3.13.5 AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy wheel files for private dependencies
-COPY strands_aws_fargate/wheels/*.whl /app/wheels/
-
-# Copy requirements file (without git-sourced packages)
-COPY strands_aws_fargate/requirements.txt /app/requirements.txt
-
-# Install the git-sourced packages from wheels first (without dependencies)
-RUN pip install --no-cache-dir --no-deps /app/wheels/twilio_agent_connect-1.0.0-py3-none-any.whl /app/wheels/tac_aws-1.0.0-py3-none-any.whl
-
-# Install all other dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies from PyPI
+RUN pip install --no-cache-dir \
+    'twilio-agent-connect-aws[strands,server]' \
+    'python-dotenv>=1.0.0' \
+    'strands-agents>=1.0.0'
 
 # Final stage
 FROM python:3.13.5
@@ -34,7 +28,7 @@ COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY strands_aws_fargate/strands_server.py ./
+COPY deploy/strands_aws_fargate/strands_server.py ./
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \

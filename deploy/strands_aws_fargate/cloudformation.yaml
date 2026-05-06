@@ -46,7 +46,7 @@ Resources:
       EnableDnsSupport: true
       Tags:
         - Key: Name
-          Value: TAC-VPC
+          Value: TAC-Strands-VPC
 
   # Internet Gateway
   InternetGateway:
@@ -54,7 +54,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: TAC-IGW
+          Value: TAC-Strands-IGW
 
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -72,7 +72,7 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs '']
       Tags:
         - Key: Name
-          Value: TAC-Public-Subnet-1
+          Value: TAC-Strands-Public-Subnet-1
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -83,7 +83,7 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs '']
       Tags:
         - Key: Name
-          Value: TAC-Public-Subnet-2
+          Value: TAC-Strands-Public-Subnet-2
 
   # Route Table
   PublicRouteTable:
@@ -92,7 +92,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: TAC-Public-RT
+          Value: TAC-Strands-Public-RT
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -118,13 +118,13 @@ Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: TAC-cluster-alb
+      ClusterName: TAC-Strands-Cluster
 
   # CloudWatch Logs
   LogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: /ecs/tac-server-alb
+      LogGroupName: /ecs/tac-strands-server
       RetentionInDays: 7
 
   # IAM Roles
@@ -166,7 +166,7 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: tac-server-alb
+      Family: tac-strands-server
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
@@ -203,8 +203,6 @@ Resources:
               Value: !Ref TwilioPhoneNumber
             - Name: TWILIO_CONVERSATION_CONFIGURATION_ID
               Value: !Ref TwilioConversationConfigurationId
-            - Name: TWILIO_ENVIRONMENT
-              Value: prod
             - Name: TWILIO_VOICE_PUBLIC_DOMAIN
               Value: !Ref TwilioVoicePublicDomain
 
@@ -222,7 +220,7 @@ Resources:
           Description: Allow HTTP traffic
       Tags:
         - Key: Name
-          Value: TAC-ALB-SG
+          Value: TAC-Strands-ALB-SG
 
   ServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -243,7 +241,7 @@ Resources:
   LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: TAC-ALB
+      Name: TAC-Strands-ALB
       Scheme: internet-facing
       Type: application
       Subnets:
@@ -253,12 +251,12 @@ Resources:
         - !Ref ALBSecurityGroup
       Tags:
         - Key: Name
-          Value: TAC-ALB
+          Value: TAC-Strands-ALB
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      Name: TAC-TG
+      Name: TAC-Strands-TG
       Port: 8000
       Protocol: HTTP
       VpcId: !Ref VPC
@@ -295,7 +293,7 @@ Resources:
     Type: AWS::ECS::Service
     DependsOn: Listener
     Properties:
-      ServiceName: tac-service-alb
+      ServiceName: tac-strands-service
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref TaskDefinition
       DesiredCount: 1
