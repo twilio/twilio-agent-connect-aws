@@ -40,6 +40,10 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
 - **BedrockAgentCoreConnector** - AWS Bedrock AgentCore integration
   - Deploy custom agent code (Strands, LangGraph, OpenAI SDK)
   - Managed runtime with built-in memory
+- **TACAWSFastAPIServer** - AWS-optimized server for ALB deployments
+  - Automatic header fixing for Twilio signature validation
+  - Works with AWS ALB + ngrok for testing
+  - Handles both HTTP (SMS) and WebSocket (Voice)
 - Multi-channel support (SMS + Voice)
 - Automatic TAC memory injection
 

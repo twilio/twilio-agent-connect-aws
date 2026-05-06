@@ -51,7 +51,7 @@ async def parse_streaming_response(
             def read_line() -> bytes | None:
                 """Read a single line from the stream (blocking operation)."""
                 try:
-                    line: bytes = next(streaming_body.iter_lines(chunk_size=10))
+                    line: bytes = next(streaming_body.iter_lines(chunk_size=1024))
                     return line
                 except StopIteration:
                     return None

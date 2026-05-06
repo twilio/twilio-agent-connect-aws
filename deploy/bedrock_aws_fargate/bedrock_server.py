@@ -20,9 +20,9 @@ from tac import TAC
 from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
-from tac.server import TACFastAPIServer
 
 from tac_aws.connectors import BedrockConnector
+from tac_aws.server import TACAWSFastAPIServer
 
 load_dotenv()
 
@@ -55,8 +55,7 @@ connector = BedrockConnector(
     sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
-# TAC Server uses connector's channels for HTTP routing
-server = TACFastAPIServer(
+server = TACAWSFastAPIServer(
     tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
 )
 

@@ -12,9 +12,9 @@ from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
 from tac.models.session import ConversationSession
-from tac.server import TACFastAPIServer
 
 from tac_aws.connectors import StrandsConnector
+from tac_aws.server import TACAWSFastAPIServer
 
 load_dotenv()
 
@@ -48,7 +48,7 @@ connector = StrandsConnector(
 )
 
 # TAC Server uses connector's channels for HTTP routing
-server = TACFastAPIServer(
+server = TACAWSFastAPIServer(
     tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
 )
 

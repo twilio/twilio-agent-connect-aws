@@ -25,6 +25,8 @@ The system handles incoming calls and SMS messages, routes them through an AI ag
 
 ## Architecture
 
+### High-Level Architecture
+
 ```mermaid
 graph TB
     Customer([👤 Customer<br/>Phone Call / SMS])
@@ -122,26 +124,20 @@ graph TB
   - Conversation Configuration ID from Conversation Orchestrator
 
 **Where to find Twilio credentials:**
-- Account SID: Twilio Console → Account Dashboard (top section)
-- Auth Token & API Keys: Twilio Console → Account → API Keys & Tokens
+- Account SID & Auth Token: Twilio Console → Account → API Keys & Tokens
+- API Key & Secret: Twilio Console → Account → API Keys & Tokens
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration
 
 ### Step 0: Build and Publish Docker Image
 
-**1. Build wheels:**
+**1. Build Docker image:**
 
 ```bash
 cd strands_aws_fargate
-./build-wheels.sh
-```
-
-**2. Build Docker image:**
-
-```bash
 docker build -t tac-strands-server:latest -f Dockerfile .
 ```
 
-**3. Publish to AWS ECR:**
+**2. Publish to AWS ECR:**
 
 Publish your Docker image to AWS ECR. You'll need the ECR image URI for Step 1.
 

@@ -27,10 +27,10 @@ from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
 from tac.models.session import ConversationSession
-from tac.server import TACFastAPIServer
 from tac.session import ThreadSafeSessionManager
 
 from tac_aws.connectors import BedrockAgentCoreConnector
+from tac_aws.server import TACAWSFastAPIServer
 from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocketConfig
 
 if TYPE_CHECKING:
@@ -129,7 +129,7 @@ connector = BedrockAgentCoreConnector(
 )
 
 # Create server
-server = TACFastAPIServer(
+server = TACAWSFastAPIServer(
     tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
 )
 

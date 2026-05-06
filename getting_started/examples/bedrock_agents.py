@@ -8,6 +8,7 @@ Environment Variables:
     BEDROCK_AGENT_ID - Bedrock Agent ID
     BEDROCK_AGENT_ALIAS_ID - Bedrock Agent Alias ID (default: TSTALIASID)
     AWS_REGION - AWS Region (default: us-east-1)
+    TWILIO_VOICE_PUBLIC_DOMAIN - (Optional) Public domain for AWS ALB deployments with ngrok
 """
 
 from __future__ import annotations
@@ -20,9 +21,9 @@ from tac import TAC
 from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
-from tac.server import TACFastAPIServer
 
 from tac_aws.connectors import BedrockConnector
+from tac_aws.server import TACAWSFastAPIServer
 
 load_dotenv()
 
@@ -50,7 +51,7 @@ connector = BedrockConnector(
     sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
-server = TACFastAPIServer(
+server = TACAWSFastAPIServer(
     tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
 )
 

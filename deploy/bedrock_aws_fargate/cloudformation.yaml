@@ -54,7 +54,7 @@ Resources:
       EnableDnsSupport: true
       Tags:
         - Key: Name
-          Value: TAC-VPC
+          Value: TAC-Bedrock-VPC
 
   # Internet Gateway
   InternetGateway:
@@ -62,7 +62,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: TAC-IGW
+          Value: TAC-Bedrock-IGW
 
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -80,7 +80,7 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs '']
       Tags:
         - Key: Name
-          Value: TAC-Public-Subnet-1
+          Value: TAC-Bedrock-Public-Subnet-1
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -91,7 +91,7 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs '']
       Tags:
         - Key: Name
-          Value: TAC-Public-Subnet-2
+          Value: TAC-Bedrock-Public-Subnet-2
 
   # Route Table
   PublicRouteTable:
@@ -100,7 +100,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: TAC-Public-RT
+          Value: TAC-Bedrock-Public-RT
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -212,8 +212,6 @@ Resources:
               Value: !Ref TwilioPhoneNumber
             - Name: TWILIO_CONVERSATION_CONFIGURATION_ID
               Value: !Ref TwilioConversationConfigurationId
-            - Name: TWILIO_ENVIRONMENT
-              Value: prod
             - Name: TWILIO_VOICE_PUBLIC_DOMAIN
               Value: !Ref TwilioVoicePublicDomain
             - Name: AWS_REGION
@@ -237,7 +235,7 @@ Resources:
           Description: Allow HTTP traffic
       Tags:
         - Key: Name
-          Value: TAC-ALB-SG
+          Value: TAC-Bedrock-ALB-SG
 
   ServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -252,7 +250,7 @@ Resources:
           Description: Allow traffic from ALB
       Tags:
         - Key: Name
-          Value: TAC-Service-SG
+          Value: TAC-Bedrock-Service-SG
 
   # Application Load Balancer
   LoadBalancer:
@@ -268,7 +266,7 @@ Resources:
         - !Ref ALBSecurityGroup
       Tags:
         - Key: Name
-          Value: TAC-ALB
+          Value: TAC-Bedrock-ALB
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup

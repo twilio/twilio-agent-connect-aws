@@ -53,6 +53,26 @@ class TestPackageImports:
         assert create_memory_tool is not None
         assert callable(create_memory_tool)
 
+    def test_aws_server_import(self) -> None:
+        """Test that TACAWSFastAPIServer can be imported from package root."""
+        try:
+            from tac_aws import TACAWSFastAPIServer
+
+            assert TACAWSFastAPIServer is not None
+        except ImportError:
+            # Server dependencies might not be installed
+            pytest.skip("Server dependencies not installed")
+
+    def test_aws_server_direct_import(self) -> None:
+        """Test that TACAWSFastAPIServer can be imported from server module."""
+        try:
+            from tac_aws.server import TACAWSFastAPIServer
+
+            assert TACAWSFastAPIServer is not None
+        except ImportError:
+            # Server dependencies might not be installed
+            pytest.skip("Server dependencies not installed")
+
     def test_package_all_exports(self) -> None:
         """Test that __all__ exports are correct."""
         import tac_aws
@@ -62,6 +82,13 @@ class TestPackageImports:
         assert "StrandsConnector" in tac_aws.__all__
         assert "BedrockAgentCoreConnector" in tac_aws.__all__
         assert "__version__" in tac_aws.__all__
+
+        # TACAWSFastAPIServer is conditionally exported if server deps are available
+        try:
+            from tac_aws.server import TACAWSFastAPIServer  # noqa: F401
+            assert "TACAWSFastAPIServer" in tac_aws.__all__
+        except ImportError:
+            pass  # Server deps not installed, skip check
 
     def test_connectors_module_exports(self) -> None:
         """Test that connectors module exports are correct."""
