@@ -176,3 +176,7 @@ $RECYCLE.BIN/
 .uv/
 Makefile.local
 .claude/
+
+# AgentCore deployment artifacts
+deploy/agentcore_lambda/agentcore/.bedrock_agentcore.yaml
+deploy/agentcore_lambda/agentcore/.bedrock_agentcore/
