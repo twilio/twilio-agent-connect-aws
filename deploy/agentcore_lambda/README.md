@@ -63,18 +63,6 @@ graph TB
     style Agent fill:#e1bee7
 ```
 
-### Architecture Notes
-
-**Lambda (Simple Router):**
-- `/twiml`: Generates pre-signed WebSocket URL for voice
-- `/webhook`: Forwards SMS webhooks to AgentCore
-
-**AgentCore (Full TAC Server):**
-- Runs complete TAC server with Twilio integrations
-- Handles WebSocket (voice) and HTTP (SMS)
-- Manages Conversations and Memory
-
-
 ---
 
 ## AWS Services
@@ -105,11 +93,6 @@ graph TB
   - IAM permissions for AgentCore, Lambda, S3, CloudFormation
   - Region: us-east-1 (or your preferred region)
 
-**Local Environment:**
-- Python 3.10+ (Python 3.13 recommended)
-- pip package manager
-- Bash shell (macOS/Linux or WSL on Windows)
-
 **Twilio Account:**
 - Account SID
 - Auth Token
@@ -136,33 +119,46 @@ cp .env.example .env
 Edit `.env` with your values:
 
 ```bash
-# Twilio Configuration
+# AWS CLI Configuration - Required for all deployments
+AWS_REGION=us-east-1
+AWS_PROFILE=your-aws-profile-name
+
+# Infrastructure [INFRA]
+S3_BUCKET=tac-deployment-bucket
+
+# Twilio Configuration - Required for agentcore and lambda
+TWILIO_CONVERSATION_CONFIGURATION_ID=conv_configuration_xxxxx
+
+# AgentCore Configuration [AGENTCORE]
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_API_KEY=SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_API_SECRET=your_api_secret
 TWILIO_PHONE_NUMBER=+1234567890
-TWILIO_CONVERSATION_CONFIGURATION_ID=conv_configuration_xxxxx
 TWILIO_LOG_LEVEL=DEBUG
 
-# AWS Configuration
-AWS_REGION=us-east-1
-AWS_PROFILE=your-aws-profile-name
-S3_BUCKET=bedrock-agentcore-{ACCOUNT_ID}-us-east-1
-STACK_NAME=tac-proxy
-
-# AgentCore Configuration (will be populated after agent deployment)
+# Lambda Configuration [LAMBDA] - Will be populated after agent deployment
 AGENTCORE_RUNTIME_ID=
-
-# OpenAI Configuration (optional, if your agent uses OpenAI)
-OPENAI_API_KEY=your_openai_key
 ```
 
-**Note:** You'll need to update `AGENTCORE_RUNTIME_ID` after deploying the agent in Step 2.
+**Note:** You'll need to update `AGENTCORE_RUNTIME_ID` after deploying AgentCore in Step 3.
 
 ---
 
-### Step 2: Deploy Agent to AgentCore
+### Step 2: Deploy Infrastructure
+
+Deploy the S3 bucket for deployment packages:
+
+```bash
+cd infra
+./deploy.sh
+```
+
+**Note:** If the bucket name is globally taken, update `S3_BUCKET` in `.env` with a unique name and retry.
+
+---
+
+### Step 3: Deploy AgentCore
 
 The `agentcore/` folder contains the agent code ready for deployment.
 
@@ -178,13 +174,6 @@ pip install bedrock-agentcore-starter-toolkit
 cd agentcore
 ./deploy.sh
 ```
-
-This script will:
-1. Create S3 bucket for deployments (with automatic fallback if name is globally taken)
-2. Load environment variables from `.env`
-3. Copy configuration from template
-4. Deploy agent to AgentCore runtime
-5. Configure observability (CloudWatch Logs + X-Ray)
 
 **Expected output:**
 
@@ -203,7 +192,7 @@ AGENTCORE_RUNTIME_ID=tacagent-XXXXX
 
 ---
 
-### Step 3: Deploy Lambda Function
+### Step 5: Deploy Lambda Function
 
 The `lambda/` folder contains the Lambda webhook handler.
 
@@ -213,14 +202,6 @@ The `lambda/` folder contains the Lambda webhook handler.
 cd lambda
 ./deploy.sh
 ```
-
-This script will:
-1. Install Python dependencies for Lambda runtime (Linux x86_64)
-2. Create deployment package (function.zip)
-3. Upload package to S3
-4. Deploy CloudFormation stack with Lambda function
-5. Create Lambda Function URL (public HTTPS endpoint)
-6. Configure IAM roles and permissions
 
 **Expected output:**
 
@@ -240,7 +221,7 @@ Stack Outputs:
 
 ---
 
-### Step 4: Configure Twilio Webhooks
+### Step 6: Configure Twilio Webhooks
 
 **Voice Webhook (Phone Numbers):**
 
