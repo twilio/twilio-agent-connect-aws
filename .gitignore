@@ -26,6 +26,12 @@ share/python-wheels/
 *.egg
 PICK LE
 
+# Exception: Allow CDK lib folders (TypeScript source code)
+!**/cdk/lib/
+
+# Node.js dependencies
+node_modules/
+
 # PyInstaller
 *.manifest
 *.spec
@@ -182,8 +188,16 @@ deploy/agentcore_lambda/agentcore/.bedrock_agentcore.yaml
 deploy/agentcore_lambda/agentcore/.bedrock_agentcore/
 deploy/agentcore_twilio_function/agentcore/.bedrock_agentcore.yaml
 deploy/agentcore_twilio_function/agentcore/.bedrock_agentcore/
+deploy/agentcore/agent/agentcore/.cli/
+deploy/agentcore/agent/agentcore/.cache/
+deploy/agentcore/agent/agentcore/aws-targets.json
+
+# CDK build artifacts
+**/cdk.out/
+**/.cdk.staging
 
 # Environment files
+deploy/agentcore/.env
 deploy/agentcore_twilio_function/.env
 
 # Twilio Functions (deploy/agentcore_twilio_function/twilio_function/)
