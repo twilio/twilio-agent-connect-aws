@@ -6,9 +6,9 @@ Parameters:
     Type: String
     Description: Twilio Conversation Configuration ID
 
-  AgentCoreRuntimeId:
+  AgentCoreRuntimeArn:
     Type: String
-    Description: AgentCore Runtime ID (deployed separately via CLI)
+    Description: Full AgentCore Runtime ARN
 
 Resources:
   # Lambda Execution Role
@@ -51,7 +51,7 @@ Resources:
       Code: function.zip
       Environment:
         Variables:
-          AGENTCORE_RUNTIME_ARN: !Sub 'arn:aws:bedrock-agentcore:${AWS::Region}:${AWS::AccountId}:runtime/${AgentCoreRuntimeId}'
+          AGENTCORE_RUNTIME_ARN: !Ref AgentCoreRuntimeArn
           TWILIO_CONVERSATION_CONFIGURATION_ID: !Ref TwilioConversationConfigurationId
       Tags:
         - Key: Name

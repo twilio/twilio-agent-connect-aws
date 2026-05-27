@@ -34,13 +34,13 @@ if [ -z "$TWILIO_CONVERSATION_CONFIGURATION_ID" ]; then
     exit 1
 fi
 
-if [ -z "$AGENTCORE_RUNTIME_ID" ]; then
-    echo "❌ Error: AGENTCORE_RUNTIME_ID environment variable is not set"
+if [ -z "$AGENTCORE_RUNTIME_ARN" ]; then
+    echo "❌ Error: AGENTCORE_RUNTIME_ARN environment variable is not set"
     echo ""
     echo "Please set it in .env file:"
-    echo "  AGENTCORE_RUNTIME_ID=tacagent-xxxxx"
+    echo "  AGENTCORE_RUNTIME_ARN=arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/tacagent-xxxxx"
     echo ""
-    echo "Deploy AgentCore first to get the runtime ID"
+    echo "Deploy AgentCore first to get the runtime ARN"
     exit 1
 fi
 
@@ -86,7 +86,7 @@ aws cloudformation deploy \
   --stack-name $STACK_NAME \
   --parameter-overrides \
     TwilioConversationConfigurationId=$TWILIO_CONVERSATION_CONFIGURATION_ID \
-    AgentCoreRuntimeId=$AGENTCORE_RUNTIME_ID \
+    AgentCoreRuntimeArn=$AGENTCORE_RUNTIME_ARN \
   --capabilities CAPABILITY_NAMED_IAM \
   --region $REGION \
   --profile $PROFILE
