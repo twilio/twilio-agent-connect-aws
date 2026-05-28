@@ -1,0 +1,4 @@
+# AgentCore CLI artifacts
+.cli/
+.cache/
+aws-targets.json

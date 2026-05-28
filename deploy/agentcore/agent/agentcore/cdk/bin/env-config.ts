@@ -29,8 +29,8 @@ export interface TacEnvConfig {
  * @throws Error if required variables are missing
  */
 export function loadEnvConfig(configRoot: string): TacEnvConfig {
-  // Load environment variables from /deploy/agentcore/.env
-  const envPath = path.resolve(configRoot, '../../.env');
+  // Load environment variables from /deploy/agentcore/agent/.env
+  const envPath = path.resolve(configRoot, '../../../.env');
   dotenv.config({ path: envPath });
 
   // Validate required environment variables

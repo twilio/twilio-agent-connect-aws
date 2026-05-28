@@ -183,30 +183,6 @@ $RECYCLE.BIN/
 Makefile.local
 .claude/
 
-# AgentCore deployment artifacts
-deploy/agentcore_lambda/agentcore/.bedrock_agentcore.yaml
-deploy/agentcore_lambda/agentcore/.bedrock_agentcore/
-deploy/agentcore_twilio_function/agentcore/.bedrock_agentcore.yaml
-deploy/agentcore_twilio_function/agentcore/.bedrock_agentcore/
-deploy/agentcore/agent/agentcore/.cli/
-deploy/agentcore/agent/agentcore/.cache/
-deploy/agentcore/agent/agentcore/aws-targets.json
-
-# CDK build artifacts
+# CDK build artifacts (global)
 **/cdk.out/
 **/.cdk.staging
-
-# Environment files
-deploy/agentcore/.env
-deploy/agentcore_twilio_function/.env
-
-# Twilio Functions (deploy/agentcore_twilio_function/twilio_function/)
-deploy/agentcore_twilio_function/twilio_function/.env
-deploy/agentcore_twilio_function/twilio_function/.env.local
-deploy/agentcore_twilio_function/twilio_function/node_modules/
-deploy/agentcore_twilio_function/twilio_function/package-lock.json
-deploy/agentcore_twilio_function/twilio_function/.twilio-functions
-deploy/agentcore_twilio_function/twilio_function/.twiliodeployinfo
-deploy/agentcore_twilio_function/twilio_function/dist/
-deploy/agentcore_twilio_function/twilio_function/build/
-deploy/agentcore_twilio_function/twilio_function/*.log
