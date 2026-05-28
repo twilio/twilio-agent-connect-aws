@@ -26,6 +26,12 @@ share/python-wheels/
 *.egg
 PICK LE
 
+# Exception: Allow CDK lib folders (TypeScript source code)
+!**/cdk/lib/
+
+# Node.js dependencies
+node_modules/
+
 # PyInstaller
 *.manifest
 *.spec
@@ -176,3 +182,7 @@ $RECYCLE.BIN/
 .uv/
 Makefile.local
 .claude/
+
+# CDK build artifacts (global)
+**/cdk.out/
+**/.cdk.staging
