@@ -27,8 +27,10 @@ This deploys the core agent runtime that handles conversation logic. After deplo
 ### 1. Install AgentCore CLI
 
 ```bash
-npm install -g @aws/agentcore-cli
+npm install -g @aws/agentcore-cli@0.15
 ```
+
+**Note:** This deployment was tested with AgentCore CLI 0.15.x. If you encounter issues with newer CLI versions, you may need to update the CDK package version in `agentcore/cdk/package.json` or downgrade the CLI to match.
 
 ### 2. Configure Environment
 
