@@ -12,9 +12,14 @@ export class TacAgentcoreTwilioFunctionStack extends cdk.Stack {
     });
 
     // Add policy for AgentCore access
+    // InvokeAgentRuntime: For SMS HTTP invocations
+    // InvokeAgentRuntimeWithWebSocketStream: For Voice WebSocket connections (via pre-signed URL)
     twilioFunctionUser.addToPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
-      actions: ['bedrock-agentcore:*'],
+      actions: [
+        'bedrock-agentcore:InvokeAgentRuntime',
+        'bedrock-agentcore:InvokeAgentRuntimeWithWebSocketStream',
+      ],
       resources: [
         `arn:aws:bedrock-agentcore:${this.region}:${this.account}:runtime/*`,
       ],

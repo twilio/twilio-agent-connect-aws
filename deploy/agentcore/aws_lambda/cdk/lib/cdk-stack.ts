@@ -28,14 +28,20 @@ export class LambdaStack extends cdk.Stack {
     });
 
     // Grant permissions to invoke AgentCore
+    // InvokeAgentRuntime: For SMS HTTP invocations
+    // InvokeAgentRuntimeWithWebSocketStream: For Voice WebSocket connections
     lambdaFunction.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['bedrock-agentcore:*'],
+      actions: [
+        'bedrock-agentcore:InvokeAgentRuntime',
+        'bedrock-agentcore:InvokeAgentRuntimeWithWebSocketStream',
+      ],
       resources: [
         `arn:aws:bedrock-agentcore:${this.region}:${this.account}:runtime/*`,
       ],
     }));
 
     // Add Function URL (public)
+    // TODO: Add Twilio signature validation in Lambda handler to prevent unauthorized access
     const functionUrl = lambdaFunction.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
     });

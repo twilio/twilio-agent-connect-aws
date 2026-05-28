@@ -58,6 +58,8 @@ async function generatePresignedUrl(runtimeArn, region, credentials) {
 
 /**
  * Handle Voice Call - Generate TwiML with WebSocket URL
+ *
+ * TODO: Add Twilio signature validation to prevent unauthorized access
  */
 async function handleVoiceTwiml(context, event, callback) {
   try {
@@ -103,6 +105,8 @@ async function handleVoiceTwiml(context, event, callback) {
 
 /**
  * Handle SMS Conversation Webhook - Forward to AgentCore
+ *
+ * TODO: Add Twilio signature validation to prevent unauthorized access
  */
 async function handleConversationWebhook(context, event, callback) {
   const response = new Twilio.Response();

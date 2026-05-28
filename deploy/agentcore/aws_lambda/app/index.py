@@ -3,6 +3,9 @@ Lambda Function - Twilio Webhook Proxy with TAC Integration
 Handles:
 - /twiml: Voice calls (generates TwiML using TAC)
 - /webhook: Conversation webhooks (forwards to AgentCore)
+
+TODO: Add Twilio signature validation to prevent unauthorized access
+See: https://www.twilio.com/docs/usage/webhooks/webhooks-security
 """
 
 import json
@@ -70,7 +73,10 @@ def handle_voice_twiml():
 
 
 def handle_conversation_webhook(event):
-    """Handle conversation webhook - forward to AgentCore."""
+    """Handle conversation webhook - forward to AgentCore.
+
+    Conversation Orchestrator sends JSON webhooks.
+    """
     try:
         body = event.get('body', '')
         headers = event.get('headers', {})

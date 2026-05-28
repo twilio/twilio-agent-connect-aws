@@ -78,15 +78,19 @@ echo ""
 
 SERVICE_NAME="${SERVICE_NAME:-tac-agentcore}"
 
+# Temporarily disable exit-on-error to capture deployment output
+set +e
 npx twilio-run deploy \
   --service-name "$SERVICE_NAME" \
   --environment prod \
   --override-existing-project \
   --env .env \
   > /tmp/twilio-deploy-output.log 2>&1
+DEPLOY_EXIT_CODE=$?
+set -e
 
 # Check if deployment succeeded
-if [ $? -ne 0 ]; then
+if [ $DEPLOY_EXIT_CODE -ne 0 ]; then
     echo ""
     echo "❌ Deployment failed"
     cat /tmp/twilio-deploy-output.log
