@@ -7,6 +7,7 @@ import { PythonFunction } from '@aws-cdk/aws-lambda-python-alpha';
 export interface LambdaStackProps extends cdk.StackProps {
   agentCoreRuntimeArn: string;
   twilioConversationConfigurationId: string;
+  twilioAuthToken: string;
 }
 
 export class LambdaStack extends cdk.Stack {
@@ -24,6 +25,7 @@ export class LambdaStack extends cdk.Stack {
       environment: {
         AGENTCORE_RUNTIME_ARN: props.agentCoreRuntimeArn,
         TWILIO_CONVERSATION_CONFIGURATION_ID: props.twilioConversationConfigurationId,
+        TWILIO_AUTH_TOKEN: props.twilioAuthToken,
       },
     });
 
@@ -41,7 +43,7 @@ export class LambdaStack extends cdk.Stack {
     }));
 
     // Add Function URL (public)
-    // TODO: Add Twilio signature validation in Lambda handler to prevent unauthorized access
+    // Signature validation handled in Lambda handler
     const functionUrl = lambdaFunction.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,
     });

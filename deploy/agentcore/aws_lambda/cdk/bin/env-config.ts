@@ -12,6 +12,7 @@ export interface LambdaEnvConfig {
 
   // Twilio Configuration
   twilioConversationConfigurationId: string;
+  twilioAuthToken: string;
 
   // AWS Configuration
   awsAccountId: string;
@@ -34,6 +35,7 @@ export function loadEnvConfig(configRoot: string): LambdaEnvConfig {
   const requiredVars = [
     'AGENTCORE_RUNTIME_ARN',
     'TWILIO_CONVERSATION_CONFIGURATION_ID',
+    'TWILIO_AUTH_TOKEN',
     'AWS_REGION',
     'AWS_ACCOUNT_ID',
   ];
@@ -51,6 +53,7 @@ export function loadEnvConfig(configRoot: string): LambdaEnvConfig {
   return {
     agentCoreRuntimeArn: process.env.AGENTCORE_RUNTIME_ARN!,
     twilioConversationConfigurationId: process.env.TWILIO_CONVERSATION_CONFIGURATION_ID!,
+    twilioAuthToken: process.env.TWILIO_AUTH_TOKEN!,
     awsAccountId: process.env.AWS_ACCOUNT_ID!,
     awsRegion: process.env.AWS_REGION!,
   };

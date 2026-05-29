@@ -4,6 +4,10 @@
  * Endpoints:
  *   - /handler?route=twiml   - Voice call TwiML generation
  *   - /handler?route=webhook - SMS conversation webhook forwarding
+ *
+ * Security: This function uses "protected" visibility, which means Twilio
+ * automatically validates the X-Twilio-Signature header on all requests.
+ * Only Twilio webhooks can access this function.
  */
 
 const {
@@ -58,8 +62,6 @@ async function generatePresignedUrl(runtimeArn, region, credentials) {
 
 /**
  * Handle Voice Call - Generate TwiML with WebSocket URL
- *
- * TODO: Add Twilio signature validation to prevent unauthorized access
  */
 async function handleVoiceTwiml(context, event, callback) {
   try {
@@ -105,8 +107,6 @@ async function handleVoiceTwiml(context, event, callback) {
 
 /**
  * Handle SMS Conversation Webhook - Forward to AgentCore
- *
- * TODO: Add Twilio signature validation to prevent unauthorized access
  */
 async function handleConversationWebhook(context, event, callback) {
   const response = new Twilio.Response();

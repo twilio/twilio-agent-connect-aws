@@ -8,6 +8,10 @@ Deploy Twilio Function webhook proxy for Twilio Agent Connect with AgentCore.
 - **Twilio Function** - Serverless webhook handler (`/handler?route=twiml`, `/handler?route=webhook`)
 - **IAM User** - Access keys for Twilio Function to call AgentCore (runs outside AWS)
 
+**Security:**
+- The function uses **"protected" visibility**, which means Twilio automatically validates the `X-Twilio-Signature` header on all requests
+- Only Twilio webhooks can access the function - public access is blocked
+
 **How it works:**
 - Voice: Twilio Function generates TwiML → Twilio ConversationRelay connects to AgentCore via WebSocket
 - SMS: Twilio Function forwards webhooks → AgentCore processes and responds via Conversations API

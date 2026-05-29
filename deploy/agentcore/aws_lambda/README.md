@@ -9,6 +9,10 @@ Deploy AWS Lambda webhook proxy for Twilio Agent Connect with AgentCore.
 - **Function URL** - Public HTTPS endpoint (no API Gateway needed)
 - **IAM Role** - AgentCore invoke permissions
 
+**Security:**
+- All requests validated using Twilio webhook signature (`X-Twilio-Signature` header)
+- Requests with invalid signatures are rejected with 403 status
+
 **How it works:**
 - Voice: Lambda generates TwiML → Twilio ConversationRelay connects to AgentCore via WebSocket
 - SMS: Lambda forwards webhooks → AgentCore processes and responds via Conversations API
@@ -82,8 +86,9 @@ cp .env.example .env
 # AgentCore Runtime ARN (from agent deployment output)
 AGENTCORE_RUNTIME_ARN=arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/tacagent-xxxxx
 
-# Twilio Conversation Configuration ID
+# Twilio Configuration
 TWILIO_CONVERSATION_CONFIGURATION_ID=WRxxxx
+TWILIO_AUTH_TOKEN=your_auth_token_here
 
 # AWS Configuration
 AWS_REGION=us-east-1

@@ -1,34 +1,45 @@
 """
 Lambda Function - Twilio Webhook Proxy with TAC Integration
-Handles:
+
+Endpoints:
 - /twiml: Voice calls (generates TwiML using TAC)
 - /webhook: Conversation webhooks (forwards to AgentCore)
-
-TODO: Add Twilio signature validation to prevent unauthorized access
-See: https://www.twilio.com/docs/usage/webhooks/webhooks-security
 """
 
 import json
 import os
+
 import boto3
-from tac.channels.voice.twiml import generate_twiml
 from bedrock_agentcore.runtime import AgentCoreRuntimeClient
+from tac.channels.voice.twiml import generate_twiml
 from tac.core.logging import get_logger
+
+from validation import TwilioSignatureValidator
 
 logger = get_logger(__name__)
 
 # Environment variables
 AGENTCORE_RUNTIME_ARN = os.environ['AGENTCORE_RUNTIME_ARN']
 TWILIO_CONVERSATION_CONFIGURATION_ID = os.environ['TWILIO_CONVERSATION_CONFIGURATION_ID']
+TWILIO_AUTH_TOKEN = os.environ['TWILIO_AUTH_TOKEN']
 AWS_REGION = os.environ['AWS_REGION']
 
 # Initialize clients
 agent_core_client = boto3.client('bedrock-agentcore')
 agentcore_runtime_client = AgentCoreRuntimeClient(region=AWS_REGION)
+signature_validator = TwilioSignatureValidator(TWILIO_AUTH_TOKEN)
 
 
 def lambda_handler(event, context):
     """Route requests to appropriate handler."""
+    # Validate Twilio signature
+    if not signature_validator.validate(event):
+        return {
+            'statusCode': 403,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'Invalid webhook signature'})
+        }
+
     request_path = event.get('rawPath', event.get('path', '/'))
 
     if request_path.startswith('/twiml'):

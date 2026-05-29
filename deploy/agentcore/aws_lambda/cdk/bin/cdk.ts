@@ -11,6 +11,7 @@ const config = loadEnvConfig(__dirname);
 new LambdaStack(app, 'TacAgentcoreLambdaStack', {
   agentCoreRuntimeArn: config.agentCoreRuntimeArn,
   twilioConversationConfigurationId: config.twilioConversationConfigurationId,
+  twilioAuthToken: config.twilioAuthToken,
   env: {
     account: config.awsAccountId,
     region: config.awsRegion,
