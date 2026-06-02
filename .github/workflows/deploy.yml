@@ -8,6 +8,7 @@ jobs:
   test:
     name: Test - Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'twilio'
     permissions:
       contents: read
     timeout-minutes: 20
@@ -33,6 +34,7 @@ jobs:
     name: Publish to PyPI
     needs: [test]
     runs-on: ubuntu-latest
+    if: github.repository_owner == 'twilio'
     environment: pypi
     permissions:
       contents: read
