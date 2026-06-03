@@ -33,7 +33,7 @@ jobs:
         run: |
           uv venv
           . .venv/bin/activate
-          uv sync --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
+          uv sync --frozen --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
 
       - name: Run ruff check
         run: |
@@ -78,7 +78,7 @@ jobs:
         run: |
           uv venv
           . .venv/bin/activate
-          uv sync --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
+          uv sync --frozen --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
 
       - name: Run mypy
         run: |
@@ -120,7 +120,7 @@ jobs:
         run: |
           uv venv
           . .venv/bin/activate
-          uv sync --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
+          uv sync --frozen --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
 
       - name: Run tests with coverage
         run: |
@@ -167,12 +167,6 @@ jobs:
           . test-env/bin/activate
           pip install dist/*.whl
           python -c "import tac_aws; print(f'Successfully imported tac_aws')"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: dist
-          path: dist/
 
   all-checks:
     name: All Checks Passed
