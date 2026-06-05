@@ -77,6 +77,11 @@ Repository = "https://github.com/twilio/twilio-agent-connect-aws"
 Issues = "https://github.com/twilio/twilio-agent-connect-aws/issues"
 
 [tool.uv]
+# Supply-chain hardening: refuse to resolve any package version uploaded to
+# PyPI within the last 2 days, quarantining freshly-published (potentially
+# compromised) releases. Recorded in uv.lock, so `uv sync --frozen` installs
+# the vetted locked versions without re-resolving; the cooldown only gates
+# `uv lock` / `uv add` (i.e. intentional dependency updates).
 exclude-newer = "2 days"
 
 [build-system]
