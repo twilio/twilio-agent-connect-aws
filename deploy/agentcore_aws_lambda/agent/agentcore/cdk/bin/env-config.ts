@@ -29,8 +29,9 @@ export interface TacEnvConfig {
  * @throws Error if required variables are missing
  */
 export function loadEnvConfig(configRoot: string): TacEnvConfig {
-  // Load environment variables from /deploy/agentcore/agent/.env
-  const envPath = path.resolve(configRoot, '../.env');
+  // Load environment variables from /deploy/agentcore_aws_lambda/.env (centralized)
+  // configRoot is agentcore/, so we go up 2 levels to reach agentcore_aws_lambda/
+  const envPath = path.resolve(configRoot, '../../.env');
   dotenv.config({ path: envPath });
 
   // Validate required environment variables

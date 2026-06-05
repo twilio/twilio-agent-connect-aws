@@ -1,2 +1,0 @@
-twilio-agent-connect
-bedrock-agentcore

@@ -1,9 +1,0 @@
-# Twilio Function local artifacts
-.env.local
-node_modules/
-package-lock.json
-.twilio-functions
-.twiliodeployinfo
-dist/
-build/
-*.log

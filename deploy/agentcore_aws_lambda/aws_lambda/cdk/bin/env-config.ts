@@ -27,8 +27,8 @@ export interface LambdaEnvConfig {
  * @throws Error if required variables are missing
  */
 export function loadEnvConfig(configRoot: string): LambdaEnvConfig {
-  // Load environment variables from /deploy/agentcore/aws_lambda/.env
-  const envPath = path.resolve(configRoot, '../../.env');
+  // Load environment variables from /deploy/agentcore_aws_lambda/.env (centralized)
+  const envPath = path.resolve(configRoot, '../../../.env');
   dotenv.config({ path: envPath });
 
   // Validate required environment variables
