@@ -26,14 +26,11 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Set package quarantine date
-        run: echo "QUARANTINE_DATE=$(date -u -d '2 days ago' +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
-
       - name: Install dependencies
         run: |
           uv venv
           . .venv/bin/activate
-          uv sync --frozen --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
+          uv sync --frozen --all-extras --all-groups
 
       - name: Run ruff check
         run: |
@@ -71,14 +68,11 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Set package quarantine date
-        run: echo "QUARANTINE_DATE=$(date -u -d '2 days ago' +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
-
       - name: Install dependencies
         run: |
           uv venv
           . .venv/bin/activate
-          uv sync --frozen --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
+          uv sync --frozen --all-extras --all-groups
 
       - name: Run mypy
         run: |
@@ -113,14 +107,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Set package quarantine date
-        run: echo "QUARANTINE_DATE=$(date -u -d '2 days ago' +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
-
       - name: Install dependencies
         run: |
           uv venv
           . .venv/bin/activate
-          uv sync --frozen --all-extras --all-groups --exclude-newer "$QUARANTINE_DATE"
+          uv sync --frozen --all-extras --all-groups
 
       - name: Run tests with coverage
         run: |
