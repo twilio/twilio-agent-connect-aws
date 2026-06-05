@@ -30,7 +30,7 @@ export interface TacEnvConfig {
  */
 export function loadEnvConfig(configRoot: string): TacEnvConfig {
   // Load environment variables from /deploy/agentcore/agent/.env
-  const envPath = path.resolve(configRoot, '../../../.env');
+  const envPath = path.resolve(configRoot, '../.env');
   dotenv.config({ path: envPath });
 
   // Validate required environment variables

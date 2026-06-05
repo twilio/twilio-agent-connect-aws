@@ -31,7 +31,15 @@ graph LR
 ## Prerequisites
 
 - **AWS Account** with Bedrock model access
-- **AWS CLI** configured with credentials
+- **AWS CLI** installed and configured with a named profile:
+  ```bash
+  # Configure a new profile
+  aws configure --profile your-profile-name
+  
+  # Set as default for this session
+  export AWS_PROFILE=your-profile-name
+  ```
+  See [AWS CLI Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-profiles.html) for details.
 - **Node.js 20+** for CDK
 - **Docker** running (for Lambda deployment)
 - **Twilio CLI** (for Twilio Function deployment)
@@ -41,7 +49,7 @@ graph LR
 All deployments use AWS CDK. Bootstrap your AWS account once:
 
 ```bash
-AWS_PROFILE=your-profile npx cdk bootstrap aws://YOUR_ACCOUNT_ID/us-east-1
+AWS_PROFILE=your-profile npx cdk bootstrap aws://YOUR_ACCOUNT_ID/REGION
 ```
 
 This creates:

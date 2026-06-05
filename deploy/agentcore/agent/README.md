@@ -71,22 +71,41 @@ TWILIO_CONVERSATION_CONFIGURATION_ID=WRxxxx
 - API Key & Secret: Create API Key
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator
 
-### 3. Deploy
+### 3. Install CDK Dependencies
+
+The AgentCore CLI needs TypeScript and CDK dependencies:
 
 ```bash
-cd agentcore
+cd agentcore/cdk
+npm install
+cd ../..
+```
+
+### 4. Configure Deployment Targets
+
+The AgentCore CLI requires an `aws-targets.json` file to know where to deploy:
+
+```bash
+cp agentcore/aws-targets.json.example agentcore/aws-targets.json
+```
+
+This creates an empty array `[]` that the AgentCore CLI will populate during deployment with your AWS account details. The file is gitignored because it contains sensitive AWS account information.
+
+### 5. Deploy
+
+Run from the agent folder (project root):
+
+```bash
 AWS_PROFILE=your-profile agentcore deploy
 ```
 
-**Expected output:**
+After deployment completes, retrieve the Runtime ARN:
 
+```bash
+AWS_PROFILE=your-profile agentcore status
 ```
-✅ AgentCore deployment complete!
 
-Runtime ARN: arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/agent_tacagentcli-XXXXX
-HTTP Endpoint: https://xxxxx.agentcore.us-east-1.amazonaws.com
-WebSocket Endpoint: wss://xxxxx.agentcore.us-east-1.amazonaws.com
-```
+This will display the deployed runtime information including the Runtime ARN.
 
 **Save the Runtime ARN** - you'll need it for the webhook proxy deployment (AWS Lambda or Twilio Function).
 

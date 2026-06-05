@@ -186,3 +186,6 @@ Makefile.local
 # CDK build artifacts (global)
 **/cdk.out/
 **/.cdk.staging
+
+# AgentCore deployment targets (contains AWS account info)
+**/aws-targets.json

@@ -109,6 +109,14 @@ class TACAWSBedrockAgentCoreServer:
         # Register WebSocket entrypoint for Voice
         @self.app.websocket
         async def websocket_handler(websocket, context):
+            # TODO: Add Twilio webhook signature validation
+            # Conversation Relay includes X-Twilio-Signature header in the initial
+            # WebSocket handshake request. We should validate this signature using the
+            # Twilio auth token to ensure requests are genuinely from Twilio.
+            # See: https://www.twilio.com/docs/voice/conversationrelay/onboarding
+            # Note: Currently blocked because AgentCore strips headers from WebSocket requests.
+            # This security enhancement should be implemented once AgentCore supports
+            # passing handshake headers to the WebSocket handler.
             try:
                 wrapped_ws = WelcomeGreetingWebSocket(websocket)
                 await self.voice_channel.handle_websocket(wrapped_ws)

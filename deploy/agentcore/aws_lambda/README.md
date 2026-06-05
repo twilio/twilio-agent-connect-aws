@@ -97,26 +97,18 @@ AWS_ACCOUNT_ID=123456789012
 
 ## Deployment
 
-### Deploy Lambda
+### 1. Install CDK Dependencies
 
 ```bash
 cd cdk
-
-# If using default AWS profile
-npx cdk deploy
-
-# If using a specific AWS profile
-AWS_PROFILE=your-profile npx cdk deploy
+npm install
 ```
 
-**What CDK does automatically:**
-- ✅ Creates S3 staging bucket (if not exists)
-- ✅ Uses Docker to install Python dependencies for Lambda
-- ✅ Packages Lambda code + dependencies
-- ✅ Uploads to S3
-- ✅ Creates IAM role with AgentCore permissions
-- ✅ Deploys Lambda function with Function URL
-- ✅ Outputs webhook URLs
+### 2. Deploy Lambda
+
+```bash
+AWS_PROFILE=your-profile npx cdk deploy
+```
 
 **Expected output:**
 
