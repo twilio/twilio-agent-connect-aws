@@ -6,22 +6,13 @@ import { App } from 'aws-cdk-lib';
 import * as path from 'path';
 import { loadEnvConfig, toAgentCoreEnvVars } from '../config/env-config';
 
-const STACK_NAME = 'TacAgentCoreStack';
-
 async function main() {
-  // baseDir should point to the agentcore/ directory itself
-  // ConfigIO expects baseDir to be the config root (agentcore/ directory)
   const configRoot = path.join(process.cwd(), 'agentcore');
-
   const configIO = new ConfigIO({ baseDir: configRoot });
-
-  // Load and validate environment configuration
   const envConfig = loadEnvConfig(process.cwd());
-
-  // Read agentcore.json
   const spec = await configIO.readProjectSpec();
 
-  // Inject Twilio env vars into spec
+  // Inject Twilio credentials as env vars into AgentCore runtime
   const twilioEnvVars = toAgentCoreEnvVars(envConfig);
   const enhancedSpec = {
     ...spec,
@@ -33,8 +24,7 @@ async function main() {
 
   const app = new App();
 
-  // Stack 1: AgentCore Runtime
-  const agentCoreStack = new AgentCoreStack(app, STACK_NAME, {
+  const agentCoreStack = new AgentCoreStack(app, 'TacAgentCoreStack', {
     spec: enhancedSpec,
     env: {
       account: envConfig.awsAccountId,
@@ -47,9 +37,8 @@ async function main() {
     },
   });
 
-  // Stack 2: Lambda Webhook Proxy (depends on AgentCore)
   const lambdaStack = new LambdaStack(app, 'TacLambdaStack', {
-    agentCoreRuntimeArn: agentCoreStack.runtimeArn,  // Cross-stack reference!
+    agentCoreRuntimeArn: agentCoreStack.runtimeArn,
     twilioConversationConfigurationId: envConfig.twilioConversationConfigurationId,
     twilioAuthToken: envConfig.twilioAuthToken,
     env: {
@@ -59,7 +48,7 @@ async function main() {
     description: 'TAC Lambda Webhook Proxy for Twilio Agent Connect',
   });
 
-  // Explicit dependency (CDK infers this from runtimeArn reference, but being explicit is clearer)
+  // Lambda must deploy after AgentCore to use runtime ARN
   lambdaStack.addDependency(agentCoreStack);
 
   app.synth();

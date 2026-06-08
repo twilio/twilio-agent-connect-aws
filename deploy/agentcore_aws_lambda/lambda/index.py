@@ -86,19 +86,56 @@ def handle_voice_twiml():
 def handle_conversation_webhook(event):
     """Handle conversation webhook - forward to AgentCore.
 
-    Conversation Orchestrator sends JSON webhooks.
+    Conversation Orchestrator sends JSON webhooks. TAC processes only:
+    - COMMUNICATION_CREATED: New message from customer (data.conversationId)
+    - CONVERSATION_UPDATED: Conversation status changed (data.id)
+
+    Other event types are ignored.
     """
     try:
         body = event.get('body', '')
         headers = event.get('headers', {})
+
+        # Parse webhook to extract conversation_id for session routing
+        webhook_data = json.loads(body)
+        event_type = webhook_data.get('eventType')
+        event_data = webhook_data.get('data', {})
+
+        # Only process events that TAC handles
+        if event_type not in ('COMMUNICATION_CREATED', 'CONVERSATION_UPDATED'):
+            logger.debug(f"Ignoring event type: {event_type}")
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'success': True, 'ignored': True})
+            }
+
+        # Extract conversation_id based on event type
+        conversation_id = None
+        if event_type == 'COMMUNICATION_CREATED':
+            # COMMUNICATION_CREATED: conversation_id at data.conversationId
+            conversation_id = event_data.get('conversationId')
+        elif event_type == 'CONVERSATION_UPDATED':
+            # CONVERSATION_UPDATED: conversation_id at data.id
+            conversation_id = event_data.get('id')
+
+        if not conversation_id:
+            logger.warning(f"Missing conversationId for event type {event_type}")
+            return {
+                'statusCode': 400,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'error': 'Missing conversationId'})
+            }
 
         payload = json.dumps({
             'webhook_data': body,
             'idempotency_token': headers.get('i-twilio-idempotency-token')
         }).encode()
 
+        # Pass conversation_id as runtimeSessionId for sticky routing to same microVM
         agent_core_client.invoke_agent_runtime(
             agentRuntimeArn=AGENTCORE_RUNTIME_ARN,
+            runtimeSessionId=conversation_id,
             payload=payload
         )
 
