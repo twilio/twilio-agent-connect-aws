@@ -1,5 +1,5 @@
 {
-  "app": "node dist/bin/cdk.js",
+  "app": "node dist/bin/app.js",
   "watch": {
     "include": ["**"],
     "exclude": ["README.md", "cdk*.json", "tsconfig.json", "package*.json", "yarn.lock", "node_modules", "dist", "test"]

@@ -22,6 +22,9 @@ export class AgentCoreStack extends Stack {
   /** The AgentCore application containing all agent environments */
   public readonly application: AgentCoreApplication;
 
+  /** The runtime ARN for the TAC agent (for cross-stack reference) */
+  public readonly runtimeArn: string;
+
   constructor(scope: Construct, id: string, props: AgentCoreStackProps) {
     super(scope, id, props);
 
@@ -32,10 +35,29 @@ export class AgentCoreStack extends Stack {
       spec,
     });
 
-    // Stack-level output
+    // Get the runtime ARN from the first (and only) runtime
+    const runtimeName = spec.runtimes[0]?.name;
+    if (!runtimeName) {
+      throw new Error('No runtimes defined in agentcore.json');
+    }
+
+    const environment = this.application.environments.get(runtimeName);
+    if (!environment) {
+      throw new Error(`Runtime environment ${runtimeName} not found`);
+    }
+
+    this.runtimeArn = environment.runtime.runtimeArn;
+
+    // Stack-level outputs
     new CfnOutput(this, 'StackNameOutput', {
       description: 'Name of the CloudFormation Stack',
       value: this.stackName,
+    });
+
+    new CfnOutput(this, 'AgentCoreRuntimeArn', {
+      description: 'AgentCore Runtime ARN',
+      value: this.runtimeArn,
+      exportName: 'TacAgentCoreRuntimeArn',  // Export for cross-stack reference
     });
   }
 }

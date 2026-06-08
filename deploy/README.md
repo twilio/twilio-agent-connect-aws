@@ -70,7 +70,12 @@ TAC Server runs on Fargate and creates per-conversation agent instances using th
 TAC Server runs on Fargate and invokes console-created agents via `invoke_agent()` API. Create agents in AWS Bedrock Console with action groups and knowledge bases. Agents are fully managed by AWS and handle conversation history server-side.
 
 ### Bedrock AgentCore Connector
+
+**Fargate Deployment:**
 Deploy custom agent code to Bedrock AgentCore runtime. TAC Server on Fargate invokes pre-deployed agents via `invoke_agent_runtime()` API. AgentCore manages runtime and memory.
+
+**Lambda Deployment:**
+Same AgentCore runtime, but with lightweight Lambda webhook proxy instead of Fargate. Unified CDK deploys both AgentCore and Lambda with automatic cross-stack references.
 
 ## Getting Started
 

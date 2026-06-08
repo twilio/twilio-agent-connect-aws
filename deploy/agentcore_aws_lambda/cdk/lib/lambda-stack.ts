@@ -16,7 +16,7 @@ export class LambdaStack extends cdk.Stack {
 
     // Lambda function with Python dependencies
     const lambdaFunction = new PythonFunction(this, 'TacAgentcoreLambda', {
-      entry: '../app',  // Reference app directory
+      entry: '../lambda',  // Reference lambda directory
       runtime: lambda.Runtime.PYTHON_3_13,
       handler: 'lambda_handler',
       index: 'index.py',

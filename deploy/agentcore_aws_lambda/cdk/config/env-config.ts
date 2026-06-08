@@ -3,7 +3,7 @@ import * as path from 'path';
 
 /**
  * Environment configuration for TAC AgentCore deployment.
- * Reads from /deploy/agentcore/.env and validates required variables.
+ * Reads from /deploy/agentcore_aws_lambda/.env and validates required variables.
  */
 
 export interface TacEnvConfig {
@@ -24,14 +24,14 @@ export interface TacEnvConfig {
 /**
  * Loads and validates environment variables from .env file.
  *
- * @param configRoot - Path to agentcore/ directory
+ * @param configRoot - Path to cdk/ directory
  * @returns Validated environment configuration
  * @throws Error if required variables are missing
  */
 export function loadEnvConfig(configRoot: string): TacEnvConfig {
   // Load environment variables from /deploy/agentcore_aws_lambda/.env (centralized)
-  // configRoot is agentcore/, so we go up 2 levels to reach agentcore_aws_lambda/
-  const envPath = path.resolve(configRoot, '../../.env');
+  // configRoot is cdk/, so we go up 1 level to reach agentcore_aws_lambda/
+  const envPath = path.resolve(configRoot, '../.env');
   dotenv.config({ path: envPath });
 
   // Validate required environment variables

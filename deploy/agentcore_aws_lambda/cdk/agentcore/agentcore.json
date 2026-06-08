@@ -1,18 +1,18 @@
 {
   "$schema": "https://schema.agentcore.aws.dev/v1/agentcore.json",
-  "name": "agent",
+  "name": "tac",
   "version": 1,
   "managedBy": "CDK",
   "tags": {
     "agentcore:created-by": "agentcore-cli",
-    "agentcore:project-name": "agent"
+    "agentcore:project-name": "tac"
   },
   "runtimes": [
     {
-      "name": "tacagentcli",
+      "name": "tac_agent",
       "build": "CodeZip",
       "entrypoint": "main.py",
-      "codeLocation": "app/agent/",
+      "codeLocation": "../agent/",
       "runtimeVersion": "PYTHON_3_14",
       "networkMode": "PUBLIC",
       "protocol": "HTTP",
