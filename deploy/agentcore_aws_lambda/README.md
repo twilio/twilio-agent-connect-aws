@@ -211,6 +211,24 @@ Copy these webhook URLs for Twilio configuration.
 
 ---
 
+## View Logs
+
+CloudWatch log groups are created after the first invocation (phone call or SMS).
+
+### AgentCore Logs
+
+1. Go to [CloudWatch Console](https://console.aws.amazon.com/cloudwatch/)
+2. In the left sidebar, click **Logs** → **Log Management** → **Log groups**
+3. In the search box, type: `/aws/bedrock-agentcore/runtimes/tac_tac_agent-`
+
+### Lambda Logs
+
+1. Go to [CloudWatch Console](https://console.aws.amazon.com/cloudwatch/)
+2. In the left sidebar, click **Logs** → **Log Management** → **Log groups**
+3. In the search box, type: `/aws/lambda/TacLambdaStack-`
+
+---
+
 ## Update Code
 
 After editing agent or Lambda code:
