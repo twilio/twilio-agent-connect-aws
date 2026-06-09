@@ -14,15 +14,15 @@ help:
 	@echo "Available targets:"
 	@echo "  bootstrap        - Bootstrap CDK (one-time setup)"
 	@echo "  build            - Build agent code and CDK"
-	@echo "  deploy-all       - Deploy both AgentCore and Lambda stacks"
-	@echo "  deploy-agentcore - Deploy only AgentCore stack"
-	@echo "  deploy-lambda    - Deploy only Lambda stack"
-	@echo "  deploy           - Alias for deploy-all"
+	@echo "  deploy           - Build and deploy both stacks (recommended)"
+	@echo "  deploy-all       - Build and deploy both AgentCore and Lambda stacks"
+	@echo "  deploy-agentcore - Build and deploy only AgentCore stack"
+	@echo "  deploy-lambda    - Build and deploy only Lambda stack"
 	@echo "  clean            - Clean build artifacts"
 	@echo ""
 	@echo "Usage:"
-	@echo "  make bootstrap      # One-time setup"
-	@echo "  make build deploy   # Deploy"
+	@echo "  make bootstrap   # One-time setup"
+	@echo "  make deploy      # Build and deploy both stacks"
 
 # Bootstrap CDK (one-time setup)
 bootstrap:
@@ -55,7 +55,7 @@ build:
 	cd cdk && npm install && npm run build
 
 # Deploy all stacks (AgentCore + Lambda)
-deploy-all:
+deploy-all: build
 ifndef AWS_PROFILE
 	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
 endif
@@ -69,7 +69,7 @@ endif
 	@echo "  aws cloudformation describe-stacks --stack-name TacLambdaStack --profile $(AWS_PROFILE)"
 
 # Deploy only AgentCore stack
-deploy-agentcore:
+deploy-agentcore: build
 ifndef AWS_PROFILE
 	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
 endif
@@ -79,7 +79,7 @@ endif
 	@echo "✓ AgentCore stack deployed!"
 
 # Deploy only Lambda stack
-deploy-lambda:
+deploy-lambda: build
 ifndef AWS_PROFILE
 	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
 endif

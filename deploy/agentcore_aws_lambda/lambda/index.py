@@ -43,7 +43,7 @@ def lambda_handler(event, context):
     request_path = event.get('rawPath', event.get('path', '/'))
 
     if request_path.startswith('/twiml'):
-        return handle_voice_twiml()
+        return handle_voice_twiml(event)
     elif request_path.startswith('/webhook'):
         return handle_conversation_webhook(event)
     else:
@@ -53,11 +53,27 @@ def lambda_handler(event, context):
         }
 
 
-def handle_voice_twiml():
-    """Handle voice call - generate TwiML."""
+def handle_voice_twiml(event):
+    """Handle voice call - generate TwiML.
+
+    Uses CallSid as session_id for AgentCore routing to ensure the call is routed
+    to a dedicated agent instance based on CallSid.
+    """
     try:
+        # Extract CallSid from Twilio webhook request
+        call_sid = _extract_call_sid(event)
+        if not call_sid:
+            logger.warning("Missing CallSid in voice webhook request")
+            return {
+                'statusCode': 400,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'error': 'Missing CallSid parameter'})
+            }
+
+        # Generate presigned WebSocket URL with CallSid as session_id
         websocket_url = agentcore_runtime_client.generate_presigned_url(
             runtime_arn=AGENTCORE_RUNTIME_ARN,
+            session_id=call_sid,
             expires=300
         )
 
@@ -81,6 +97,25 @@ def handle_voice_twiml():
             'headers': {'Content-Type': 'application/json'},
             'body': json.dumps({'error': str(e)})
         }
+
+
+def _extract_call_sid(event):
+    """Extract CallSid from Lambda event (POST body or query string)."""
+    # Try POST body first (form-encoded)
+    body = event.get('body', '')
+    if body:
+        from urllib.parse import parse_qs
+        if event.get('isBase64Encoded'):
+            import base64
+            body = base64.b64decode(body).decode('utf-8')
+        params = parse_qs(body)
+        call_sid = params.get('CallSid', [None])[0]
+        if call_sid:
+            return call_sid
+
+    # Fall back to query string parameters
+    query_params = event.get('queryStringParameters') or {}
+    return query_params.get('CallSid')
 
 
 def handle_conversation_webhook(event):

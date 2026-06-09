@@ -18,6 +18,13 @@
       "protocol": "HTTP",
       "requestHeaderAllowlist": [
         "X-Twilio-Signature"
+      ],
+      "filesystemConfigurations": [
+        {
+          "sessionStorage": {
+            "mountPath": "/mnt/workspace"
+          }
+        }
       ]
     }
   ],

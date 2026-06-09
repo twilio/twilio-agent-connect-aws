@@ -32,13 +32,15 @@ export class LambdaStack extends cdk.Stack {
     // Grant permissions to invoke AgentCore
     // InvokeAgentRuntime: For SMS HTTP invocations
     // InvokeAgentRuntimeWithWebSocketStream: For Voice WebSocket connections
+    // Scoped to the specific AgentCore runtime for least-privilege access
     lambdaFunction.addToRolePolicy(new iam.PolicyStatement({
       actions: [
         'bedrock-agentcore:InvokeAgentRuntime',
         'bedrock-agentcore:InvokeAgentRuntimeWithWebSocketStream',
       ],
       resources: [
-        `arn:aws:bedrock-agentcore:${this.region}:${this.account}:runtime/*`,
+        props.agentCoreRuntimeArn,
+        `${props.agentCoreRuntimeArn}/*`,
       ],
     }));
 

@@ -5,6 +5,7 @@ Simplified using StrandsConnector and TACAWSBedrockAgentCoreServer
 import json
 from strands import Agent
 from strands.models import BedrockModel
+from strands.session import FileSessionManager
 from tac import TAC, TACConfig
 from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
@@ -24,11 +25,19 @@ def create_agent(context: ConversationSession) -> Agent:
     Agent factory for Strands connector.
 
     Called once per conversation to create an isolated agent instance.
-    Region is auto-detected from AWS environment.
+    Uses FileSessionManager to persist conversation history across microVM shutdowns.
+
+    See:
+    - Strands Session Management: https://strandsagents.com/docs/user-guide/concepts/agents/session-management/
+    - AgentCore Managed Session Storage: https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-filesystem-configurations.html
     """
     return Agent(
         model=BedrockModel(model_id="amazon.nova-pro-v1:0"),
         system_prompt="You are a helpful customer service agent. Keep responses short and conversational — one or two sentences. Do not use markdown, asterisks, bullets, or emojis.",
+        session_manager=FileSessionManager(
+            session_id=context.conversation_id,
+            storage_dir="/mnt/workspace/.sessions"
+        )
     )
 
 
@@ -79,9 +88,9 @@ class WelcomeGreetingWebSocket:
         return getattr(self._ws, name)
 
 
-class TACAWSBedrockAgentCoreServer:
+class TACBedrockAgentCoreApp:
     """
-    Server adapter for TAC on AWS Bedrock AgentCore.
+    App adapter for TAC on AWS Bedrock AgentCore.
 
     Integrates TAC channels with BedrockAgentCoreApp for serverless deployment.
     Handles both HTTP (SMS) and WebSocket (Voice) protocols.
@@ -133,15 +142,15 @@ class TACAWSBedrockAgentCoreServer:
         self.app.run()
 
 
-# Create server
-server = TACAWSBedrockAgentCoreServer(
+# Create app
+tac_app = TACBedrockAgentCoreApp(
     tac=tac,
     voice_channel=connector.voice,
     sms_channel=connector.sms,
 )
 
 # For AgentCore deployment
-app = server.app
+app = tac_app.app
 
 if __name__ == "__main__":
-    server.run()
+    tac_app.run()

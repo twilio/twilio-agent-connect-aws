@@ -76,19 +76,44 @@ graph TB
 
 ### 1. Create IAM User and Access Keys
 
+**Step 1: Create the policy**
+
 1. Sign in to [AWS Console](https://console.aws.amazon.com)
-2. Navigate to **IAM** → **Users**
-3. Click **Create user** (or select existing user)
-4. **Add permissions:**
-   - Click **Add permissions** → **Attach policies directly**
-   - Select `AdministratorAccess` (or define specific permissions as needed)
-   - Click **Next** → **Create user**
-5. Select the user → **Security credentials** tab
-6. Under **Access keys**, click **Create access key**
-7. Choose use case: **Command Line Interface (CLI)**
-8. **Save credentials** (⚠️ secret key only shown once):
+2. Navigate to **IAM** → **Policies**
+3. Click **Create policy**
+4. Click the **JSON** tab
+5. Copy the contents of [`iam-policy.json`](./iam-policy.json) and paste it
+6. Click **Next**
+7. Enter a policy name (e.g., `TACDeploymentPolicy`)
+8. (Optional) Add a description
+9. Click **Create policy**
+
+**Step 2: Create the user**
+
+1. Navigate to **IAM** → **Users**
+2. Click **Create user**
+3. Enter a **User name** (e.g., `tac-deployment-user`)
+4. Click **Next**
+5. On "Set permissions" page, select **Attach policies directly**
+6. Search for `TACDeploymentPolicy` (the policy you just created)
+7. Check the box next to it
+8. Click **Next**
+9. Review and click **Create user**
+
+**Step 3: Create access key**
+
+1. After user creation, click the **Security credentials** tab
+2. Under **Access keys**, click **Create access key**
+3. Choose use case: **Command Line Interface (CLI)**
+4. Check the confirmation box and click **Next**
+5. (Optional) Add a description tag
+6. Click **Create access key**
+7. **Save credentials** (⚠️ secret key only shown once):
    - Access key ID (e.g., `AKIAIOSFODNN7EXAMPLE`)
    - Secret access key
+8. Click **Done**
+
+**Note:** The IAM policy in [`iam-policy.json`](./iam-policy.json) follows the principle of least privilege, scoping permissions to only the resources needed for this deployment (CloudFormation stacks, S3 CDK assets, Lambda functions, BedrockAgentCore runtimes). For tighter security in production, replace `*` in account IDs with your specific AWS account ID.
 
 ### 2. Configure AWS CLI Profile
 
@@ -166,7 +191,7 @@ This installs CDK dependencies and bootstraps your AWS account for CDK deploymen
 ### 3. Deploy Everything
 
 ```bash
-make build deploy
+make deploy
 ```
 
 This command:
@@ -234,6 +259,6 @@ CloudWatch log groups are created after the first invocation (phone call or SMS)
 After editing agent or Lambda code:
 
 ```bash
-make build deploy
+make deploy
 ```
 
