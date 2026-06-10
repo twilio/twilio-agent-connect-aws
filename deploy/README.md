@@ -1,87 +1,67 @@
 # twilio-agent-connect-aws Deployment Guide
 
-Production deployment options for twilio-agent-connect-aws connectors.
+Production deployment options for twilio-agent-connect-aws.
 
-## Available Deployments
+## Deployments
 
-### AWS Fargate with Strands
+### AWS Lambda + Bedrock AgentCore (Recommended)
 
-Deploy Strands SDK-based agents to AWS Fargate with Application Load Balancer.
+**Architecture:** Twilio Conversation Relay connects directly to AgentCore via WebSocket. Lambda functions handle Twilio webhooks.
 
-**Guide:** [`strands_aws_fargate/README.md`](strands_aws_fargate/README.md)
+**Key features:**
+- Direct WebSocket connection (best performance)
+- No Fargate, ALB, or VPC required
+- Fully serverless (pay-per-request)
+- Single CDK command deployment
 
-**Includes:**
-- ECS Fargate + ALB infrastructure
-- Docker multi-stage build
-- Complete CloudFormation templates
-- Architecture diagrams with Mermaid
-- Multi-stage Docker build for private dependencies
+**Guide:** [`agentcore_aws_lambda/README.md`](agentcore_aws_lambda/README.md)
 
-**Best for:**
-- Production Strands agents with per-conversation management
-- Scalable multi-channel deployments (SMS + Voice)
+**Best for:** Production agents with custom code (Strands, LangGraph, OpenAI SDK)
 
-### AWS Fargate with Bedrock Agents
+---
 
-Deploy console-created Bedrock Agents to AWS Fargate with Application Load Balancer.
+### AWS Fargate + Bedrock AgentCore
 
-**Guide:** [`bedrock_aws_fargate/README.md`](bedrock_aws_fargate/README.md)
+**Architecture:** TAC Server runs on Fargate behind ALB. Server connects to AgentCore runtime via HTTP/WebSocket.
 
-**Includes:**
-- ECS Fargate + ALB infrastructure
-- Docker multi-stage build
-- Complete CloudFormation templates
-- Architecture diagrams with Mermaid
-- Integration with console-created Bedrock Agents
-
-**Best for:**
-- Console-created Bedrock Agents with action groups and knowledge bases
-- Fully managed agent service
-- Production multi-channel deployments (SMS + Voice)
-
-### AWS Fargate with Bedrock AgentCore
-
-Deploy Bedrock AgentCore-based agents to AWS Fargate with Application Load Balancer.
+**Key features:**
+- Custom agent code deployment to AgentCore
+- TAC Server on ECS Fargate + ALB
+- Docker containerized deployment
+- CloudFormation templates
 
 **Guide:** [`agentcore_aws_fargate/README.md`](agentcore_aws_fargate/README.md)
 
-**Includes:**
-- Agent deployment to Bedrock AgentCore runtime
-- TAC Server on ECS Fargate + ALB infrastructure
-- Docker multi-stage build
-- Complete CloudFormation templates
-- Architecture diagrams with Mermaid
-- Agent deployment guide with AgentCore CLI
+**Best for:** Existing Fargate infrastructure or specific VPC requirements
 
-**Best for:**
-- Custom agent code deployments (Strands, LangGraph, OpenAI SDK)
-- Managed agent runtime with built-in memory
-- Pre-deployed agents invoked via API
+---
 
-**Real-world example:**
-- [AWS Sample: Bedrock AgentCore + TAC Reference Implementation](https://github.com/aws-samples/sample-bedrock-agentcore-twilio-agent-connect-reference)
+### AWS Fargate + Bedrock Agents
 
-## Deployment Architecture
+**Architecture:** TAC Server runs on Fargate behind ALB. Server invokes console-created Bedrock Agents via API.
 
-### Strands Connector
-TAC Server runs on Fargate and creates per-conversation agent instances using the Strands SDK. Each conversation gets its own agent with isolated state.
+**Key features:**
+- Console-created agents with action groups and knowledge bases
+- Fully managed agent service
+- TAC Server on ECS Fargate + ALB
+- CloudFormation templates
 
-### Bedrock Agents Connector
-TAC Server runs on Fargate and invokes console-created agents via `invoke_agent()` API. Create agents in AWS Bedrock Console with action groups and knowledge bases. Agents are fully managed by AWS and handle conversation history server-side.
+**Guide:** [`bedrock_aws_fargate/README.md`](bedrock_aws_fargate/README.md)
 
-### Bedrock AgentCore Connector
+**Best for:** Using AWS Bedrock Agents created in AWS Console
 
-**Fargate Deployment:**
-Deploy custom agent code to Bedrock AgentCore runtime. TAC Server on Fargate invokes pre-deployed agents via `invoke_agent_runtime()` API. AgentCore manages runtime and memory.
+---
 
-**Lambda Deployment:**
-Same AgentCore runtime, but with lightweight Lambda webhook proxy instead of Fargate. Unified CDK deploys both AgentCore and Lambda with automatic cross-stack references.
+### AWS Fargate + Strands
 
-## Getting Started
+**Architecture:** TAC Server runs on Fargate behind ALB. Strands agents created per-conversation with direct Bedrock LLM calls.
 
-1. Choose your connector type
-2. Follow the appropriate deployment guide
-3. Configure environment variables
-4. Deploy infrastructure
+**Key features:**
+- Strands SDK agent framework
+- Per-conversation agent instances
+- TAC Server on ECS Fargate + ALB
+- CloudFormation templates
 
-For local development and testing, see [`../getting_started/README.md`](../getting_started/README.md)
+**Guide:** [`strands_aws_fargate/README.md`](strands_aws_fargate/README.md)
+
+**Best for:** Strands framework with per-conversation state management
