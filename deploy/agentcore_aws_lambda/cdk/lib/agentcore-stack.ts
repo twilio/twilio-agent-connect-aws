@@ -3,6 +3,7 @@ import {
   type AgentCoreProjectSpec,
 } from '@aws/agentcore-cdk';
 import { CfnOutput, Stack, type StackProps } from 'aws-cdk-lib';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 export interface AgentCoreStackProps extends StackProps {
@@ -10,6 +11,11 @@ export interface AgentCoreStackProps extends StackProps {
    * The AgentCore project specification containing agents, memories, and credentials.
    */
   spec: AgentCoreProjectSpec;
+
+  /**
+   * ARN of the Secrets Manager secret containing Twilio credentials.
+   */
+  twilioSecretArn: string;
 }
 
 /**
@@ -28,11 +34,30 @@ export class AgentCoreStack extends Stack {
   constructor(scope: Construct, id: string, props: AgentCoreStackProps) {
     super(scope, id, props);
 
-    const { spec } = props;
+    const { spec, twilioSecretArn } = props;
 
-    // Create AgentCoreApplication with all agents
+    // Import the secret from ARN
+    const twilioSecret = secretsmanager.Secret.fromSecretCompleteArn(
+      this,
+      'TwilioSecret',
+      twilioSecretArn
+    );
+
+    // Enhanced spec with secret ARN as environment variable
+    const enhancedSpec = {
+      ...spec,
+      runtimes: spec.runtimes.map(runtime => ({
+        ...runtime,
+        envVars: [
+          ...(runtime.envVars || []),
+          { name: 'TWILIO_SECRET_ARN', value: twilioSecretArn },
+        ],
+      })),
+    };
+
+    // Create AgentCoreApplication with enhanced spec
     this.application = new AgentCoreApplication(this, 'Application', {
-      spec,
+      spec: enhancedSpec,
     });
 
     // Get the runtime ARN from the first (and only) runtime
@@ -47,6 +72,10 @@ export class AgentCoreStack extends Stack {
     }
 
     this.runtimeArn = environment.runtime.runtimeArn;
+
+    // Grant runtime permission to read the secret
+    const runtimeRole = environment.runtime.role;
+    twilioSecret.grantRead(runtimeRole);
 
     // Stack-level outputs
     new CfnOutput(this, 'StackNameOutput', {

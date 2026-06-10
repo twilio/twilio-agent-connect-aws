@@ -1,18 +1,25 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { PythonFunction } from '@aws-cdk/aws-lambda-python-alpha';
 
 export interface LambdaStackProps extends cdk.StackProps {
   agentCoreRuntimeArn: string;
-  twilioConversationConfigurationId: string;
-  twilioAuthToken: string;
+  twilioSecretArn: string;
 }
 
 export class LambdaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: LambdaStackProps) {
     super(scope, id, props);
+
+    // Import the secret from ARN
+    const twilioSecret = secretsmanager.Secret.fromSecretCompleteArn(
+      this,
+      'TwilioSecret',
+      props.twilioSecretArn
+    );
 
     // Lambda function with Python dependencies
     const lambdaFunction = new PythonFunction(this, 'TacAgentcoreLambda', {
@@ -24,8 +31,7 @@ export class LambdaStack extends cdk.Stack {
       memorySize: 1024,
       environment: {
         AGENTCORE_RUNTIME_ARN: props.agentCoreRuntimeArn,
-        TWILIO_CONVERSATION_CONFIGURATION_ID: props.twilioConversationConfigurationId,
-        TWILIO_AUTH_TOKEN: props.twilioAuthToken,
+        TWILIO_SECRET_ARN: props.twilioSecretArn,
       },
     });
 
@@ -43,6 +49,9 @@ export class LambdaStack extends cdk.Stack {
         `${props.agentCoreRuntimeArn}/*`,
       ],
     }));
+
+    // Grant Lambda permission to read the secret
+    twilioSecret.grantRead(lambdaFunction);
 
     // Add Function URL (public)
     // Signature validation handled in Lambda handler

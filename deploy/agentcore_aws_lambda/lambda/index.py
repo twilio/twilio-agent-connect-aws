@@ -20,19 +20,33 @@ logger = get_logger(__name__)
 
 # Environment variables
 AGENTCORE_RUNTIME_ARN = os.environ['AGENTCORE_RUNTIME_ARN']
-TWILIO_CONVERSATION_CONFIGURATION_ID = os.environ['TWILIO_CONVERSATION_CONFIGURATION_ID']
-TWILIO_AUTH_TOKEN = os.environ['TWILIO_AUTH_TOKEN']
+TWILIO_SECRET_ARN = os.environ['TWILIO_SECRET_ARN']
 AWS_REGION = os.environ['AWS_REGION']
 
 # Initialize clients
 agent_core_client = boto3.client('bedrock-agentcore')
 agentcore_runtime_client = AgentCoreRuntimeClient(region=AWS_REGION)
-signature_validator = TwilioSignatureValidator(TWILIO_AUTH_TOKEN)
+secrets_client = boto3.client('secretsmanager', region_name=AWS_REGION)
+
+# Lazy-load secrets (cached after first invocation)
+_secrets_cache = None
+
+
+def _get_secrets():
+    """Fetch secrets from Secrets Manager (cached after first call)."""
+    global _secrets_cache
+    if _secrets_cache is None:
+        logger.info("Loading Twilio credentials from Secrets Manager")
+        response = secrets_client.get_secret_value(SecretId=TWILIO_SECRET_ARN)
+        _secrets_cache = json.loads(response['SecretString'])
+    return _secrets_cache
 
 
 def lambda_handler(event, context):
     """Route requests to appropriate handler."""
     # Validate Twilio signature
+    secrets = _get_secrets()
+    signature_validator = TwilioSignatureValidator(secrets['TWILIO_AUTH_TOKEN'])
     if not signature_validator.validate(event):
         return {
             'statusCode': 403,
@@ -77,10 +91,14 @@ def handle_voice_twiml(event):
             expires=300
         )
 
+        # Get conversation configuration ID from secrets
+        secrets = _get_secrets()
+        conversation_configuration_id = secrets['TWILIO_CONVERSATION_CONFIGURATION_ID']
+
         twiml = generate_twiml(
             options={
                 "websocket_url": websocket_url,
-                "conversation_configuration": TWILIO_CONVERSATION_CONFIGURATION_ID
+                "conversation_configuration": conversation_configuration_id
             }
         )
 

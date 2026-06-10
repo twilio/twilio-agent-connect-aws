@@ -15,6 +15,7 @@ graph TB
     end
 
     subgraph AWS["☁️ AWS Account"]
+        Secrets[🔐 Secrets Manager<br/>Twilio Credentials]
         Lambda[⚡ AWS Lambda<br/>Function URL]
 
         subgraph AgentCore["🤖 Bedrock AgentCore Runtime"]
@@ -38,11 +39,16 @@ graph TB
     Agent --> Maestro
     Agent --> Memory
     
+    %% Secrets Manager integrations
+    Lambda -.->|Read credentials| Secrets
+    Agent -.->|Read credentials| Secrets
+    
     Phone -->|Response| Customer
 
     style Customer fill:#e1f5ff
     style Twilio fill:#f0f0f0
     style AWS fill:#fff4e6
+    style Secrets fill:#ffe6e6
     style Lambda fill:#fff9c4
     style AgentCore fill:#f3e5f5
     style Agent fill:#e1bee7
@@ -52,6 +58,7 @@ graph TB
 
 - **AgentCore Runtime** - AI agent with TAC integration, HTTP and WebSocket endpoints
 - **Lambda Webhook Proxy** - Serverless webhook router with Function URLs
+- **Secrets Manager** - Encrypted storage for Twilio credentials
 
 ## Prerequisites
 

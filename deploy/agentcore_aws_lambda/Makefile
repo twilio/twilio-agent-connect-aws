@@ -1,4 +1,4 @@
-.PHONY: build deploy deploy-all deploy-agentcore deploy-lambda bootstrap clean help
+.PHONY: build deploy deploy-all deploy-secrets deploy-agentcore deploy-lambda bootstrap clean help
 
 # Load environment variables from .env file
 -include .env
@@ -14,15 +14,16 @@ help:
 	@echo "Available targets:"
 	@echo "  bootstrap        - Bootstrap CDK (one-time setup)"
 	@echo "  build            - Build agent code and CDK"
-	@echo "  deploy           - Build and deploy both stacks (recommended)"
-	@echo "  deploy-all       - Build and deploy both AgentCore and Lambda stacks"
+	@echo "  deploy           - Build and deploy all stacks (recommended)"
+	@echo "  deploy-all       - Build and deploy all stacks (Secrets + AgentCore + Lambda)"
+	@echo "  deploy-secrets   - Build and deploy only Secrets stack"
 	@echo "  deploy-agentcore - Build and deploy only AgentCore stack"
 	@echo "  deploy-lambda    - Build and deploy only Lambda stack"
 	@echo "  clean            - Clean build artifacts"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make bootstrap   # One-time setup"
-	@echo "  make deploy      # Build and deploy both stacks"
+	@echo "  make deploy      # Build and deploy all stacks"
 
 # Bootstrap CDK (one-time setup)
 bootstrap:
@@ -54,19 +55,30 @@ build:
 	@echo "Building CDK..."
 	cd cdk && npm install && npm run build
 
-# Deploy all stacks (AgentCore + Lambda)
+# Deploy all stacks (Secrets + AgentCore + Lambda)
 deploy-all: build
 ifndef AWS_PROFILE
 	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
 endif
-	@echo "Deploying all stacks (AgentCore + Lambda)..."
+	@echo "Deploying all stacks (Secrets + AgentCore + Lambda)..."
 	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx aws-cdk deploy --all --require-approval never
 	@echo ""
 	@echo "✓ All stacks deployed!"
 	@echo ""
 	@echo "View stack outputs:"
+	@echo "  aws cloudformation describe-stacks --stack-name TacSecretsStack --profile $(AWS_PROFILE)"
 	@echo "  aws cloudformation describe-stacks --stack-name TacAgentCoreStack --profile $(AWS_PROFILE)"
 	@echo "  aws cloudformation describe-stacks --stack-name TacLambdaStack --profile $(AWS_PROFILE)"
+
+# Deploy only Secrets stack
+deploy-secrets: build
+ifndef AWS_PROFILE
+	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
+endif
+	@echo "Deploying Secrets stack..."
+	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx aws-cdk deploy TacSecretsStack --require-approval never
+	@echo ""
+	@echo "✓ Secrets stack deployed!"
 
 # Deploy only AgentCore stack
 deploy-agentcore: build
@@ -74,6 +86,7 @@ ifndef AWS_PROFILE
 	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
 endif
 	@echo "Deploying AgentCore stack..."
+	@echo "Note: AgentCore depends on TacSecretsStack. Ensure TacSecretsStack is deployed first."
 	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx aws-cdk deploy TacAgentCoreStack --require-approval never
 	@echo ""
 	@echo "✓ AgentCore stack deployed!"
@@ -84,6 +97,7 @@ ifndef AWS_PROFILE
 	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
 endif
 	@echo "Deploying Lambda stack..."
+	@echo "Note: Lambda depends on TacSecretsStack and TacAgentCoreStack. Ensure both are deployed first."
 	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx aws-cdk deploy TacLambdaStack --require-approval never
 	@echo ""
 	@echo "✓ Lambda stack deployed!"
