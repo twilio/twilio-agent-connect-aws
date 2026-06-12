@@ -1,9 +1,11 @@
 """Lambda proxy for Twilio webhooks with AWS Bedrock AgentCore integration."""
 
+from __future__ import annotations
+
 import base64
 import json
 import os
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qs
 
 import boto3
@@ -12,6 +14,9 @@ from tac.channels.voice.twiml import generate_twiml
 from tac.core.logging import get_logger
 
 from validation import TwilioSignatureValidator
+
+if TYPE_CHECKING:
+    from mypy_boto3_bedrock_agentcore.client import BedrockAgentCoreClient
 
 logger = get_logger(__name__)
 
@@ -33,8 +38,8 @@ class TACAgentCoreLambdaProxy:
         agentcore_runtime_arn: str,
         twilio_auth_token: str,
         conversation_configuration_id: str,
-        agent_core_client: Any = None,
-        agentcore_runtime_client: Any = None,
+        agent_core_client: BedrockAgentCoreClient | None = None,
+        agentcore_runtime_client: AgentCoreRuntimeClient | None = None,
     ):
         """Initialize the lambda proxy.
 
