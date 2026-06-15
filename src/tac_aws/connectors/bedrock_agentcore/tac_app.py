@@ -9,7 +9,7 @@ from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from tac import TAC
 from tac.core.logging import get_logger
 
-from websocket_adapter import TACAgentCoreWebSocketAdapter
+from .websocket_adapter import TACAgentCoreWebSocketAdapter
 
 if TYPE_CHECKING:
     from tac.channels.sms import SMSChannel

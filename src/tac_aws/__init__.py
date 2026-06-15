@@ -6,6 +6,10 @@ Connectors:
     - StrandsConnector: AWS Strands SDK integration with multi-channel support
     - BedrockAgentCoreConnector: AWS Bedrock Agent Core integration with multi-channel support
 
+AgentCore Runtime:
+    - TACAgentCoreApp: AgentCore app adapter for TAC deployment
+    - TACAgentCoreLambdaProxy: Lambda function handler for AgentCore deployments
+
 Server:
     - TACAWSFastAPIServer: FastAPI server with AWS ALB header fixing for Twilio webhooks
 
@@ -17,6 +21,7 @@ from tac_aws._version import __version__
 
 # Import connectors
 from tac_aws.connectors import BedrockAgentCoreConnector, StrandsConnector
+from tac_aws.connectors.bedrock_agentcore import TACAgentCoreApp, TACAgentCoreLambdaProxy
 
 # Import server utilities (optional, requires tac[server])
 try:
@@ -32,6 +37,9 @@ __all__ = [
     # Connectors
     "BedrockAgentCoreConnector",
     "StrandsConnector",
+    # AgentCore Runtime
+    "TACAgentCoreApp",
+    "TACAgentCoreLambdaProxy",
 ]
 
 if _has_server:

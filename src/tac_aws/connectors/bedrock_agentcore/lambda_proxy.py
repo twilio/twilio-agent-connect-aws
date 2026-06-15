@@ -13,7 +13,7 @@ from bedrock_agentcore.runtime import AgentCoreRuntimeClient
 from tac.channels.voice.twiml import generate_twiml
 from tac.core.logging import get_logger
 
-from validation import TwilioSignatureValidator
+from .validation import TwilioSignatureValidator
 
 if TYPE_CHECKING:
     from mypy_boto3_bedrock_agentcore.client import BedrockAgentCoreClient
