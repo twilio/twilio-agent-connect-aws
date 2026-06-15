@@ -33,6 +33,7 @@ async function main() {
   const agentCoreStack = new AgentCoreStack(app, 'TacAgentCoreStack', {
     spec: spec,
     twilioSecretArn: secretsStack.twilioSecret.secretArn,
+    twilioLogLevel: envConfig.twilioLogLevel,
     env: {
       account: envConfig.awsAccountId,
       region: envConfig.awsRegion,

@@ -27,6 +27,16 @@ export class SecretsStack extends cdk.Stack {
     // Create secret with all Twilio credentials
     // Using secretObjectValue allows CDK to update the secret when .env changes
     // RemovalPolicy.RETAIN prevents accidental deletion when stack is destroyed
+    //
+    // SECURITY NOTE: unsafePlainText() means these values will appear in:
+    // - CloudFormation template (cdk.out/ directory)
+    // - CloudFormation console (visible to users with console access)
+    // - cdk diff output
+    // This is acceptable for local development deployments, but for production
+    // environments, consider creating the secret manually via AWS CLI instead:
+    //   aws secretsmanager create-secret --name tac/twilio-credentials \
+    //     --secret-string '{"TWILIO_ACCOUNT_SID":"...","TWILIO_AUTH_TOKEN":"...",...}'
+    // Then import it with: Secret.fromSecretNameV2(this, 'Secret', 'tac/twilio-credentials')
     this.twilioSecret = new secretsmanager.Secret(this, 'TwilioCredentials', {
       secretName: 'tac/twilio-credentials',
       description: 'Twilio credentials for TAC AgentCore deployment',

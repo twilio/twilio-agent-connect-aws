@@ -1,7 +1,5 @@
 """
-TAC AgentCore App adapter.
-
-Integrates TAC channels with BedrockAgentCoreApp for serverless deployment.
+TAC adapter for AWS Bedrock AgentCore Runtime.
 """
 import json
 from tac import TAC
@@ -16,8 +14,8 @@ class TACAgentCoreApp:
     """
     App adapter for TAC on AWS Bedrock AgentCore.
 
-    Integrates TAC channels with BedrockAgentCoreApp for serverless deployment.
-    Handles both HTTP (SMS) and WebSocket (Voice) protocols.
+    Integrates TAC channels with BedrockAgentCoreApp for TAC deployment in AgentCore Runtime.
+    Handles both HTTP (messaging) and WebSocket (voice) protocols.
     """
     def __init__(self, tac: TAC, voice_channel, sms_channel):
         self.tac = tac
@@ -25,7 +23,9 @@ class TACAgentCoreApp:
         self.sms_channel = sms_channel
         self.app = BedrockAgentCoreApp()
 
-        # Register HTTP entrypoint for SMS
+        # Register HTTP entrypoint for messaging (SMS, WhatsApp)
+        # Note: Twilio webhook signature validation is performed in the Lambda proxy
+        # before invoking AgentCore, so we don't need to validate it here.
         @self.app.entrypoint
         async def http_handler(payload):
             try:

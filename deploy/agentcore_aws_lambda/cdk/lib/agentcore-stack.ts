@@ -16,6 +16,11 @@ export interface AgentCoreStackProps extends StackProps {
    * ARN of the Secrets Manager secret containing Twilio credentials.
    */
   twilioSecretArn: string;
+
+  /**
+   * Twilio log level (INFO, DEBUG, WARNING, ERROR)
+   */
+  twilioLogLevel: string;
 }
 
 /**
@@ -34,7 +39,7 @@ export class AgentCoreStack extends Stack {
   constructor(scope: Construct, id: string, props: AgentCoreStackProps) {
     super(scope, id, props);
 
-    const { spec, twilioSecretArn } = props;
+    const { spec, twilioSecretArn, twilioLogLevel } = props;
 
     // Import the secret from ARN
     const twilioSecret = secretsmanager.Secret.fromSecretCompleteArn(
@@ -43,7 +48,7 @@ export class AgentCoreStack extends Stack {
       twilioSecretArn
     );
 
-    // Enhanced spec with secret ARN as environment variable
+    // Enhanced spec with secret ARN and log level as environment variables
     const enhancedSpec = {
       ...spec,
       runtimes: spec.runtimes.map(runtime => ({
@@ -51,6 +56,7 @@ export class AgentCoreStack extends Stack {
         envVars: [
           ...(runtime.envVars || []),
           { name: 'TWILIO_SECRET_ARN', value: twilioSecretArn },
+          { name: 'TWILIO_LOG_LEVEL', value: twilioLogLevel },
         ],
       })),
     };
