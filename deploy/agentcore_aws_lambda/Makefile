@@ -36,7 +36,7 @@ ifndef AWS_REGION
 	$(error AWS_REGION is not set in .env file)
 endif
 	@echo "Installing CDK dependencies..."
-	cd cdk && npm install
+	cd cdk && npm ci
 	@echo ""
 	@echo "Building CDK TypeScript..."
 	cd cdk && npm run build
@@ -52,7 +52,7 @@ build:
 	cd agent && uv sync --frozen
 	@echo ""
 	@echo "Building CDK..."
-	cd cdk && npm install && npm run build
+	cd cdk && npm ci && npm run build
 
 # Deploy all stacks (AgentCore + Lambda)
 deploy-all: build
