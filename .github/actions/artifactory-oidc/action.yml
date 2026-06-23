@@ -1,0 +1,61 @@
+name: "Artifactory OIDC Auth"
+description: "Exchange GitHub OIDC token for Artifactory access and configure uv/pip indexes"
+
+inputs:
+  artifactory-url:
+    description: "Base Artifactory URL"
+    required: true
+  oidc-provider-name:
+    description: "OIDC provider name configured in Artifactory"
+    required: false
+    default: "github-actions"
+  pypi-repo:
+    description: "Artifactory virtual PyPI repository name"
+    required: false
+    default: "virtual-pypi-thirdparty"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Exchange GitHub OIDC token for Artifactory token
+      shell: bash
+      env:
+        ARTIFACTORY_URL: ${{ inputs.artifactory-url }}
+        OIDC_PROVIDER_NAME: ${{ inputs.oidc-provider-name }}
+        PYPI_REPO: ${{ inputs.pypi-repo }}
+      run: |
+        set -euo pipefail
+        if [ -z "${ARTIFACTORY_URL:-}" ]; then
+          echo "::error::ARTIFACTORY_URL input is not set"; exit 1
+        fi
+
+        # 1) Ask GitHub for an OIDC JWT
+        OIDC_JWT=$(curl -sS \
+          "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${ARTIFACTORY_URL}" \
+          -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" | jq -r '.value')
+
+        if [ -z "$OIDC_JWT" ] || [ "$OIDC_JWT" = "null" ]; then
+          echo "::error::Failed to obtain GitHub OIDC token"; exit 1
+        fi
+
+        # 2) Exchange the JWT for a short-lived Artifactory access token
+        ART_TOKEN=$(curl -sS "${ARTIFACTORY_URL}/access/api/v1/oidc/token" \
+          -H 'Content-Type: application/json' \
+          -d "{\"grant_type\":\"urn:ietf:params:oauth:grant-type:token-exchange\",
+               \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\",
+               \"subject_token\":\"${OIDC_JWT}\",
+               \"provider_name\":\"${OIDC_PROVIDER_NAME}\"}" | jq -r '.access_token')
+
+        if [ -z "$ART_TOKEN" ] || [ "$ART_TOKEN" = "null" ]; then
+          echo "::error::OIDC token exchange failed — check the identity mapping subject and provider_name"; exit 1
+        fi
+        echo "::add-mask::$ART_TOKEN"
+
+        # 3) Configure uv and pip to resolve through Artifactory
+        HOST=$(echo "${ARTIFACTORY_URL}" | sed -E 's#^https?://##')
+        INDEX_URL="https://token:${ART_TOKEN}@${HOST}/artifactory/api/pypi/${PYPI_REPO}/simple/"
+
+        echo "::add-mask::${INDEX_URL}"
+        echo "UV_INDEX_URL=${INDEX_URL}" >> "$GITHUB_ENV"
+        echo "PIP_INDEX_URL=${INDEX_URL}" >> "$GITHUB_ENV"
+        echo "✅ uv and pip configured to resolve through Artifactory (${PYPI_REPO})"
