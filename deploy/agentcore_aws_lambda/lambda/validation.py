@@ -34,8 +34,8 @@ class TwilioSignatureValidator:
         Returns:
             True if signature is valid, False otherwise
         """
-        headers = event.get('headers', {})
-        signature = headers.get('x-twilio-signature', '')
+        headers = event.get("headers", {})
+        signature = headers.get("x-twilio-signature", "")
 
         if not signature:
             logger.warning("Missing X-Twilio-Signature header")
@@ -43,10 +43,10 @@ class TwilioSignatureValidator:
 
         url = self._construct_request_url(event, headers)
         body = self._decode_request_body(event)
-        content_type = headers.get('content-type', '')
+        content_type = headers.get("content-type", "")
 
         # Determine validation data based on content type
-        if 'application/x-www-form-urlencoded' in content_type:
+        if "application/x-www-form-urlencoded" in content_type:
             # Form-encoded: parse body with blank values preserved
             validation_data = dict(parse_qsl(body, keep_blank_values=True))
         else:
@@ -63,9 +63,9 @@ class TwilioSignatureValidator:
     @staticmethod
     def _construct_request_url(event: dict, headers: dict) -> str:
         """Construct full request URL from Lambda event."""
-        domain = headers.get('host', '')
-        path = event.get('rawPath', event.get('path', '/'))
-        query_string = event.get('rawQueryString', '')
+        domain = headers.get("host", "")
+        path = event.get("rawPath", event.get("path", "/"))
+        query_string = event.get("rawQueryString", "")
 
         url = f"https://{domain}{path}"
         if query_string:
@@ -76,10 +76,10 @@ class TwilioSignatureValidator:
     @staticmethod
     def _decode_request_body(event: dict) -> str:
         """Decode request body, handling base64 encoding if present."""
-        body = event.get('body', '')
-        is_base64 = event.get('isBase64Encoded', False)
+        body = event.get("body", "")
+        is_base64 = event.get("isBase64Encoded", False)
 
         if is_base64 and body:
-            body = base64.b64decode(body).decode('utf-8')
+            body = base64.b64decode(body).decode("utf-8")
 
         return body

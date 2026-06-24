@@ -2,16 +2,19 @@
 TAC Agent for AWS Bedrock AgentCore with Strands AI
 Simplified using StrandsConnector and TACAWSBedrockAgentCoreServer
 """
+
 import json
+
+from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from strands import Agent
 from strands.models import BedrockModel
 from strands.session import FileSessionManager
 from tac import TAC, TACConfig
 from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
-from tac.models.session import ConversationSession
 from tac.core.logging import get_logger
-from bedrock_agentcore.runtime import BedrockAgentCoreApp
+from tac.models.session import ConversationSession
+
 from tac_aws.connectors import StrandsConnector
 
 logger = get_logger(__name__)
@@ -35,9 +38,8 @@ def create_agent(context: ConversationSession) -> Agent:
         model=BedrockModel(model_id="amazon.nova-pro-v1:0"),
         system_prompt="You are a helpful customer service agent. Keep responses short and conversational — one or two sentences. Do not use markdown, asterisks, bullets, or emojis.",
         session_manager=FileSessionManager(
-            session_id=context.conversation_id,
-            storage_dir="/mnt/workspace/.sessions"
-        )
+            session_id=context.conversation_id, storage_dir="/mnt/workspace/.sessions"
+        ),
     )
 
 
@@ -57,6 +59,7 @@ class WelcomeGreetingWebSocket:
     Required for Twilio ConversationRelay with conversationConfiguration.
     Without an initial greeting, ConversationRelay won't activate speech detection.
     """
+
     def __init__(self, ws):
         self._ws = ws
         self._setup_received = False
@@ -64,13 +67,13 @@ class WelcomeGreetingWebSocket:
     async def receive_json(self):
         data = await self._ws.receive_json()
 
-        if not self._setup_received and data.get('type') == 'setup':
+        if not self._setup_received and data.get("type") == "setup":
             self._setup_received = True
             try:
                 welcome_msg = {
                     "type": "text",
                     "token": "Hello! How can I assist you today?",
-                    "last": True
+                    "last": True,
                 }
                 await self._ws.send_text(json.dumps(welcome_msg))
             except Exception as e:
@@ -95,6 +98,7 @@ class TACBedrockAgentCoreApp:
     Integrates TAC channels with BedrockAgentCoreApp for serverless deployment.
     Handles both HTTP (SMS) and WebSocket (Voice) protocols.
     """
+
     def __init__(self, tac: TAC, voice_channel, sms_channel):
         self.tac = tac
         self.voice_channel = voice_channel
