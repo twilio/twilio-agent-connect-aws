@@ -76,13 +76,14 @@ Documentation = "https://www.twilio.com/docs/conversations/agent-connect"
 Repository = "https://github.com/twilio/twilio-agent-connect-aws"
 Issues = "https://github.com/twilio/twilio-agent-connect-aws/issues"
 
-[tool.uv]
-# Supply-chain hardening: refuse to resolve any package version uploaded to
-# PyPI within the last 2 days, quarantining freshly-published (potentially
-# compromised) releases. Recorded in uv.lock, so `uv sync --frozen` installs
-# the vetted locked versions without re-resolving; the cooldown only gates
-# `uv lock` / `uv add` (i.e. intentional dependency updates).
-exclude-newer = "2 days"
+# Supply-chain hardening (version-age cooldown):
+# Previously `[tool.uv] exclude-newer = "2 days"`, but that cannot work when
+# resolving through Artifactory — the proxied PyPI index exposes no upload-time
+# metadata (no PEP 700 / data-upload-time), so uv rejects every version
+# ("missing an upload date"). The cooldown is now enforced SERVER-SIDE in
+# Artifactory curation (48h version-age policy) for all consumers, see
+# artifactory-cloud-twilio-config modules/curation. Do not re-add exclude-newer
+# while resolving through Artifactory.
 
 [build-system]
 requires = ["hatchling"]
