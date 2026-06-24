@@ -16,11 +16,12 @@ env:
 jobs:
   lint:
     name: Linting
-    runs-on: ubuntu-x64
+    runs-on: ${{ github.repository_owner == 'twilio' && 'ubuntu-x64' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Authenticate with Artifactory
+        if: github.repository_owner == 'twilio'
         uses: ./.github/actions/artifactory-oidc
 
       - name: Install uv
@@ -61,11 +62,12 @@ jobs:
 
   type-check:
     name: Type Check
-    runs-on: ubuntu-x64
+    runs-on: ${{ github.repository_owner == 'twilio' && 'ubuntu-x64' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Authenticate with Artifactory
+        if: github.repository_owner == 'twilio'
         uses: ./.github/actions/artifactory-oidc
 
       - name: Install uv
@@ -99,7 +101,7 @@ jobs:
 
   test:
     name: Test - Python ${{ matrix.python-version }}
-    runs-on: ubuntu-x64
+    runs-on: ${{ github.repository_owner == 'twilio' && 'ubuntu-x64' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -108,6 +110,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Authenticate with Artifactory
+        if: github.repository_owner == 'twilio'
         uses: ./.github/actions/artifactory-oidc
 
       - name: Install uv
@@ -140,11 +143,12 @@ jobs:
 
   build:
     name: Build Package
-    runs-on: ubuntu-x64
+    runs-on: ${{ github.repository_owner == 'twilio' && 'ubuntu-x64' || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Authenticate with Artifactory
+        if: github.repository_owner == 'twilio'
         uses: ./.github/actions/artifactory-oidc
 
       - name: Install uv
@@ -178,7 +182,7 @@ jobs:
   all-checks:
     name: All Checks Passed
     needs: [lint, type-check, test, build]
-    runs-on: ubuntu-x64
+    runs-on: ${{ github.repository_owner == 'twilio' && 'ubuntu-x64' || 'ubuntu-latest' }}
     if: always()
     steps:
       - name: Check all job statuses

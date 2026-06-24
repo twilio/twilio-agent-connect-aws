@@ -3,7 +3,7 @@ description: "Exchange GitHub OIDC token for Artifactory access and configure uv
 
 inputs:
   artifactory-url:
-    description: "Base Artifactory URL (defaults to ARTIFACTORY_URL env var)"
+    description: "Base Artifactory platform URL. Falls back to ARTIFACTORY_URL env var if not provided."
     required: false
     default: ""
   oidc-provider-name:

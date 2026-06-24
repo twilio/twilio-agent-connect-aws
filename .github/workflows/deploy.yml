@@ -10,7 +10,7 @@ env:
 jobs:
   test:
     name: Test - Python ${{ matrix.python-version }}
-    runs-on: ubuntu-x64
+    runs-on: ${{ github.repository_owner == 'twilio' && 'ubuntu-x64' || 'ubuntu-latest' }}
     if: github.repository_owner == 'twilio'
     permissions:
       contents: read
@@ -39,7 +39,7 @@ jobs:
   deploy:
     name: Publish to PyPI
     needs: [test]
-    runs-on: ubuntu-x64
+    runs-on: ${{ github.repository_owner == 'twilio' && 'ubuntu-x64' || 'ubuntu-latest' }}
     if: github.repository_owner == 'twilio'
     environment: pypi
     permissions:
