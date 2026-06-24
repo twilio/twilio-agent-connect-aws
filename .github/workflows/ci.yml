@@ -16,12 +16,12 @@ env:
 jobs:
   lint:
     name: Linting
-    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'ubuntu-x64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Authenticate with Artifactory
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: ./.github/actions/artifactory-oidc
 
       - name: Install uv
@@ -62,12 +62,12 @@ jobs:
 
   type-check:
     name: Type Check
-    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'ubuntu-x64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Authenticate with Artifactory
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: ./.github/actions/artifactory-oidc
 
       - name: Install uv
@@ -101,7 +101,7 @@ jobs:
 
   test:
     name: Test - Python ${{ matrix.python-version }}
-    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'ubuntu-x64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
     strategy:
       fail-fast: false
       matrix:
@@ -110,7 +110,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Authenticate with Artifactory
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: ./.github/actions/artifactory-oidc
 
       - name: Install uv
@@ -143,12 +143,12 @@ jobs:
 
   build:
     name: Build Package
-    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'ubuntu-x64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Authenticate with Artifactory
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         uses: ./.github/actions/artifactory-oidc
 
       - name: Install uv
@@ -182,7 +182,7 @@ jobs:
   all-checks:
     name: All Checks Passed
     needs: [lint, type-check, test, build]
-    runs-on: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'ubuntu-x64' || 'ubuntu-latest' }}
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
     if: always()
     steps:
       - name: Check all job statuses
