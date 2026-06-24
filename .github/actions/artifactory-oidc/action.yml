@@ -69,6 +69,16 @@ runs:
         fi
         echo "::add-mask::$ART_TOKEN"
 
+        # --- DIAGNOSTIC: probe the repo read directly so we can tell whether the
+        # 401 is a token-format problem (#1) or a build-isolation problem (#2).
+        # Tests both auth styles against the pypi simple index for `hatchling`.
+        SIMPLE="${ARTIFACTORY_URL}/artifactory/api/pypi/${PYPI_REPO}/simple/hatchling/"
+        echo "DIAG: GET ${ARTIFACTORY_URL}/.../${PYPI_REPO}/simple/hatchling/"
+        echo "DIAG bearer-header  http=$(curl -sS -o /dev/null -w '%{http_code}' -H "Authorization: Bearer ${ART_TOKEN}" "$SIMPLE")"
+        echo "DIAG basic -u token http=$(curl -sS -o /dev/null -w '%{http_code}' -u "token:${ART_TOKEN}" "$SIMPLE")"
+        echo "DIAG url-embedded   http=$(curl -sS -o /dev/null -w '%{http_code}' "https://token:${ART_TOKEN}@$(echo "${ARTIFACTORY_URL}" | sed -E 's#^https?://##')/artifactory/api/pypi/${PYPI_REPO}/simple/hatchling/")"
+        # --- END DIAGNOSTIC
+
         # 3) Configure uv and pip to resolve through Artifactory
         HOST=$(echo "${ARTIFACTORY_URL}" | sed -E 's#^https?://##')
         INDEX_URL="https://token:${ART_TOKEN}@${HOST}/artifactory/api/pypi/${PYPI_REPO}/simple/"
