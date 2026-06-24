@@ -69,6 +69,21 @@ runs:
         fi
         echo "::add-mask::$ART_TOKEN"
 
+        # --- DIAGNOSTIC: does the index expose PEP 700 `upload-time`? uv needs it
+        # for `exclude-newer`; if absent, exclude-newer rejects all versions.
+        # Probe both the JSON simple API (PEP 691/700) and the HTML simple index.
+        PROBE="${ARTIFACTORY_URL}/artifactory/api/pypi/${PYPI_REPO}/simple/hatchling/"
+        echo "DIAG ---- JSON simple API (Accept: vnd.pypi.simple.v1+json) ----"
+        JSON=$(curl -sS -H "Authorization: Bearer ${ART_TOKEN}" -H 'Accept: application/vnd.pypi.simple.v1+json' "$PROBE")
+        echo "DIAG json content-type/snippet:"; echo "$JSON" | head -c 500; echo
+        echo "DIAG json has upload-time? -> $(echo "$JSON" | grep -c 'upload-time' || true) occurrences"
+        echo "DIAG json meta-version    -> $(echo "$JSON" | jq -r '.meta["api-version"] // "n/a"' 2>/dev/null)"
+        echo "DIAG ---- HTML simple index (data-upload-time attr) ----"
+        HTML=$(curl -sS -H "Authorization: Bearer ${ART_TOKEN}" "$PROBE")
+        echo "DIAG html has data-upload-time? -> $(echo "$HTML" | grep -c 'data-upload-time' || true) occurrences"
+        echo "DIAG html sample line:"; echo "$HTML" | grep -oE '<a [^>]*hatchling-1\.30[^>]*>' | head -1
+        # --- END DIAGNOSTIC
+
         # 3) Configure uv and pip to resolve through Artifactory.
         #
         # JFrog access tokens authenticate as a Bearer token, NOT as basic auth
