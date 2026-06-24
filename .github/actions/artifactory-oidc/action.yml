@@ -29,7 +29,8 @@ runs:
           echo "::error::ARTIFACTORY_URL input is not set"; exit 1
         fi
 
-        # 1) Ask GitHub for an OIDC JWT
+        # 1) Ask GitHub for an OIDC JWT. audience must match what the Artifactory
+        #    OIDC config expects (we left audience unset in TF, so use the URL).
         OIDC_JWT=$(curl -sS \
           "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${ARTIFACTORY_URL}" \
           -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" | jq -r '.value')
@@ -38,16 +39,30 @@ runs:
           echo "::error::Failed to obtain GitHub OIDC token"; exit 1
         fi
 
-        # 2) Exchange the JWT for a short-lived Artifactory access token
-        ART_TOKEN=$(curl -sS "${ARTIFACTORY_URL}/access/api/v1/oidc/token" \
+        # Decode the JWT payload so we can confirm the sub, aud and iss claims
+        # match the Artifactory OIDC config + mapping.
+        decode_seg() { local s="${1}"; local m=$(( ${#s} % 4 )); [ $m -ne 0 ] && s="${s}$(printf '=%.0s' $(seq 1 $((4-m))))"; echo "$s" | tr '_-' '/+' | base64 -d 2>/dev/null; }
+        PAYLOAD=$(decode_seg "$(echo "$OIDC_JWT" | cut -d. -f2)")
+        echo "OIDC token claims:"
+        echo "  sub = $(echo "$PAYLOAD" | jq -r '.sub')"
+        echo "  aud = $(echo "$PAYLOAD" | jq -r '.aud')"
+        echo "  iss = $(echo "$PAYLOAD" | jq -r '.iss')"
+
+        # 2) Exchange the JWT for a short-lived Artifactory access token.
+        #    Capture the FULL response so JFrog's error is visible on failure.
+        RESP=$(curl -sS "${ARTIFACTORY_URL}/access/api/v1/oidc/token" \
           -H 'Content-Type: application/json' \
           -d "{\"grant_type\":\"urn:ietf:params:oauth:grant-type:token-exchange\",
                \"subject_token_type\":\"urn:ietf:params:oauth:token-type:id_token\",
                \"subject_token\":\"${OIDC_JWT}\",
-               \"provider_name\":\"${OIDC_PROVIDER_NAME}\"}" | jq -r '.access_token')
+               \"provider_name\":\"${OIDC_PROVIDER_NAME}\"}")
 
-        if [ -z "$ART_TOKEN" ] || [ "$ART_TOKEN" = "null" ]; then
-          echo "::error::OIDC token exchange failed — check the identity mapping subject and provider_name"; exit 1
+        ART_TOKEN=$(echo "$RESP" | jq -r '.access_token // empty')
+
+        if [ -z "$ART_TOKEN" ]; then
+          echo "::error::OIDC token exchange failed. Raw response (token field redacted):"
+          echo "$RESP" | jq 'if .access_token then .access_token="<redacted>" else . end' 2>/dev/null || echo "$RESP"
+          exit 1
         fi
         echo "::add-mask::$ART_TOKEN"
 
