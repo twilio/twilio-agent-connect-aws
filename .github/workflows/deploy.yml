@@ -8,6 +8,7 @@ jobs:
   test:
     name: Test - Python ${{ matrix.python-version }}
     runs-on: ubuntu-x64
+    if: github.repository_owner == 'twilio'
     permissions:
       contents: read
       id-token: write
@@ -28,7 +29,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: uv sync --all-extras --all-packages
+      - run: uv sync --frozen --all-extras --all-packages
       - run: uv run ruff check src/tac_aws getting_started
       - run: uv run ruff format --check src/tac_aws getting_started
       - run: MYPYPATH=src uv run mypy src/tac_aws getting_started
@@ -38,6 +39,7 @@ jobs:
     name: Publish to PyPI
     needs: [test]
     runs-on: ubuntu-x64
+    if: github.repository_owner == 'twilio'
     environment: pypi
     permissions:
       contents: read
