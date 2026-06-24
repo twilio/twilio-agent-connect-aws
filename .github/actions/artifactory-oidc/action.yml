@@ -3,8 +3,9 @@ description: "Exchange GitHub OIDC token for Artifactory access and configure uv
 
 inputs:
   artifactory-url:
-    description: "Base Artifactory URL"
-    required: true
+    description: "Base Artifactory URL (defaults to ARTIFACTORY_URL env var)"
+    required: false
+    default: ""
   oidc-provider-name:
     description: "OIDC provider name configured in Artifactory"
     required: false
@@ -20,13 +21,15 @@ runs:
     - name: Exchange GitHub OIDC token for Artifactory token
       shell: bash
       env:
-        ARTIFACTORY_URL: ${{ inputs.artifactory-url }}
+        INPUT_ARTIFACTORY_URL: ${{ inputs.artifactory-url }}
         OIDC_PROVIDER_NAME: ${{ inputs.oidc-provider-name }}
         PYPI_REPO: ${{ inputs.pypi-repo }}
       run: |
         set -euo pipefail
-        if [ -z "${ARTIFACTORY_URL:-}" ]; then
-          echo "::error::ARTIFACTORY_URL input is not set"; exit 1
+        # Use input if provided, otherwise fall back to ARTIFACTORY_URL env var
+        ARTIFACTORY_URL="${INPUT_ARTIFACTORY_URL:-${ARTIFACTORY_URL:-}}"
+        if [ -z "${ARTIFACTORY_URL}" ]; then
+          echo "::error::ARTIFACTORY_URL is not set (pass as input or set as env var)"; exit 1
         fi
 
         # 1) Ask GitHub for an OIDC JWT. audience must match what the Artifactory
