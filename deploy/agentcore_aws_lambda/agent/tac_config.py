@@ -42,7 +42,7 @@ def get_twilio_credentials() -> dict:
     try:
         response = secrets_client.get_secret_value(SecretId=secret_arn)
         credentials = json.loads(response["SecretString"])
-        logger.info(f"Successfully loaded Twilio credentials from Secrets Manager: {secret_arn}")
+        logger.info("Successfully loaded Twilio credentials from Secrets Manager")
         return credentials
     except Exception as e:
         logger.error(f"Failed to fetch Twilio credentials from Secrets Manager: {e}", exc_info=True)

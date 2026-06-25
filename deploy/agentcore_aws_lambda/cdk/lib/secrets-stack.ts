@@ -8,19 +8,10 @@ export class SecretsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Create secret with placeholder values
-    // Real values populated via 'make secret-update' after deployment
+    // Create empty secret resource (populated via 'make secret-update' after deployment)
     this.twilioSecret = new secretsmanager.Secret(this, 'TwilioCredentials', {
       secretName: 'tac/twilio-credentials',
-      description: 'Twilio credentials and configuration for TAC (auto-updated by make deploy)',
-      secretObjectValue: {
-        TWILIO_ACCOUNT_SID: cdk.SecretValue.unsafePlainText('PLACEHOLDER'),
-        TWILIO_AUTH_TOKEN: cdk.SecretValue.unsafePlainText('PLACEHOLDER'),
-        TWILIO_API_KEY: cdk.SecretValue.unsafePlainText('PLACEHOLDER'),
-        TWILIO_API_SECRET: cdk.SecretValue.unsafePlainText('PLACEHOLDER'),
-        TWILIO_PHONE_NUMBER: cdk.SecretValue.unsafePlainText('PLACEHOLDER'),
-        TWILIO_CONVERSATION_CONFIGURATION_ID: cdk.SecretValue.unsafePlainText('PLACEHOLDER'),
-      },
+      description: 'Twilio credentials and configuration for TAC',
     });
 
     // Output secret ARN for cross-stack references

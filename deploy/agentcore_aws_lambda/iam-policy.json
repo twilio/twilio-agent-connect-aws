@@ -163,10 +163,20 @@
       "Resource": "arn:aws:iam::*:role/cdk-*"
     },
     {
-      "Sid": "SecretsManagerDeploy",
+      "Sid": "SecretsManagerCreate",
+      "Effect": "Allow",
+      "Action": "secretsmanager:CreateSecret",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "secretsmanager:Name": "tac/twilio-credentials"
+        }
+      }
+    },
+    {
+      "Sid": "SecretsManagerUpdate",
       "Effect": "Allow",
       "Action": [
-        "secretsmanager:CreateSecret",
         "secretsmanager:DescribeSecret",
         "secretsmanager:PutSecretValue",
         "secretsmanager:TagResource"

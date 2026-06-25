@@ -57,13 +57,14 @@ def get_twilio_credentials():
         response = secrets_client.get_secret_value(SecretId=TWILIO_SECRET_ARN)
         credentials = json.loads(response["SecretString"])
 
-        # Validate credentials aren't placeholders
-        for key, value in credentials.items():
-            if str(value).startswith("PLACEHOLDER_"):
-                raise ValueError(
-                    f"Secret contains placeholder value for {key}. "
-                    f"Run 'make secret-update' to set real Twilio credentials."
-                )
+        # Validate required credentials have non-empty values
+        if not credentials.get("TWILIO_AUTH_TOKEN") or not credentials.get(
+            "TWILIO_CONVERSATION_CONFIGURATION_ID"
+        ):
+            raise ValueError(
+                "Secret missing or empty credentials. "
+                "Run 'make secret-update' to populate Twilio credentials."
+            )
 
         # Cache for future invocations
         _twilio_credentials = credentials
