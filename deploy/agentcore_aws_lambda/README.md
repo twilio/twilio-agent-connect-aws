@@ -10,7 +10,7 @@ graph TB
 
     subgraph Twilio["☁️ Twilio Cloud"]
         Phone[📱 Phone Number<br/>+1-XXX-XXX-XXXX]
-        Maestro[💬 Conversations<br/>Maestro API]
+        Orchestrator[💬 Conversations<br/>Conversation Orchestrator]
         Memory[🧠 Memory Service<br/>Profile & Context]
     end
 
@@ -35,7 +35,7 @@ graph TB
     Agent -->|4. SMS Response| Phone
     
     %% AgentCore integrations
-    Agent --> Maestro
+    Agent --> Orchestrator
     Agent --> Memory
     
     Phone -->|Response| Customer
@@ -58,7 +58,7 @@ graph TB
 ### Required Tools
 
 - **[AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)** - Command-line tool for AWS
-- **[Node.js 20+](https://nodejs.org/)** - For CDK infrastructure
+- **[Node.js 24+](https://nodejs.org/)** - For CDK infrastructure
 - **[Python 3.10+](https://www.python.org/downloads/)** - For agent code
 - **[uv](https://docs.astral.sh/uv/getting-started/installation/)** - Python package manager
 - **[Docker](https://docs.docker.com/get-docker/)** - For Lambda packaging (must be running)
