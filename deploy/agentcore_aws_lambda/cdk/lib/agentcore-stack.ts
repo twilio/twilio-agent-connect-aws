@@ -3,6 +3,7 @@ import {
   type AgentCoreProjectSpec,
 } from '@aws/agentcore-cdk';
 import { CfnOutput, Stack, type StackProps } from 'aws-cdk-lib';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 export interface AgentCoreStackProps extends StackProps {
@@ -10,6 +11,11 @@ export interface AgentCoreStackProps extends StackProps {
    * The AgentCore project specification containing agents, memories, and credentials.
    */
   spec: AgentCoreProjectSpec;
+
+  /**
+   * Twilio credentials secret (for granting read access to AgentCore runtime)
+   */
+  twilioSecret: secretsmanager.ISecret;
 }
 
 /**
@@ -47,6 +53,9 @@ export class AgentCoreStack extends Stack {
     }
 
     this.runtimeArn = environment.runtime.runtimeArn;
+
+    // Grant AgentCore runtime permission to read Twilio credentials
+    props.twilioSecret.grantRead(environment.runtime.role);
 
     // Stack-level outputs
     new CfnOutput(this, 'StackNameOutput', {

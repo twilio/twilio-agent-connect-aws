@@ -1,13 +1,13 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { PythonFunction } from '@aws-cdk/aws-lambda-python-alpha';
 
 export interface LambdaStackProps extends cdk.StackProps {
   agentCoreRuntimeArn: string;
-  twilioConversationConfigurationId: string;
-  twilioAuthToken: string;
+  twilioSecret: secretsmanager.ISecret;
 }
 
 export class LambdaStack extends cdk.Stack {
@@ -24,10 +24,12 @@ export class LambdaStack extends cdk.Stack {
       memorySize: 1024,
       environment: {
         AGENTCORE_RUNTIME_ARN: props.agentCoreRuntimeArn,
-        TWILIO_CONVERSATION_CONFIGURATION_ID: props.twilioConversationConfigurationId,
-        TWILIO_AUTH_TOKEN: props.twilioAuthToken,
+        TWILIO_SECRET_ARN: props.twilioSecret.secretArn,
       },
     });
+
+    // Grant Lambda permission to read Twilio credentials and config from Secrets Manager
+    props.twilioSecret.grantRead(lambdaFunction);
 
     // Grant permissions to invoke AgentCore
     // InvokeAgentRuntime: For SMS HTTP invocations

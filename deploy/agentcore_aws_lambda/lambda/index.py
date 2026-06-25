@@ -19,13 +19,31 @@ logger = get_logger(__name__)
 
 # Environment variables
 AGENTCORE_RUNTIME_ARN = os.environ["AGENTCORE_RUNTIME_ARN"]
-TWILIO_CONVERSATION_CONFIGURATION_ID = os.environ["TWILIO_CONVERSATION_CONFIGURATION_ID"]
-TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
+TWILIO_SECRET_ARN = os.environ["TWILIO_SECRET_ARN"]
 AWS_REGION = os.environ["AWS_REGION"]
 
 # Initialize clients
 agent_core_client = boto3.client("bedrock-agentcore")
 agentcore_runtime_client = AgentCoreRuntimeClient(region=AWS_REGION)
+secrets_client = boto3.client("secretsmanager", region_name=AWS_REGION)
+
+
+def get_twilio_credentials():
+    """Fetch Twilio credentials from Secrets Manager."""
+    try:
+        response = secrets_client.get_secret_value(SecretId=TWILIO_SECRET_ARN)
+        return json.loads(response["SecretString"])
+    except Exception as e:
+        logger.error(f"Failed to fetch Twilio credentials from Secrets Manager: {e}", exc_info=True)
+        raise
+
+
+# Fetch credentials once at cold start
+twilio_credentials = get_twilio_credentials()
+TWILIO_AUTH_TOKEN = twilio_credentials["TWILIO_AUTH_TOKEN"]
+TWILIO_CONVERSATION_CONFIGURATION_ID = twilio_credentials["TWILIO_CONVERSATION_CONFIGURATION_ID"]
+
+# Initialize signature validator with auth token
 signature_validator = TwilioSignatureValidator(TWILIO_AUTH_TOKEN)
 
 
