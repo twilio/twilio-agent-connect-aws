@@ -129,10 +129,10 @@ jobs:
           . .venv/bin/activate
           uv sync --frozen --all-extras --all-groups
 
-      - name: Run tests with coverage
+      - name: Run tests
         run: |
           . .venv/bin/activate
-          uv run pytest --cov=src/tac_aws --cov-report=term-missing --cov-report=xml
+          uv run pytest
 
   build:
     name: Build Package
