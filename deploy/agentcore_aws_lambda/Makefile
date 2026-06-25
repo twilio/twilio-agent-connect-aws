@@ -78,11 +78,23 @@ endif
 ifndef TWILIO_CONVERSATION_CONFIGURATION_ID
 	$(error TWILIO_CONVERSATION_CONFIGURATION_ID is not set in .env file)
 endif
+ifndef AWS_REGION
+	$(error AWS_REGION is not set in .env file)
+endif
 	@echo "Updating Secrets Manager with Twilio credentials and configuration from .env..."
-	@aws secretsmanager put-secret-value \
-		--secret-id tac/twilio-credentials \
-		--secret-string '{"TWILIO_ACCOUNT_SID":"$(TWILIO_ACCOUNT_SID)","TWILIO_AUTH_TOKEN":"$(TWILIO_AUTH_TOKEN)","TWILIO_API_KEY":"$(TWILIO_API_KEY)","TWILIO_API_SECRET":"$(TWILIO_API_SECRET)","TWILIO_PHONE_NUMBER":"$(TWILIO_PHONE_NUMBER)","TWILIO_CONVERSATION_CONFIGURATION_ID":"$(TWILIO_CONVERSATION_CONFIGURATION_ID)"}' \
-		--profile $(AWS_PROFILE) > /dev/null
+	@python3 -c 'import json, sys; print(json.dumps({ \
+		"TWILIO_ACCOUNT_SID": sys.argv[1], \
+		"TWILIO_AUTH_TOKEN": sys.argv[2], \
+		"TWILIO_API_KEY": sys.argv[3], \
+		"TWILIO_API_SECRET": sys.argv[4], \
+		"TWILIO_PHONE_NUMBER": sys.argv[5], \
+		"TWILIO_CONVERSATION_CONFIGURATION_ID": sys.argv[6] \
+	}))' "$(TWILIO_ACCOUNT_SID)" "$(TWILIO_AUTH_TOKEN)" "$(TWILIO_API_KEY)" "$(TWILIO_API_SECRET)" "$(TWILIO_PHONE_NUMBER)" "$(TWILIO_CONVERSATION_CONFIGURATION_ID)" | \
+		aws secretsmanager put-secret-value \
+			--secret-id tac/twilio-credentials \
+			--region $(AWS_REGION) \
+			--profile $(AWS_PROFILE) \
+			--secret-string file:///dev/stdin > /dev/null
 	@echo "✓ Secrets updated successfully!"
 
 # Deploy all stacks in stages (Secrets → Update → AgentCore + Lambda)

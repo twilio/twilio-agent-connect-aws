@@ -27,30 +27,70 @@ agent_core_client = boto3.client("bedrock-agentcore")
 agentcore_runtime_client = AgentCoreRuntimeClient(region=AWS_REGION)
 secrets_client = boto3.client("secretsmanager", region_name=AWS_REGION)
 
+# Module-level cache for credentials (lazy loaded on first invocation)
+_twilio_credentials = None
+_signature_validator = None
+
 
 def get_twilio_credentials():
-    """Fetch Twilio credentials from Secrets Manager."""
+    """
+    Fetch and validate Twilio credentials from Secrets Manager (cached).
+
+    Credentials are fetched lazily on first invocation and cached for subsequent requests.
+    This approach allows transient Secrets Manager errors to recover on retry rather than
+    bricking the Lambda execution environment during cold start.
+
+    Returns:
+        dict: Validated Twilio credentials
+
+    Raises:
+        ValueError: If secret contains placeholder values or missing keys
+        Exception: If secret retrieval fails
+    """
+    global _twilio_credentials
+
+    # Return cached value if available
+    if _twilio_credentials is not None:
+        return _twilio_credentials
+
     try:
         response = secrets_client.get_secret_value(SecretId=TWILIO_SECRET_ARN)
-        return json.loads(response["SecretString"])
+        credentials = json.loads(response["SecretString"])
+
+        # Validate credentials aren't placeholders
+        for key, value in credentials.items():
+            if str(value).startswith("PLACEHOLDER_"):
+                raise ValueError(
+                    f"Secret contains placeholder value for {key}. "
+                    f"Run 'make secret-update' to set real Twilio credentials."
+                )
+
+        # Cache for future invocations
+        _twilio_credentials = credentials
+        logger.info("Successfully loaded and validated Twilio credentials from Secrets Manager")
+        return credentials
+
     except Exception as e:
         logger.error(f"Failed to fetch Twilio credentials from Secrets Manager: {e}", exc_info=True)
         raise
 
 
-# Fetch credentials once at cold start
-twilio_credentials = get_twilio_credentials()
-TWILIO_AUTH_TOKEN = twilio_credentials["TWILIO_AUTH_TOKEN"]
-TWILIO_CONVERSATION_CONFIGURATION_ID = twilio_credentials["TWILIO_CONVERSATION_CONFIGURATION_ID"]
+def get_signature_validator():
+    """Get TwilioSignatureValidator instance (cached, initialized lazily)."""
+    global _signature_validator
 
-# Initialize signature validator with auth token
-signature_validator = TwilioSignatureValidator(TWILIO_AUTH_TOKEN)
+    if _signature_validator is None:
+        credentials = get_twilio_credentials()
+        _signature_validator = TwilioSignatureValidator(credentials["TWILIO_AUTH_TOKEN"])
+
+    return _signature_validator
 
 
 def lambda_handler(event, context):
     """Route requests to appropriate handler."""
-    # Validate Twilio signature
-    if not signature_validator.validate(event):
+    # Validate Twilio signature (lazy loads credentials on first invocation)
+    validator = get_signature_validator()
+    if not validator.validate(event):
         return {
             "statusCode": 403,
             "headers": {"Content-Type": "application/json"},
@@ -89,10 +129,11 @@ def handle_voice_twiml(event):
             runtime_arn=AGENTCORE_RUNTIME_ARN, session_id=call_sid, expires=300
         )
 
+        credentials = get_twilio_credentials()
         twiml = generate_twiml(
             options={
                 "websocket_url": websocket_url,
-                "conversation_configuration": TWILIO_CONVERSATION_CONFIGURATION_ID,
+                "conversation_configuration": credentials["TWILIO_CONVERSATION_CONFIGURATION_ID"],
             }
         )
 
