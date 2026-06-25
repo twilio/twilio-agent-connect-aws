@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agent"
+version = "0.1.0"
+description = "AgentCore Runtime Application using Strands SDK"
+requires-python = ">=3.10"
+dependencies = [
+    "strands-agents >= 1.40.0",
+    "twilio-agent-connect-aws[agentcore]==1.0.2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]

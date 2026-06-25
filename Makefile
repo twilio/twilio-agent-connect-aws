@@ -25,16 +25,16 @@ dev-setup: sync
 
 format:
 	@echo "Formatting code with ruff..."
-	uv run ruff format src/tac_aws getting_started
-	uv run ruff check --fix src/tac_aws getting_started
+	uv run ruff format src/tac_aws getting_started deploy
+	uv run ruff check --fix src/tac_aws getting_started deploy
 
 lint:
 	@echo "Running lint checks..."
-	uv run ruff check src/tac_aws getting_started
+	uv run ruff check src/tac_aws getting_started deploy
 
 type-check:
 	@echo "Running mypy type checking..."
-	MYPYPATH=src uv run mypy src/tac_aws getting_started
+	MYPYPATH=src uv run mypy src/tac_aws getting_started deploy
 
 test:
 	@echo "Running tests..."
