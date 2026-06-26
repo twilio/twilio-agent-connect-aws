@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 def get_twilio_credentials() -> dict:
     """Fetch Twilio credentials from AWS Secrets Manager."""
     secret_arn = os.environ["TWILIO_SECRET_ARN"]
-    secrets_client = boto3.client("secretsmanager")
+    secrets_client = boto3.client("secretsmanager", region_name=os.environ["AWS_REGION"])
 
     try:
         response = secrets_client.get_secret_value(SecretId=secret_arn)

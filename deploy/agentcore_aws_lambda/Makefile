@@ -88,14 +88,7 @@ endif
 		TWILIO_API_SECRET="$(TWILIO_API_SECRET)" \
 		TWILIO_PHONE_NUMBER="$(TWILIO_PHONE_NUMBER)" \
 		TWILIO_CONVERSATION_CONFIGURATION_ID="$(TWILIO_CONVERSATION_CONFIGURATION_ID)" \
-		python3 -c 'import json, os; print(json.dumps({ \
-			"TWILIO_ACCOUNT_SID": os.environ["TWILIO_ACCOUNT_SID"], \
-			"TWILIO_AUTH_TOKEN": os.environ["TWILIO_AUTH_TOKEN"], \
-			"TWILIO_API_KEY": os.environ["TWILIO_API_KEY"], \
-			"TWILIO_API_SECRET": os.environ["TWILIO_API_SECRET"], \
-			"TWILIO_PHONE_NUMBER": os.environ["TWILIO_PHONE_NUMBER"], \
-			"TWILIO_CONVERSATION_CONFIGURATION_ID": os.environ["TWILIO_CONVERSATION_CONFIGURATION_ID"] \
-		}))' | \
+		python3 -c 'import json, os; print(json.dumps({"TWILIO_ACCOUNT_SID": os.environ["TWILIO_ACCOUNT_SID"], "TWILIO_AUTH_TOKEN": os.environ["TWILIO_AUTH_TOKEN"], "TWILIO_API_KEY": os.environ["TWILIO_API_KEY"], "TWILIO_API_SECRET": os.environ["TWILIO_API_SECRET"], "TWILIO_PHONE_NUMBER": os.environ["TWILIO_PHONE_NUMBER"], "TWILIO_CONVERSATION_CONFIGURATION_ID": os.environ["TWILIO_CONVERSATION_CONFIGURATION_ID"]}))' | \
 		aws secretsmanager put-secret-value \
 			--secret-id tac/twilio-credentials \
 			--region $(AWS_REGION) \
