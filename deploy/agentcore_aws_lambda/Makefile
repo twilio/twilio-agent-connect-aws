@@ -1,4 +1,4 @@
-.PHONY: build deploy deploy-all deploy-agentcore deploy-lambda bootstrap clean secret-update help
+.PHONY: build deploy deploy-all deploy-agentcore deploy-lambda bootstrap clean secret-update destroy help
 
 # Load environment variables from .env file
 -include .env
@@ -18,12 +18,14 @@ help:
 	@echo "  deploy-all       - Build and deploy all stacks (Secrets, AgentCore, Lambda)"
 	@echo "  deploy-agentcore - Build and deploy only AgentCore stack"
 	@echo "  deploy-lambda    - Build and deploy only Lambda stack"
-	@echo "  secret-update    - Update Secrets Manager with values from .env"
+	@echo "  secret-update    - Update Secrets Manager with credentials from .env"
+	@echo "  destroy          - Destroy all stacks (Lambda, AgentCore, Secrets)"
 	@echo "  clean            - Clean build artifacts"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make bootstrap   # One-time setup"
 	@echo "  make deploy      # Build, deploy, and update secrets"
+	@echo "  make destroy     # Delete all AWS resources"
 
 # Bootstrap CDK (one-time setup)
 bootstrap:
@@ -55,7 +57,7 @@ build:
 	@echo "Building CDK..."
 	cd cdk && npm ci && npm run build
 
-# Update Secrets Manager with values from .env
+# Update Secrets Manager with credentials from .env (secrets only, not configuration)
 secret-update:
 ifndef AWS_PROFILE
 	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
@@ -72,23 +74,15 @@ endif
 ifndef TWILIO_API_SECRET
 	$(error TWILIO_API_SECRET is not set in .env file)
 endif
-ifndef TWILIO_PHONE_NUMBER
-	$(error TWILIO_PHONE_NUMBER is not set in .env file)
-endif
-ifndef TWILIO_CONVERSATION_CONFIGURATION_ID
-	$(error TWILIO_CONVERSATION_CONFIGURATION_ID is not set in .env file)
-endif
 ifndef AWS_REGION
 	$(error AWS_REGION is not set in .env file)
 endif
-	@echo "Updating Secrets Manager with Twilio credentials and configuration from .env..."
+	@echo "Updating Secrets Manager with Twilio credentials from .env..."
 	@TWILIO_ACCOUNT_SID="$(TWILIO_ACCOUNT_SID)" \
 		TWILIO_AUTH_TOKEN="$(TWILIO_AUTH_TOKEN)" \
 		TWILIO_API_KEY="$(TWILIO_API_KEY)" \
 		TWILIO_API_SECRET="$(TWILIO_API_SECRET)" \
-		TWILIO_PHONE_NUMBER="$(TWILIO_PHONE_NUMBER)" \
-		TWILIO_CONVERSATION_CONFIGURATION_ID="$(TWILIO_CONVERSATION_CONFIGURATION_ID)" \
-		python3 -c 'import json, os; print(json.dumps({"TWILIO_ACCOUNT_SID": os.environ["TWILIO_ACCOUNT_SID"], "TWILIO_AUTH_TOKEN": os.environ["TWILIO_AUTH_TOKEN"], "TWILIO_API_KEY": os.environ["TWILIO_API_KEY"], "TWILIO_API_SECRET": os.environ["TWILIO_API_SECRET"], "TWILIO_PHONE_NUMBER": os.environ["TWILIO_PHONE_NUMBER"], "TWILIO_CONVERSATION_CONFIGURATION_ID": os.environ["TWILIO_CONVERSATION_CONFIGURATION_ID"]}))' | \
+		python3 -c 'import json, os; print(json.dumps({"TWILIO_ACCOUNT_SID": os.environ["TWILIO_ACCOUNT_SID"], "TWILIO_AUTH_TOKEN": os.environ["TWILIO_AUTH_TOKEN"], "TWILIO_API_KEY": os.environ["TWILIO_API_KEY"], "TWILIO_API_SECRET": os.environ["TWILIO_API_SECRET"]}))' | \
 		aws secretsmanager put-secret-value \
 			--secret-id tac/twilio-credentials \
 			--region $(AWS_REGION) \
@@ -107,7 +101,7 @@ endif
 	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx aws-cdk deploy TacSecretsStack --require-approval never
 	@echo ""
 	@echo "═══════════════════════════════════════════════════════════"
-	@echo "Step 2/3: Updating secret with real credentials from .env..."
+	@echo "Step 2/3: Updating Secrets Manager with credentials from .env..."
 	@echo "═══════════════════════════════════════════════════════════"
 	@$(MAKE) secret-update
 	@echo ""
@@ -116,12 +110,7 @@ endif
 	@echo "═══════════════════════════════════════════════════════════"
 	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx aws-cdk deploy TacAgentCoreStack TacLambdaStack --require-approval never
 	@echo ""
-	@echo "✓ All stacks deployed with real credentials!"
-	@echo ""
-	@echo "View stack outputs:"
-	@echo "  aws cloudformation describe-stacks --stack-name TacSecretsStack --profile $(AWS_PROFILE)"
-	@echo "  aws cloudformation describe-stacks --stack-name TacAgentCoreStack --profile $(AWS_PROFILE)"
-	@echo "  aws cloudformation describe-stacks --stack-name TacLambdaStack --profile $(AWS_PROFILE)"
+	@echo "✓ All stacks deployed!"
 
 # Deploy only AgentCore stack
 deploy-agentcore: build
@@ -147,9 +136,24 @@ endif
 # Note: deploy-all now handles secret-update in the correct order automatically
 deploy: deploy-all
 
+# Destroy all stacks (reverse order: Lambda → AgentCore → Secrets)
+destroy:
+ifndef AWS_PROFILE
+	$(error AWS_PROFILE is not set in .env file. Add AWS_PROFILE=<your-profile> to deploy/agentcore_aws_lambda/.env)
+endif
+	@echo "⚠️  WARNING: This will destroy all stacks and delete all resources!"
+	@echo ""
+	@echo "Destroying stacks in order: Lambda → AgentCore → Secrets"
+	@echo ""
+	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx aws-cdk destroy TacLambdaStack TacAgentCoreStack TacSecretsStack --force
+	@echo ""
+	@echo "✓ All stacks destroyed!"
+
 # Clean build artifacts
 clean:
 	rm -rf agent/.venv
+	rm -rf agent/__pycache__
+	rm -rf lambda/__pycache__
 	rm -rf cdk/node_modules
 	rm -rf cdk/cdk.out
 	rm -rf cdk/dist

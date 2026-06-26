@@ -10,6 +10,9 @@ export interface TacEnvConfig {
   // AWS Configuration
   awsAccountId: string;
   awsRegion: string;
+  // Twilio Configuration (non-secret)
+  twilioPhoneNumber: string;
+  twilioConversationConfigurationId: string;
 }
 
 /**
@@ -29,6 +32,8 @@ export function loadEnvConfig(configRoot: string): TacEnvConfig {
   const requiredVars = [
     'AWS_ACCOUNT_ID',
     'AWS_REGION',
+    'TWILIO_PHONE_NUMBER',
+    'TWILIO_CONVERSATION_CONFIGURATION_ID',
   ];
 
   const missingVars = requiredVars.filter(varName => !process.env[varName]);
@@ -44,6 +49,8 @@ export function loadEnvConfig(configRoot: string): TacEnvConfig {
   return {
     awsAccountId: process.env.AWS_ACCOUNT_ID!,
     awsRegion: process.env.AWS_REGION!,
+    twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER!,
+    twilioConversationConfigurationId: process.env.TWILIO_CONVERSATION_CONFIGURATION_ID!,
   };
 }
 

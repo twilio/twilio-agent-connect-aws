@@ -20,6 +20,7 @@ logger = get_logger(__name__)
 # Environment variables
 AGENTCORE_RUNTIME_ARN = os.environ["AGENTCORE_RUNTIME_ARN"]
 TWILIO_SECRET_ARN = os.environ["TWILIO_SECRET_ARN"]
+TWILIO_CONVERSATION_CONFIGURATION_ID = os.environ["TWILIO_CONVERSATION_CONFIGURATION_ID"]
 AWS_REGION = os.environ["AWS_REGION"]
 
 # Initialize clients
@@ -35,11 +36,9 @@ def _fetch_twilio_credentials():
         credentials = json.loads(response["SecretString"])
 
         # Validate required credentials have non-empty values
-        if not credentials.get("TWILIO_AUTH_TOKEN") or not credentials.get(
-            "TWILIO_CONVERSATION_CONFIGURATION_ID"
-        ):
+        if not credentials.get("TWILIO_AUTH_TOKEN"):
             raise ValueError(
-                "Secret missing or empty credentials. "
+                "Secret missing TWILIO_AUTH_TOKEN. "
                 "Run 'make secret-update' to populate Twilio credentials."
             )
 
@@ -99,9 +98,7 @@ def handle_voice_twiml(event):
         twiml = generate_twiml(
             options={
                 "websocket_url": websocket_url,
-                "conversation_configuration": twilio_credentials[
-                    "TWILIO_CONVERSATION_CONFIGURATION_ID"
-                ],
+                "conversation_configuration": TWILIO_CONVERSATION_CONFIGURATION_ID,
             }
         )
 

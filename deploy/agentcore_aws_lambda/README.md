@@ -162,19 +162,26 @@ AWS_PROFILE=your-profile-name          # Profile name from step 2
 AWS_ACCOUNT_ID=123456789012            # Account ID from step 3
 AWS_REGION=us-east-1
 
-# Twilio Configuration
+# Twilio Credentials (stored in AWS Secrets Manager)
 TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_AUTH_TOKEN=your_auth_token
 TWILIO_API_KEY=SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 TWILIO_API_SECRET=your_api_secret
+
+# Twilio Configuration (passed as environment variables)
 TWILIO_PHONE_NUMBER=+1234567890
 TWILIO_CONVERSATION_CONFIGURATION_ID=WRxxxx
 ```
 
-**Where to find Twilio credentials:**
+**Where to find Twilio values:**
 - Account SID & Auth Token: Twilio Console → Account → API Keys & Tokens
 - API Key & Secret: Create new API Key
+- Phone Number: Twilio Console → Phone Numbers
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator
+
+**Security Model:**
+- Credentials (Account SID, Auth Token, API Key, API Secret) are stored in AWS Secrets Manager
+- Configuration (Phone Number, Conversation Configuration ID) are passed as environment variables during deployment
 
 ### 2. Bootstrap CDK (One-Time Setup)
 

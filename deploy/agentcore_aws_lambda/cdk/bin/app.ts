@@ -24,7 +24,7 @@ async function main() {
     description: 'TAC Secrets Manager for Twilio credentials',
   });
 
-  // Inject secret ARN and region as env vars into AgentCore runtime
+  // Inject secret ARN, region, and Twilio configuration as env vars into AgentCore runtime
   const enhancedSpec = {
     ...spec,
     runtimes: spec.runtimes.map(runtime => ({
@@ -33,6 +33,8 @@ async function main() {
         ...(runtime.envVars || []),
         { name: 'TWILIO_SECRET_ARN', value: secretsStack.twilioSecret.secretArn },
         { name: 'AWS_REGION', value: envConfig.awsRegion },
+        { name: 'TWILIO_PHONE_NUMBER', value: envConfig.twilioPhoneNumber },
+        { name: 'TWILIO_CONVERSATION_CONFIGURATION_ID', value: envConfig.twilioConversationConfigurationId },
       ]
     }))
   };
@@ -54,6 +56,7 @@ async function main() {
   const lambdaStack = new LambdaStack(app, 'TacLambdaStack', {
     agentCoreRuntimeArn: agentCoreStack.runtimeArn,
     twilioSecret: secretsStack.twilioSecret,
+    twilioConversationConfigurationId: envConfig.twilioConversationConfigurationId,
     env: {
       account: envConfig.awsAccountId,
       region: envConfig.awsRegion,

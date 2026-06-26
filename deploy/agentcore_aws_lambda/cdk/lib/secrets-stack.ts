@@ -8,14 +8,12 @@ export class SecretsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Create secret resource with placeholder value (overwritten by 'make secret-update')
-    // RETAIN prevents accidental credential deletion when stack is deleted/replaced.
-    // Note: If you delete the stack and redeploy, you must first manually delete the secret:
-    //   aws secretsmanager delete-secret --secret-id tac/twilio-credentials --region <region>
+    // Secret with placeholder value (populated by 'make secret-update')
+    // DESTROY policy allows clean redeploy. Credentials are in .env and can be restored.
     this.twilioSecret = new secretsmanager.Secret(this, 'TwilioCredentials', {
       secretName: 'tac/twilio-credentials',
-      description: 'Twilio credentials and configuration for TAC',
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      description: 'Twilio credentials for TAC',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
   }
 }

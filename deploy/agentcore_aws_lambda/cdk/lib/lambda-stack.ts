@@ -8,6 +8,7 @@ import { PythonFunction } from '@aws-cdk/aws-lambda-python-alpha';
 export interface LambdaStackProps extends cdk.StackProps {
   agentCoreRuntimeArn: string;
   twilioSecret: secretsmanager.ISecret;
+  twilioConversationConfigurationId: string;
 }
 
 export class LambdaStack extends cdk.Stack {
@@ -25,10 +26,11 @@ export class LambdaStack extends cdk.Stack {
       environment: {
         AGENTCORE_RUNTIME_ARN: props.agentCoreRuntimeArn,
         TWILIO_SECRET_ARN: props.twilioSecret.secretArn,
+        TWILIO_CONVERSATION_CONFIGURATION_ID: props.twilioConversationConfigurationId,
       },
     });
 
-    // Grant Lambda permission to read Twilio credentials and config from Secrets Manager
+    // Grant Lambda permission to read Twilio credentials from Secrets Manager
     props.twilioSecret.grantRead(lambdaFunction);
 
     // Grant permissions to invoke AgentCore
@@ -61,11 +63,6 @@ export class LambdaStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'ConversationWebhookUrl', {
       value: `${functionUrl.url}webhook`,
       description: 'Twilio Conversation Webhook URL',
-    });
-
-    new cdk.CfnOutput(this, 'FunctionArn', {
-      value: lambdaFunction.functionArn,
-      description: 'Lambda Function ARN',
     });
   }
 }

@@ -26,7 +26,7 @@ def get_twilio_credentials() -> dict:
 
 
 def create_tac_config() -> TACConfig:
-    """Create TACConfig from credentials stored in AWS Secrets Manager."""
+    """Create TACConfig from Secrets Manager (credentials) and environment variables (configuration)."""
     credentials = get_twilio_credentials()
 
     return TACConfig(
@@ -34,6 +34,6 @@ def create_tac_config() -> TACConfig:
         auth_token=credentials["TWILIO_AUTH_TOKEN"],
         api_key=credentials["TWILIO_API_KEY"],
         api_secret=credentials["TWILIO_API_SECRET"],
-        phone_number=credentials["TWILIO_PHONE_NUMBER"],
-        conversation_configuration_id=credentials["TWILIO_CONVERSATION_CONFIGURATION_ID"],
+        phone_number=os.environ["TWILIO_PHONE_NUMBER"],
+        conversation_configuration_id=os.environ["TWILIO_CONVERSATION_CONFIGURATION_ID"],
     )

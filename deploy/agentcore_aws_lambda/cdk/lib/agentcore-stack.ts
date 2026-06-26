@@ -57,16 +57,11 @@ export class AgentCoreStack extends Stack {
     // Grant AgentCore runtime permission to read Twilio credentials
     props.twilioSecret.grantRead(environment.runtime.role);
 
-    // Stack-level outputs
-    new CfnOutput(this, 'StackNameOutput', {
-      description: 'Name of the CloudFormation Stack',
-      value: this.stackName,
-    });
-
+    // Output runtime ARN for Lambda stack
     new CfnOutput(this, 'AgentCoreRuntimeArn', {
       description: 'AgentCore Runtime ARN',
       value: this.runtimeArn,
-      exportName: 'TacAgentCoreRuntimeArn',  // Export for cross-stack reference
+      exportName: 'TacAgentCoreRuntimeArn',
     });
   }
 }
