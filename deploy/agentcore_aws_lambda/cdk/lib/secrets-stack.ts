@@ -8,10 +8,11 @@ export class SecretsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Create empty secret resource (populated via 'make secret-update' after deployment)
+    // Create secret resource with placeholder value (overwritten by 'make secret-update')
     this.twilioSecret = new secretsmanager.Secret(this, 'TwilioCredentials', {
       secretName: 'tac/twilio-credentials',
       description: 'Twilio credentials and configuration for TAC',
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     // Output secret ARN for cross-stack references
