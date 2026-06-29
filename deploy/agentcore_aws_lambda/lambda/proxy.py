@@ -25,9 +25,11 @@ Example usage:
     lambda_handler = proxy.lambda_handler
 """
 
+import base64
 import json
 import os
 from typing import Any
+from urllib.parse import parse_qs
 
 import boto3
 from bedrock_agentcore.runtime import AgentCoreRuntimeClient
@@ -66,13 +68,23 @@ class AgentCoreLambdaProxy:
             agentcore_runtime_arn: ARN of the AgentCore runtime
             conversation_configuration_id: Twilio Conversation Configuration ID
             twilio_auth_token: Twilio auth token for webhook signature validation
-            aws_region: AWS region for boto3 clients (optional, defaults to AWS_REGION
-                environment variable provided by Lambda runtime)
+            aws_region: AWS region for boto3 clients (optional, auto-detected from
+                AWS_REGION env var, boto3 session, or AWS config)
+
+        Raises:
+            ValueError: If AWS region cannot be determined
         """
         self.agentcore_runtime_arn = agentcore_runtime_arn
         self.conversation_configuration_id = conversation_configuration_id
         self.signature_validator = TwilioSignatureValidator(twilio_auth_token)
-        self.aws_region = aws_region or os.environ["AWS_REGION"]
+
+        # Resolve AWS region: explicit parameter > AWS_REGION env var > boto3 session
+        self.aws_region = aws_region or os.environ.get("AWS_REGION") or boto3.Session().region_name
+
+        if not self.aws_region:
+            raise ValueError(
+                "AWS region not found. Provide aws_region parameter or configure AWS region."
+            )
 
         self.agent_core_client = boto3.client("bedrock-agentcore", region_name=self.aws_region)
         self.agentcore_runtime_client = AgentCoreRuntimeClient(region=self.aws_region)
@@ -101,7 +113,11 @@ class AgentCoreLambdaProxy:
         elif request_path.startswith("/webhook"):
             return self._handle_conversation_webhook(event)
         else:
-            return {"statusCode": 404, "body": json.dumps({"error": "Not found"})}
+            return {
+                "statusCode": 404,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({"error": "Not found"}),
+            }
 
     def _handle_voice_twiml(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle voice call - generate TwiML.
@@ -147,7 +163,7 @@ class AgentCoreLambdaProxy:
             return {
                 "statusCode": 500,
                 "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"error": str(e)}),
+                "body": json.dumps({"error": "Internal server error"}),
             }
 
     def _extract_call_sid(self, event: dict[str, Any]) -> str | None:
@@ -161,11 +177,7 @@ class AgentCoreLambdaProxy:
         """
         body = event.get("body", "")
         if body:
-            from urllib.parse import parse_qs
-
             if event.get("isBase64Encoded"):
-                import base64
-
                 body = base64.b64decode(body).decode("utf-8")
             params = parse_qs(body)
             call_sid = params.get("CallSid", [None])[0]
@@ -194,7 +206,21 @@ class AgentCoreLambdaProxy:
             body = event.get("body", "")
             headers = event.get("headers", {})
 
-            webhook_data = json.loads(body)
+            # Handle base64 encoding (Lambda may encode binary content)
+            if event.get("isBase64Encoded"):
+                body = base64.b64decode(body).decode("utf-8")
+
+            # Parse JSON with explicit error handling
+            try:
+                webhook_data = json.loads(body)
+            except json.JSONDecodeError as e:
+                logger.warning(f"Invalid JSON in webhook body: {e}")
+                return {
+                    "statusCode": 400,
+                    "headers": {"Content-Type": "application/json"},
+                    "body": json.dumps({"error": "Invalid JSON payload"}),
+                }
+
             event_type = webhook_data.get("eventType")
             event_data = webhook_data.get("data", {})
 
@@ -246,5 +272,5 @@ class AgentCoreLambdaProxy:
             return {
                 "statusCode": 500,
                 "headers": {"Content-Type": "application/json"},
-                "body": json.dumps({"error": str(e)}),
+                "body": json.dumps({"error": "Internal server error"}),
             }
