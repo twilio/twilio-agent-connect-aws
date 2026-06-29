@@ -9,18 +9,19 @@ from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from strands import Agent
 from strands.models import BedrockModel
 from strands.session import FileSessionManager
-from tac import TAC, TACConfig
+from tac import TAC
 from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.logging import get_logger
 from tac.models.session import ConversationSession
+from tac_config import create_tac_config
 
 from tac_aws.connectors import StrandsConnector
 
 logger = get_logger(__name__)
 
-# Initialize TAC
-tac = TAC(config=TACConfig.from_env())
+# Initialize TAC with credentials from Secrets Manager
+tac = TAC(config=create_tac_config())
 
 
 def create_agent(context: ConversationSession) -> Agent:

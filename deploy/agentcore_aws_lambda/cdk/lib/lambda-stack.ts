@@ -1,13 +1,14 @@
 import * as cdk from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { PythonFunction } from '@aws-cdk/aws-lambda-python-alpha';
 
 export interface LambdaStackProps extends cdk.StackProps {
   agentCoreRuntimeArn: string;
+  twilioSecret: secretsmanager.ISecret;
   twilioConversationConfigurationId: string;
-  twilioAuthToken: string;
 }
 
 export class LambdaStack extends cdk.Stack {
@@ -24,10 +25,13 @@ export class LambdaStack extends cdk.Stack {
       memorySize: 1024,
       environment: {
         AGENTCORE_RUNTIME_ARN: props.agentCoreRuntimeArn,
+        TWILIO_SECRET_ARN: props.twilioSecret.secretArn,
         TWILIO_CONVERSATION_CONFIGURATION_ID: props.twilioConversationConfigurationId,
-        TWILIO_AUTH_TOKEN: props.twilioAuthToken,
       },
     });
+
+    // Grant Lambda permission to read Twilio credentials from Secrets Manager
+    props.twilioSecret.grantRead(lambdaFunction);
 
     // Grant permissions to invoke AgentCore
     // InvokeAgentRuntime: For SMS HTTP invocations
@@ -59,11 +63,6 @@ export class LambdaStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'ConversationWebhookUrl', {
       value: `${functionUrl.url}webhook`,
       description: 'Twilio Conversation Webhook URL',
-    });
-
-    new cdk.CfnOutput(this, 'FunctionArn', {
-      value: lambdaFunction.functionArn,
-      description: 'Lambda Function ARN',
     });
   }
 }

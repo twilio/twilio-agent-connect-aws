@@ -3,6 +3,7 @@ import {
   type AgentCoreProjectSpec,
 } from '@aws/agentcore-cdk';
 import { CfnOutput, Stack, type StackProps } from 'aws-cdk-lib';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 
 export interface AgentCoreStackProps extends StackProps {
@@ -10,6 +11,11 @@ export interface AgentCoreStackProps extends StackProps {
    * The AgentCore project specification containing agents, memories, and credentials.
    */
   spec: AgentCoreProjectSpec;
+
+  /**
+   * Twilio credentials secret (for granting read access to AgentCore runtime)
+   */
+  twilioSecret: secretsmanager.ISecret;
 }
 
 /**
@@ -48,16 +54,14 @@ export class AgentCoreStack extends Stack {
 
     this.runtimeArn = environment.runtime.runtimeArn;
 
-    // Stack-level outputs
-    new CfnOutput(this, 'StackNameOutput', {
-      description: 'Name of the CloudFormation Stack',
-      value: this.stackName,
-    });
+    // Grant AgentCore runtime permission to read Twilio credentials
+    props.twilioSecret.grantRead(environment.runtime.role);
 
+    // Output runtime ARN for Lambda stack
     new CfnOutput(this, 'AgentCoreRuntimeArn', {
       description: 'AgentCore Runtime ARN',
       value: this.runtimeArn,
-      exportName: 'TacAgentCoreRuntimeArn',  // Export for cross-stack reference
+      exportName: 'TacAgentCoreRuntimeArn',
     });
   }
 }

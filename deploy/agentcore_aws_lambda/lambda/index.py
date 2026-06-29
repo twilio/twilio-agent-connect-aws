@@ -19,19 +19,43 @@ logger = get_logger(__name__)
 
 # Environment variables
 AGENTCORE_RUNTIME_ARN = os.environ["AGENTCORE_RUNTIME_ARN"]
+TWILIO_SECRET_ARN = os.environ["TWILIO_SECRET_ARN"]
 TWILIO_CONVERSATION_CONFIGURATION_ID = os.environ["TWILIO_CONVERSATION_CONFIGURATION_ID"]
-TWILIO_AUTH_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
 AWS_REGION = os.environ["AWS_REGION"]
 
 # Initialize clients
 agent_core_client = boto3.client("bedrock-agentcore")
 agentcore_runtime_client = AgentCoreRuntimeClient(region=AWS_REGION)
-signature_validator = TwilioSignatureValidator(TWILIO_AUTH_TOKEN)
+secrets_client = boto3.client("secretsmanager", region_name=AWS_REGION)
+
+
+def _fetch_twilio_credentials():
+    """Fetch Twilio credentials from Secrets Manager."""
+    try:
+        response = secrets_client.get_secret_value(SecretId=TWILIO_SECRET_ARN)
+        credentials = json.loads(response["SecretString"])
+
+        # Validate required credentials have non-empty values
+        if not credentials.get("TWILIO_AUTH_TOKEN"):
+            raise ValueError(
+                "Secret missing TWILIO_AUTH_TOKEN. "
+                "Run 'make secret-update' to populate Twilio credentials."
+            )
+
+        logger.info("Successfully loaded Twilio credentials from Secrets Manager")
+        return credentials
+
+    except Exception as e:
+        logger.error(f"Failed to fetch Twilio credentials: {e}", exc_info=True)
+        raise
+
+
+twilio_credentials = _fetch_twilio_credentials()
+signature_validator = TwilioSignatureValidator(twilio_credentials["TWILIO_AUTH_TOKEN"])
 
 
 def lambda_handler(event, context):
     """Route requests to appropriate handler."""
-    # Validate Twilio signature
     if not signature_validator.validate(event):
         return {
             "statusCode": 403,

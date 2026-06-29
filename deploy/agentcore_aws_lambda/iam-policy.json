@@ -161,6 +161,27 @@
       "Effect": "Allow",
       "Action": "sts:AssumeRole",
       "Resource": "arn:aws:iam::*:role/cdk-*"
+    },
+    {
+      "Sid": "SecretsManagerCreate",
+      "Effect": "Allow",
+      "Action": "secretsmanager:CreateSecret",
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "secretsmanager:Name": "tac/twilio-credentials"
+        }
+      }
+    },
+    {
+      "Sid": "SecretsManagerUpdate",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:PutSecretValue",
+        "secretsmanager:TagResource"
+      ],
+      "Resource": "arn:aws:secretsmanager:*:*:secret:tac/twilio-credentials*"
     }
   ]
 }
