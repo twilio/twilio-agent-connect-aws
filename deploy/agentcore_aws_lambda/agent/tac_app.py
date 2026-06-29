@@ -96,7 +96,7 @@ class TACAgentCoreApp:
 
             except Exception as e:
                 logger.error(f"Error processing SMS webhook: {e}", exc_info=True)
-                return {"status": "error", "message": str(e)}
+                return {"status": "error", "message": "Internal server error"}
 
         # Register WebSocket entrypoint for Voice
         # Note: WebSocket connections use presigned URLs with AWS credentials generated

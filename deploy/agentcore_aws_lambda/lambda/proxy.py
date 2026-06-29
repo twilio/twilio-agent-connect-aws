@@ -26,6 +26,7 @@ Example usage:
 """
 
 import base64
+import binascii
 import json
 import os
 from typing import Any
@@ -187,6 +188,20 @@ class AgentCoreLambdaProxy:
         query_params = event.get("queryStringParameters") or {}
         return query_params.get("CallSid")
 
+    def _normalize_headers(self, headers: dict[str, str]) -> dict[str, str]:
+        """Normalize HTTP headers to lowercase keys for case-insensitive lookup.
+
+        Lambda API Gateway may deliver headers with different casing depending on
+        integration configuration. HTTP headers are case-insensitive per RFC 7230.
+
+        Args:
+            headers: Raw headers dict from Lambda event
+
+        Returns:
+            Dict with lowercase keys for case-insensitive lookup
+        """
+        return {k.lower(): v for k, v in headers.items()}
+
     def _handle_conversation_webhook(self, event: dict[str, Any]) -> dict[str, Any]:
         """Handle conversation webhook - forward to AgentCore.
 
@@ -204,11 +219,19 @@ class AgentCoreLambdaProxy:
         """
         try:
             body = event.get("body", "")
-            headers = event.get("headers", {})
+            headers = self._normalize_headers(event.get("headers", {}))
 
             # Handle base64 encoding (Lambda may encode binary content)
             if event.get("isBase64Encoded"):
-                body = base64.b64decode(body).decode("utf-8")
+                try:
+                    body = base64.b64decode(body).decode("utf-8")
+                except (binascii.Error, UnicodeDecodeError) as e:
+                    logger.warning(f"Invalid base64 or UTF-8 encoding in request body: {e}")
+                    return {
+                        "statusCode": 400,
+                        "headers": {"Content-Type": "application/json"},
+                        "body": json.dumps({"error": "Invalid request body encoding"}),
+                    }
 
             # Parse JSON with explicit error handling
             try:

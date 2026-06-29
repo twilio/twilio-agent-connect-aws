@@ -19,18 +19,22 @@ def fetch_twilio_auth_token(secret_arn: str, region: str | None = None) -> str:
 
     Args:
         secret_arn: ARN of the secret containing Twilio credentials
-        region: AWS region for Secrets Manager client (optional, defaults to
-            AWS_REGION environment variable provided by Lambda runtime)
+        region: AWS region for Secrets Manager client (optional, auto-detected from
+            AWS_REGION env var, boto3 session, or AWS config)
 
     Returns:
         Twilio auth token string
 
     Raises:
-        ValueError: If TWILIO_AUTH_TOKEN is missing or empty
+        ValueError: If TWILIO_AUTH_TOKEN is missing or empty, or if AWS region cannot be determined
         Exception: If Secrets Manager fetch fails
     """
-    # Lambda runtime automatically provides AWS_REGION environment variable
-    aws_region = region or os.environ["AWS_REGION"]
+    # Resolve AWS region: explicit parameter > AWS_REGION env var > boto3 session
+    aws_region = region or os.environ.get("AWS_REGION") or boto3.Session().region_name
+
+    if not aws_region:
+        raise ValueError("AWS region not found. Provide region parameter or configure AWS region.")
+
     secrets_client = boto3.client("secretsmanager", region_name=aws_region)
 
     try:
