@@ -22,9 +22,10 @@ class TACAgentCoreWebSocketAdapter:
     Without an initial greeting, ConversationRelay won't activate speech detection.
     """
 
-    def __init__(self, ws):
+    def __init__(self, ws, welcome_message: str = "Hello! How can I assist you today?"):
         self._ws = ws
         self._setup_received = False
+        self._welcome_message = welcome_message
 
     async def receive_json(self):
         data = await self._ws.receive_json()
@@ -34,7 +35,7 @@ class TACAgentCoreWebSocketAdapter:
             try:
                 welcome_msg = {
                     "type": "text",
-                    "token": "Hello! How can I assist you today?",
+                    "token": self._welcome_message,
                     "last": True,
                 }
                 await self._ws.send_text(json.dumps(welcome_msg))
@@ -66,10 +67,17 @@ class TACAgentCoreApp:
     Handles both HTTP (SMS) and WebSocket (Voice) protocols.
     """
 
-    def __init__(self, tac: TAC, voice_channel, sms_channel):
+    def __init__(
+        self,
+        tac: TAC,
+        voice_channel,
+        sms_channel,
+        welcome_message: str = "Hello! How can I assist you today?",
+    ):
         self.tac = tac
         self.voice_channel = voice_channel
         self.sms_channel = sms_channel
+        self.welcome_message = welcome_message
         self.app = BedrockAgentCoreApp()
 
         # Register HTTP entrypoint for SMS
@@ -101,7 +109,7 @@ class TACAgentCoreApp:
         @self.app.websocket
         async def websocket_handler(websocket, context):
             try:
-                wrapped_ws = TACAgentCoreWebSocketAdapter(websocket)
+                wrapped_ws = TACAgentCoreWebSocketAdapter(websocket, self.welcome_message)
                 await self.voice_channel.handle_websocket(wrapped_ws)
 
             except Exception as e:
