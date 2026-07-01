@@ -114,7 +114,7 @@ class TwilioSignatureValidator:
         if is_base64 and body:
             try:
                 body = base64.b64decode(body).decode("utf-8")
-            except (binascii.Error, UnicodeDecodeError) as e:
+            except (TypeError, binascii.Error, UnicodeDecodeError) as e:
                 logger.warning(f"Failed to decode request body: {e}")
                 return ""
 

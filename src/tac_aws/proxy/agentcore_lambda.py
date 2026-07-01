@@ -62,7 +62,7 @@ class AgentCoreLambdaProxy:
         conversation_configuration_id: str,
         twilio_auth_token: str,
         aws_region: str | None = None,
-    ):
+    ) -> None:
         """Initialize AgentCore Lambda proxy.
 
         Args:
