@@ -6,8 +6,7 @@ routing to AWS Bedrock AgentCore. Users provide the Twilio auth token, and the p
 handles signature validation and webhook routing internally.
 
 Example usage:
-    from credentials import fetch_twilio_auth_token
-    from proxy import AgentCoreLambdaProxy
+    from tac_aws.proxy import AgentCoreLambdaProxy
 
     # Fetch Twilio auth token from Secrets Manager
     twilio_auth_token = fetch_twilio_auth_token(
@@ -36,7 +35,8 @@ import boto3
 from bedrock_agentcore.runtime import AgentCoreRuntimeClient
 from tac.channels.voice.twiml import generate_twiml
 from tac.core.logging import get_logger
-from validation import TwilioSignatureValidator
+
+from .validation import TwilioSignatureValidator
 
 logger = get_logger(__name__)
 
