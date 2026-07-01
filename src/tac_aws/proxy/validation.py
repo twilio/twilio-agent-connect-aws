@@ -6,10 +6,18 @@ Handles signature validation for both form-encoded and JSON webhooks.
 
 import base64
 import binascii
+from typing import TYPE_CHECKING, Any
 from urllib.parse import parse_qsl
 
 from tac.core.logging import get_logger
-from twilio.request_validator import RequestValidator
+
+if TYPE_CHECKING:
+    from twilio.request_validator import RequestValidator
+else:
+    try:
+        from twilio.request_validator import RequestValidator
+    except ImportError:
+        RequestValidator = None  # type: ignore
 
 logger = get_logger(__name__)
 
@@ -17,11 +25,20 @@ logger = get_logger(__name__)
 class TwilioSignatureValidator:
     """Validates Twilio webhook signatures for AWS Lambda events."""
 
-    def __init__(self, auth_token: str):
-        """Initialize validator with Twilio auth token."""
+    def __init__(self, auth_token: str) -> None:
+        """Initialize validator with Twilio auth token.
+
+        Raises:
+            ImportError: If twilio package is not installed
+        """
+        if RequestValidator is None:
+            raise ImportError(
+                "twilio package is required for TwilioSignatureValidator. "
+                "Install with: pip install twilio-agent-connect-aws[agentcore]"
+            )
         self.request_validator = RequestValidator(auth_token)
 
-    def validate(self, event: dict) -> bool:
+    def validate(self, event: dict[str, Any]) -> bool:
         """Validate Twilio webhook signature from Lambda event.
 
         Handles different content types:
@@ -50,6 +67,7 @@ class TwilioSignatureValidator:
         content_type = headers.get("content-type", "").lower()
 
         # Determine validation data based on content type
+        validation_data: dict[str, str] | str
         if "application/x-www-form-urlencoded" in content_type:
             # Form-encoded: parse body with blank values preserved
             validation_data = dict(parse_qsl(body, keep_blank_values=True))
@@ -57,7 +75,7 @@ class TwilioSignatureValidator:
             # JSON or other: use body string
             validation_data = body
 
-        is_valid = self.request_validator.validate(url, validation_data, signature)
+        is_valid: bool = bool(self.request_validator.validate(url, validation_data, signature))
 
         if not is_valid:
             logger.warning(f"Invalid Twilio signature for URL: {url}")
@@ -65,7 +83,7 @@ class TwilioSignatureValidator:
         return is_valid
 
     @staticmethod
-    def _construct_request_url(event: dict, headers: dict) -> str:
+    def _construct_request_url(event: dict[str, Any], headers: dict[str, str]) -> str:
         """Construct full request URL from Lambda Function URL event.
 
         Lambda Function URLs use the format:
@@ -85,18 +103,18 @@ class TwilioSignatureValidator:
         return url
 
     @staticmethod
-    def _decode_request_body(event: dict) -> str:
+    def _decode_request_body(event: dict[str, Any]) -> str:
         """Decode request body, handling base64 encoding if present.
 
         Returns empty string if decoding fails (invalid base64 or non-UTF8).
         """
-        body = event.get("body", "")
+        body: str = event.get("body", "") or ""
         is_base64 = event.get("isBase64Encoded", False)
 
         if is_base64 and body:
             try:
                 body = base64.b64decode(body).decode("utf-8")
-            except (binascii.Error, UnicodeDecodeError) as e:
+            except (TypeError, binascii.Error, UnicodeDecodeError) as e:
                 logger.warning(f"Failed to decode request body: {e}")
                 return ""
 

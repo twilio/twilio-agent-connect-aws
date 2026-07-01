@@ -47,7 +47,7 @@ class TACAgentCoreWebSocketAdapter:
                 }
                 await self._ws.send_text(json.dumps(welcome_msg))
             except Exception as e:
-                logger.error(f"Failed to send welcome greeting: {e}")
+                logger.error(f"Failed to send welcome greeting: {e}", exc_info=True)
 
         return data
 

@@ -269,3 +269,65 @@ After editing agent or Lambda code:
 make deploy
 ```
 
+---
+
+## Troubleshooting
+
+### CDK bootstrap fails with S3 public access block errors
+
+**Symptom:** `make bootstrap` fails with an error about S3 public access block configuration, such as:
+```
+Error: Failed to create S3 bucket: The S3 bucket that was created for the CDK bootstrap cannot be created with public access block enabled
+```
+
+**Cause:** Some AWS accounts or organizations have strict S3 security policies that conflict with CDK's default bootstrap configuration.
+
+**Solution:**
+
+⚠️ **Security Warning:** Only use this workaround if absolutely necessary. Disabling public access block configuration weakens the security posture of your CDK bootstrap resources.
+
+If you encounter this error and have confirmed with your AWS administrator that it's acceptable, you can manually run bootstrap with the flag:
+
+```bash
+cd cdk && AWS_PROFILE=your-profile-name npx cdk bootstrap \
+    --public-access-block-configuration false \
+    aws://123456789012/us-east-1
+```
+
+**Better alternatives:**
+1. Work with your AWS administrator to adjust organization-level S3 policies
+2. Use a CDK bootstrap configuration that aligns with your organization's security requirements
+3. Consider using a separate AWS account without organization-level restrictions for development
+
+### Node.js not found or npm commands fail
+
+**Symptom:** `npm: command not found` or `node: command not found` after installing Node.js via Homebrew.
+
+**Cause:** Homebrew installs some Node.js versions as "keg-only" (not automatically linked to PATH).
+
+**Solution:**
+
+Check your Node.js installation:
+```bash
+brew list | grep node
+```
+
+If you see `node@24`, add it to your PATH:
+```bash
+# For zsh (default macOS shell)
+echo 'export PATH="/opt/homebrew/opt/node@24/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# For bash
+echo 'export PATH="/opt/homebrew/opt/node@24/bin:$PATH"' >> ~/.bash_profile
+source ~/.bash_profile
+```
+
+Verify:
+```bash
+node --version  # Should show v24.x.x
+npm --version   # Should show 10.x.x
+```
+
+**Note:** This project requires Node.js 24+ as specified in `cdk/package.json`. Make sure you install the correct version.
+

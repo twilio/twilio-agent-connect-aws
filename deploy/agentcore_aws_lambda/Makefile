@@ -45,7 +45,8 @@ endif
 	cd cdk && npm run build
 	@echo ""
 	@echo "Bootstrapping CDK..."
-	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx cdk bootstrap aws://$(AWS_ACCOUNT_ID)/$(AWS_REGION)
+	cd cdk && AWS_PROFILE=$(AWS_PROFILE) npx cdk bootstrap \
+		aws://$(AWS_ACCOUNT_ID)/$(AWS_REGION)
 	@echo ""
 	@echo "✓ CDK bootstrapped for $(AWS_ACCOUNT_ID) in $(AWS_REGION)"
 
