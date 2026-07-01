@@ -269,3 +269,39 @@ After editing agent or Lambda code:
 make deploy
 ```
 
+---
+
+## Troubleshooting
+
+### Node.js not found or npm commands fail
+
+**Symptom:** `npm: command not found` or `node: command not found` after installing Node.js via Homebrew.
+
+**Cause:** Homebrew installs some Node.js versions as "keg-only" (not automatically linked to PATH).
+
+**Solution:**
+
+Check your Node.js installation:
+```bash
+brew list | grep node
+```
+
+If you see `node@24`, add it to your PATH:
+```bash
+# For zsh (default macOS shell)
+echo 'export PATH="/opt/homebrew/opt/node@24/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# For bash
+echo 'export PATH="/opt/homebrew/opt/node@24/bin:$PATH"' >> ~/.bash_profile
+source ~/.bash_profile
+```
+
+Verify:
+```bash
+node --version  # Should show v24.x.x
+npm --version   # Should show 10.x.x
+```
+
+**Note:** This project requires Node.js 24+ as specified in `cdk/package.json`. Make sure you install the correct version.
+

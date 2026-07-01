@@ -13,9 +13,9 @@ try:
 
     __all__.append("TACAWSFastAPIServer")
 except ModuleNotFoundError as e:
-    # Only catch missing tac[server] dependency (fastapi, uvicorn, etc.)
-    # Re-raise if it's a bug in our code (e.g., wrong import path)
-    if e.name not in ("fastapi", "uvicorn", "tac.server"):
+    # Only catch missing server dependencies (fastapi, uvicorn, starlette, tac[server], etc.)
+    # Re-raise if it's a bug in our code (internal tac_aws import path error)
+    if e.name is not None and e.name.startswith("tac_aws."):
         raise
 
 try:
@@ -26,7 +26,7 @@ try:
 
     __all__.extend(["TACAgentCoreApp", "TACAgentCoreWebSocketAdapter"])
 except ModuleNotFoundError as e:
-    # Only catch missing bedrock_agentcore dependency
-    # Re-raise if it's a bug in our code
-    if e.name != "bedrock_agentcore":
+    # Only catch missing agentcore dependencies (bedrock_agentcore, etc.)
+    # Re-raise if it's a bug in our code (internal tac_aws import path error)
+    if e.name is not None and e.name.startswith("tac_aws."):
         raise

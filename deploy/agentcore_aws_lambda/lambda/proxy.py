@@ -168,7 +168,7 @@ class AgentCoreLambdaProxy:
             }
 
     def _extract_call_sid(self, event: dict[str, Any]) -> str | None:
-        """Extract CallSid from Lambda event (POST body or query string).
+        """Extract CallSid from Lambda event POST body (form-encoded).
 
         Args:
             event: Lambda event containing HTTP request data
@@ -176,12 +176,13 @@ class AgentCoreLambdaProxy:
         Returns:
             CallSid string if found, None otherwise
         """
-        body = event.get("body", "")
+        # Normalize body (handle None from body: null in event)
+        body = event.get("body") or ""
         if body:
             if event.get("isBase64Encoded"):
                 try:
                     body = base64.b64decode(body).decode("utf-8")
-                except (binascii.Error, UnicodeDecodeError) as e:
+                except (TypeError, binascii.Error, UnicodeDecodeError) as e:
                     logger.warning(f"Failed to decode request body: {e}")
                     return None
             params: dict[str, list[str]] = parse_qs(body)
@@ -189,7 +190,6 @@ class AgentCoreLambdaProxy:
             if call_sid_list:
                 return call_sid_list[0]
 
-        # Lambda Function URL: query string via rawQueryString (parsed above in body)
         return None
 
     def _normalize_headers(
@@ -225,14 +225,15 @@ class AgentCoreLambdaProxy:
             Dict containing statusCode and success response
         """
         try:
-            body = event.get("body", "")
+            # Normalize body (handle None from body: null in event)
+            body = event.get("body") or ""
             headers = self._normalize_headers(event.get("headers", {}))
 
             # Handle base64 encoding (Lambda may encode binary content)
             if event.get("isBase64Encoded"):
                 try:
                     body = base64.b64decode(body).decode("utf-8")
-                except (binascii.Error, UnicodeDecodeError) as e:
+                except (TypeError, binascii.Error, UnicodeDecodeError) as e:
                     logger.warning(f"Invalid base64 or UTF-8 encoding in request body: {e}")
                     return {
                         "statusCode": 400,
@@ -243,7 +244,7 @@ class AgentCoreLambdaProxy:
             # Parse JSON with explicit error handling
             try:
                 webhook_data = json.loads(body)
-            except json.JSONDecodeError as e:
+            except (TypeError, json.JSONDecodeError) as e:
                 logger.warning(f"Invalid JSON in webhook body: {e}")
                 return {
                     "statusCode": 400,

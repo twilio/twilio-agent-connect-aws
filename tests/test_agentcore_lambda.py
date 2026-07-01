@@ -87,3 +87,75 @@ class TestAgentCoreLambdaProxy:
 
         result = proxy._normalize_headers({})
         assert result == {}
+
+    def test_extract_call_sid_from_post_body(self):
+        """Test that _extract_call_sid extracts CallSid from POST body."""
+        proxy = AgentCoreLambdaProxy(
+            agentcore_runtime_arn="arn:aws:bedrock:us-east-1:123456789012:runtime/test",
+            conversation_configuration_id="test-config",
+            twilio_auth_token="test_token",
+            aws_region="us-east-1",
+        )
+
+        event = {
+            "body": "CallSid=CA1234567890abcdef&From=%2B15551234567",
+            "isBase64Encoded": False,
+        }
+
+        call_sid = proxy._extract_call_sid(event)
+        assert call_sid == "CA1234567890abcdef"
+
+    def test_extract_call_sid_missing(self):
+        """Test that _extract_call_sid returns None when CallSid is missing."""
+        proxy = AgentCoreLambdaProxy(
+            agentcore_runtime_arn="arn:aws:bedrock:us-east-1:123456789012:runtime/test",
+            conversation_configuration_id="test-config",
+            twilio_auth_token="test_token",
+            aws_region="us-east-1",
+        )
+
+        event = {
+            "body": "From=%2B15551234567",
+            "isBase64Encoded": False,
+        }
+
+        call_sid = proxy._extract_call_sid(event)
+        assert call_sid is None
+
+    def test_extract_call_sid_base64_encoded(self):
+        """Test that _extract_call_sid handles base64-encoded bodies."""
+        import base64
+
+        proxy = AgentCoreLambdaProxy(
+            agentcore_runtime_arn="arn:aws:bedrock:us-east-1:123456789012:runtime/test",
+            conversation_configuration_id="test-config",
+            twilio_auth_token="test_token",
+            aws_region="us-east-1",
+        )
+
+        body_content = "CallSid=CA1234567890abcdef&From=%2B15551234567"
+        encoded_body = base64.b64encode(body_content.encode("utf-8")).decode("utf-8")
+
+        event = {
+            "body": encoded_body,
+            "isBase64Encoded": True,
+        }
+
+        call_sid = proxy._extract_call_sid(event)
+        assert call_sid == "CA1234567890abcdef"
+
+    def test_extract_call_sid_none_body(self):
+        """Test that _extract_call_sid handles None body gracefully."""
+        proxy = AgentCoreLambdaProxy(
+            agentcore_runtime_arn="arn:aws:bedrock:us-east-1:123456789012:runtime/test",
+            conversation_configuration_id="test-config",
+            twilio_auth_token="test_token",
+            aws_region="us-east-1",
+        )
+
+        event = {
+            "body": None,  # AWS events can have body: null
+        }
+
+        call_sid = proxy._extract_call_sid(event)
+        assert call_sid is None

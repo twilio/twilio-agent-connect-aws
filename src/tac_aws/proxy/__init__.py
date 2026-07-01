@@ -7,9 +7,9 @@ try:
 
     __all__.append("AgentCoreLambdaProxy")
 except ModuleNotFoundError as e:
-    # Only catch missing boto3/bedrock_agentcore dependencies
-    # Re-raise if it's a bug in our code
-    if e.name not in ("boto3", "botocore", "bedrock_agentcore"):
+    # Only catch missing agentcore dependencies (boto3, botocore, bedrock_agentcore, etc.)
+    # Re-raise if it's a bug in our code (internal tac_aws import path error)
+    if e.name is not None and e.name.startswith("tac_aws."):
         raise
 
 try:
@@ -17,7 +17,7 @@ try:
 
     __all__.append("TwilioSignatureValidator")
 except ModuleNotFoundError as e:
-    # Only catch missing twilio dependency
-    # Re-raise if it's a bug in our code
-    if e.name != "twilio":
+    # Only catch missing twilio dependencies (twilio, etc.)
+    # Re-raise if it's a bug in our code (internal tac_aws import path error)
+    if e.name is not None and e.name.startswith("tac_aws."):
         raise
