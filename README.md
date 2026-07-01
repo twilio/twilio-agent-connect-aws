@@ -37,8 +37,8 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
 - **AWS Strands SDK** - Build conversational agents with persistent session management and context-aware configuration
 - **AWS Bedrock Agents** - Connect console-created agents with managed action groups and knowledge bases
 - **AWS Bedrock AgentCore** - Deploy custom agent code (any framework: Strands, LangGraph, OpenAI SDK) with managed runtime
-  - **Fargate Deployment** - Container-based deployment with `BedrockAgentCoreConnector` and FastAPI server on AWS Fargate
   - **Lambda Deployment** ⭐ **Recommended** - Serverless deployment with Lambda Function URL webhook proxy (no container infrastructure)
+  - **Fargate Deployment** - Container-based deployment with `BedrockAgentCoreConnector` and FastAPI server on AWS Fargate
 
 ### Multi-Channel Communication
 - **Voice and SMS support** - Single codebase handles both phone calls and text messages
