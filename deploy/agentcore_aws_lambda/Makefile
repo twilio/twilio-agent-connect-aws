@@ -3,6 +3,9 @@
 # Load environment variables from .env file
 -include .env
 
+# Load local customizations if present (gitignored; personal testing targets)
+-include Makefile.local
+
 # Unset AWS_PROFILE from shell environment to force reading from .env only
 unexport AWS_PROFILE
 AWS_PROFILE := $(shell grep '^AWS_PROFILE=' .env 2>/dev/null | cut -d '=' -f 2-)

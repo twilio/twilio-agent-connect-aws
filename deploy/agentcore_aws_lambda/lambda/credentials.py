@@ -50,7 +50,7 @@ def fetch_twilio_auth_token(secret_arn: str, region: str | None = None) -> str:
             )
 
         logger.info("Successfully loaded Twilio auth token from Secrets Manager")
-        return auth_token
+        return str(auth_token)
 
     except Exception as e:
         logger.error(f"Failed to fetch Twilio auth token: {e}", exc_info=True)

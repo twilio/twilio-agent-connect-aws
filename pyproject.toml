@@ -61,8 +61,8 @@ dev = [
     # Server dependencies (via TAC core)
     "twilio-agent-connect[server]>=1.0.0,<2",
     # Dev tools
-    "pytest>=7.0.0,<8",
-    "pytest-asyncio>=0.23.0,<1",
+    "pytest>=9.0.0,<10",
+    "pytest-asyncio>=1.0.0,<2",
     "pytest-cov>=5.0.0,<8",
     "ruff>=0.8.0,<1",
     "mypy>=1.0.0,<2",
@@ -161,7 +161,7 @@ module = "twilio.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]
-minversion = "7.0"
+minversion = "9.0"
 addopts = "-ra -q --strict-markers --strict-config"
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
