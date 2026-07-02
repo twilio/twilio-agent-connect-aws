@@ -1,0 +1,67 @@
+import {
+  AgentCoreApplication,
+  type AgentCoreProjectSpec,
+} from '@aws/agentcore-cdk';
+import { CfnOutput, Stack, type StackProps } from 'aws-cdk-lib';
+import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
+import { Construct } from 'constructs';
+
+export interface AgentCoreStackProps extends StackProps {
+  /**
+   * The AgentCore project specification containing agents, memories, and credentials.
+   */
+  spec: AgentCoreProjectSpec;
+
+  /**
+   * Twilio credentials secret (for granting read access to AgentCore runtime)
+   */
+  twilioSecret: secretsmanager.ISecret;
+}
+
+/**
+ * CDK Stack that deploys AgentCore infrastructure.
+ *
+ * This is a thin wrapper that instantiates L3 constructs.
+ * All resource logic and outputs are contained within the L3 constructs.
+ */
+export class AgentCoreStack extends Stack {
+  /** The AgentCore application containing all agent environments */
+  public readonly application: AgentCoreApplication;
+
+  /** The runtime ARN for the TAC agent (for cross-stack reference) */
+  public readonly runtimeArn: string;
+
+  constructor(scope: Construct, id: string, props: AgentCoreStackProps) {
+    super(scope, id, props);
+
+    const { spec } = props;
+
+    // Create AgentCoreApplication with all agents
+    this.application = new AgentCoreApplication(this, 'Application', {
+      spec,
+    });
+
+    // Get the runtime ARN from the first (and only) runtime
+    const runtimeName = spec.runtimes[0]?.name;
+    if (!runtimeName) {
+      throw new Error('No runtimes defined in agentcore.json');
+    }
+
+    const environment = this.application.environments.get(runtimeName);
+    if (!environment) {
+      throw new Error(`Runtime environment ${runtimeName} not found`);
+    }
+
+    this.runtimeArn = environment.runtime.runtimeArn;
+
+    // Grant AgentCore runtime permission to read Twilio credentials
+    props.twilioSecret.grantRead(environment.runtime.role);
+
+    // Output runtime ARN for Lambda stack
+    new CfnOutput(this, 'AgentCoreRuntimeArn', {
+      description: 'AgentCore Runtime ARN',
+      value: this.runtimeArn,
+      exportName: 'TacAgentCoreRuntimeArn',
+    });
+  }
+}
