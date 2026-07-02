@@ -19,7 +19,7 @@ This deployment runs a voice and SMS AI agent using:
 - **AWS Bedrock** - LLM inference (Amazon Nova Pro, Claude, etc.)
 - **TAC (Twilio Agent Connect)** - Integration middleware
 
-The system handles incoming calls and SMS messages, routes them through an AI agent deployed on AgentCore Runtime, and manages conversation state using Twilio's Maestro (Conversations API) and Memory services.
+The system handles incoming calls and SMS messages, routes them through an AI agent deployed on AgentCore Runtime, and manages conversation state using Twilio's Conversation Orchestrator and Memory services.
 
 ---
 
@@ -33,7 +33,7 @@ graph TB
 
     subgraph Twilio["☁️ Twilio Cloud"]
         Phone[📱 Phone Number<br/>+1-XXX-XXX-XXXX]
-        Maestro[💬 Conversations<br/>Maestro API]
+        Orchestrator[💬 Conversations<br/>Conversation Orchestrator]
         Memory[🧠 Memory Service<br/>Profile & Context]
     end
 
@@ -64,7 +64,7 @@ graph TB
     Phone -->|2. Webhook POST| HTTPS
     HTTPS -->|3. HTTP Request<br/>/twiml or /webhook| ALB
     ALB -->|4. Forward to| ECS
-    ECS -->|5. Create Conversation| Maestro
+    ECS -->|5. Create Conversation| Orchestrator
     ECS -->|6. Retrieve Profile| Memory
     ECS -->|7. Invoke AgentCore| Agent
     Agent -->|8. Session State| AgentMemory
