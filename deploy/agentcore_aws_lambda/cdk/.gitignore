@@ -1,0 +1,13 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+dist
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Exception: Allow lib/ folder (TypeScript source code)
+# Overrides root .gitignore lib/ pattern
+!lib/
