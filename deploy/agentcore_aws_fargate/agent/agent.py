@@ -1,18 +1,19 @@
 import json
 import logging
-from strands import Agent
+
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
+from strands import Agent
 
 logger = logging.getLogger(__name__)
 
 agent = Agent(
     model="us.amazon.nova-pro-v1:0",  # Use cross-region inference profile
     system_prompt=(
-        "You are a helpful voice assistant. Respond naturally in plain text. "
+        "You are a helpful assistant. Respond naturally in plain text. "
         "IMPORTANT: Never use markdown formatting - no asterisks, no bold, no italics, no code blocks. "
         "Just respond with plain conversational text. "
-        "Be concise and direct."
-    )
+        "Be helpful and provide complete, informative responses."
+    ),
 )
 app = BedrockAgentCoreApp()
 
@@ -26,8 +27,8 @@ async def invoke(payload):
     # Stream response token by token
     async for chunk in agent.stream_async(user_message):
         # Strands stream_async returns dicts with 'data' key containing the text token
-        if isinstance(chunk, dict) and 'data' in chunk:
-            token = chunk['data']
+        if isinstance(chunk, dict) and "data" in chunk:
+            token = chunk["data"]
             if token:
                 yield {"type": "text", "token": token}
 
@@ -60,29 +61,20 @@ async def websocket_handler(websocket, context):
                 try:
                     async for chunk in agent.stream_async(user_message):
                         # Strands stream_async returns dicts with 'data' key containing the text token
-                        if isinstance(chunk, dict) and 'data' in chunk:
-                            token = chunk['data']
+                        if isinstance(chunk, dict) and "data" in chunk:
+                            token = chunk["data"]
                             if token:
-                                response = {
-                                    "type": "text",
-                                    "token": token,
-                                    "last": False
-                                }
+                                response = {"type": "text", "token": token, "last": False}
                                 await websocket.send_text(json.dumps(response))
 
                     # Send final message
-                    await websocket.send_text(json.dumps({
-                        "type": "text",
-                        "token": "",
-                        "last": True
-                    }))
+                    await websocket.send_text(
+                        json.dumps({"type": "text", "token": "", "last": True})
+                    )
 
                 except Exception as e:
                     logger.error(f"Error streaming response: {e}")
-                    await websocket.send_text(json.dumps({
-                        "type": "error",
-                        "message": str(e)
-                    }))
+                    await websocket.send_text(json.dumps({"type": "error", "message": str(e)}))
 
             elif message.get("type") == "interrupt":
                 # Handle interruption - stop current generation

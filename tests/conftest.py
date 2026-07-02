@@ -8,7 +8,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 if TYPE_CHECKING:
-    from strands import Agent
+    pass
 
 
 @pytest.fixture

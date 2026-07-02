@@ -50,7 +50,7 @@ Resources:
       EnableDnsSupport: true
       Tags:
         - Key: Name
-          Value: TAC-VPC
+          Value: TAC-AgentCore-VPC
 
   # Internet Gateway
   InternetGateway:
@@ -58,7 +58,7 @@ Resources:
     Properties:
       Tags:
         - Key: Name
-          Value: TAC-IGW
+          Value: TAC-AgentCore-IGW
 
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -76,7 +76,7 @@ Resources:
       AvailabilityZone: !Select [0, !GetAZs '']
       Tags:
         - Key: Name
-          Value: TAC-Public-Subnet-1
+          Value: TAC-AgentCore-Public-Subnet-1
 
   PublicSubnet2:
     Type: AWS::EC2::Subnet
@@ -87,7 +87,7 @@ Resources:
       AvailabilityZone: !Select [1, !GetAZs '']
       Tags:
         - Key: Name
-          Value: TAC-Public-Subnet-2
+          Value: TAC-AgentCore-Public-Subnet-2
 
   # Route Table
   PublicRouteTable:
@@ -96,7 +96,7 @@ Resources:
       VpcId: !Ref VPC
       Tags:
         - Key: Name
-          Value: TAC-Public-RT
+          Value: TAC-AgentCore-Public-RT
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -122,7 +122,7 @@ Resources:
   ECSCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: TAC-agentcore-cluster
+      ClusterName: TAC-AgentCore-Cluster
 
   # CloudWatch Logs
   LogGroup:
@@ -173,7 +173,7 @@ Resources:
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
-      Family: tac-server-alb
+      Family: tac-agentcore-server
       NetworkMode: awsvpc
       RequiresCompatibilities:
         - FARGATE
@@ -185,7 +185,7 @@ Resources:
         CpuArchitecture: X86_64
         OperatingSystemFamily: LINUX
       ContainerDefinitions:
-        - Name: tac-server
+        - Name: tac-agentcore-server
           Image: !Ref ImageURI
           Essential: true
           PortMappings:
@@ -210,11 +210,9 @@ Resources:
               Value: !Ref TwilioPhoneNumber
             - Name: TWILIO_CONVERSATION_CONFIGURATION_ID
               Value: !Ref TwilioConversationConfigurationId
-            - Name: TWILIO_ENVIRONMENT
-              Value: prod
             - Name: TWILIO_VOICE_PUBLIC_DOMAIN
               Value: !Ref TwilioVoicePublicDomain
-            - Name: TWILIO_LOG_LEVEL
+            - Name: TWILIO_TAC_LOG_LEVEL
               Value: DEBUG
             - Name: AWS_REGION
               Value: !Ref AWS::Region
@@ -225,7 +223,7 @@ Resources:
   ALBSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for ALB
+      GroupDescription: Security group for AgentCore ALB
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -235,12 +233,12 @@ Resources:
           Description: Allow HTTP traffic
       Tags:
         - Key: Name
-          Value: TAC-ALB-SG
+          Value: TAC-AgentCore-ALB-SG
 
   ServiceSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Security group for TAC Fargate service
+      GroupDescription: Security group for TAC AgentCore Fargate service
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -250,7 +248,7 @@ Resources:
           Description: Allow traffic from ALB
       Tags:
         - Key: Name
-          Value: TAC-Service-SG
+          Value: TAC-AgentCore-Service-SG
 
   # Application Load Balancer
   LoadBalancer:
@@ -266,7 +264,7 @@ Resources:
         - !Ref ALBSecurityGroup
       Tags:
         - Key: Name
-          Value: TAC-ALB
+          Value: TAC-AgentCore-ALB
 
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -308,7 +306,7 @@ Resources:
     Type: AWS::ECS::Service
     DependsOn: Listener
     Properties:
-      ServiceName: tac-service-alb
+      ServiceName: tac-agentcore-service
       Cluster: !Ref ECSCluster
       TaskDefinition: !Ref TaskDefinition
       DesiredCount: 1
@@ -322,7 +320,7 @@ Resources:
           SecurityGroups:
             - !Ref ServiceSecurityGroup
       LoadBalancers:
-        - ContainerName: tac-server
+        - ContainerName: tac-agentcore-server
           ContainerPort: 8000
           TargetGroupArn: !Ref TargetGroup
       HealthCheckGracePeriodSeconds: 60

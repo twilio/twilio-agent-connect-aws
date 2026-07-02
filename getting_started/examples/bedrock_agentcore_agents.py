@@ -27,11 +27,11 @@ from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
 from tac.models.session import ConversationSession
-from tac.server import TACFastAPIServer
 from tac.session import ThreadSafeSessionManager
 
 from tac_aws.connectors import BedrockAgentCoreConnector
 from tac_aws.connectors.bedrock_agentcore.config import RuntimeConfig, WebSocketConfig
+from tac_aws.server import TACAWSFastAPIServer
 
 if TYPE_CHECKING:
     from mypy_boto3_bedrock_agentcore.type_defs import InvokeAgentRuntimeResponseTypeDef
@@ -129,7 +129,7 @@ connector = BedrockAgentCoreConnector(
 )
 
 # Create server
-server = TACFastAPIServer(
+server = TACAWSFastAPIServer(
     tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
 )
 

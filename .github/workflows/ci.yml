@@ -1,0 +1,189 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ARTIFACTORY_URL: ${{ vars.ARTIFACTORY_URL }}
+
+jobs:
+  lint:
+    name: Linting
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Authenticate with Artifactory
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: ./.github/actions/artifactory-oidc
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        with:
+          version: "0.9.26"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          . .venv/bin/activate
+          uv sync --frozen --all-extras --all-groups
+
+      - name: Run ruff check
+        run: |
+          . .venv/bin/activate
+          echo "Checking Python files in repository:"
+          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | sort | head -30
+          echo ""
+          echo "Total Python files to check:"
+          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | wc -l
+          echo ""
+          uv run ruff check .
+
+      - name: Run ruff format check
+        run: |
+          . .venv/bin/activate
+          echo "Checking formatting for Python files in repository:"
+          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | wc -l
+          echo "files"
+          echo ""
+          uv run ruff format --check .
+
+  type-check:
+    name: Type Check
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Authenticate with Artifactory
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: ./.github/actions/artifactory-oidc
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        with:
+          version: "0.9.26"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          . .venv/bin/activate
+          uv sync --frozen --all-extras --all-groups
+
+      - name: Run mypy
+        run: |
+          . .venv/bin/activate
+          echo "Type checking directories: src/tac_aws getting_started"
+          echo ""
+          echo "Python files in src/tac_aws:"
+          find src/tac_aws -name "*.py" -type f | wc -l
+          echo ""
+          echo "Python files in getting_started:"
+          find getting_started -name "*.py" -type f | wc -l
+          echo ""
+          MYPYPATH=src uv run mypy src/tac_aws getting_started
+
+  test:
+    name: Test - Python ${{ matrix.python-version }}
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Authenticate with Artifactory
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: ./.github/actions/artifactory-oidc
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        with:
+          version: "0.9.26"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          . .venv/bin/activate
+          uv sync --frozen --all-extras --all-groups
+
+      - name: Run tests
+        run: |
+          . .venv/bin/activate
+          uv run pytest
+
+  build:
+    name: Build Package
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Authenticate with Artifactory
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: ./.github/actions/artifactory-oidc
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        with:
+          version: "0.9.26"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.10"
+
+      - name: Build package
+        run: |
+          uv build
+
+      - name: Check package metadata
+        run: |
+          uv venv
+          . .venv/bin/activate
+          pip install twine
+          twine check dist/*
+
+      - name: Test package installation
+        run: |
+          python -m venv test-env
+          . test-env/bin/activate
+          pip install dist/*.whl
+          python -c "import tac_aws; print(f'Successfully imported tac_aws')"
+
+  all-checks:
+    name: All Checks Passed
+    needs: [lint, type-check, test, build]
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest' || 'ubuntu-x64' }}
+    if: always()
+    steps:
+      - name: Check all job statuses
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs['type-check'].result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ]; then
+            echo "One or more checks failed"
+            exit 1
+          fi

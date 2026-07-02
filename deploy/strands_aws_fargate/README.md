@@ -19,11 +19,13 @@ This deployment runs a voice and SMS AI agent using:
 - **Strands** - Agent orchestration framework
 - **TAC (Twilio Agent Connect)** - Integration middleware
 
-The system handles incoming calls and SMS messages, routes them through an AI agent powered by AWS Bedrock, and manages conversation state using Twilio's Maestro (Conversations API) and Memory services.
+The system handles incoming calls and SMS messages, routes them through an AI agent powered by AWS Bedrock, and manages conversation state using Twilio's Conversation Orchestrator and Memory services.
 
 ---
 
 ## Architecture
+
+### High-Level Architecture
 
 ```mermaid
 graph TB
@@ -31,7 +33,7 @@ graph TB
 
     subgraph Twilio["☁️ Twilio Cloud"]
         Phone[📱 Phone Number<br/>+1-XXX-XXX-XXXX]
-        Maestro[💬 Conversations<br/>Maestro API]
+        Orchestrator[💬 Conversations<br/>Conversation Orchestrator]
         Memory[🧠 Memory Service<br/>Profile & Context]
     end
 
@@ -57,7 +59,7 @@ graph TB
     Phone -->|2. Webhook POST| HTTPS
     HTTPS -->|3. HTTP Request<br/>/twiml or /webhook| ALB
     ALB -->|4. Forward to| ECS
-    ECS -->|5. Create Conversation| Maestro
+    ECS -->|5. Create Conversation| Orchestrator
     ECS -->|6. Retrieve Profile| Memory
     ECS -->|7. LLM Inference| Bedrock
     ECS -->|8. Write Logs| Logs
@@ -122,26 +124,20 @@ graph TB
   - Conversation Configuration ID from Conversation Orchestrator
 
 **Where to find Twilio credentials:**
-- Account SID: Twilio Console → Account Dashboard (top section)
-- Auth Token & API Keys: Twilio Console → Account → API Keys & Tokens
+- Account SID & Auth Token: Twilio Console → Account → API Keys & Tokens
+- API Key & Secret: Twilio Console → Account → API Keys & Tokens
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration
 
 ### Step 0: Build and Publish Docker Image
 
-**1. Build wheels:**
+**1. Build Docker image:**
 
 ```bash
-cd strands_aws_fargate
-./build-wheels.sh
+# From the strands_aws_fargate directory
+docker build -t tac-strands-server:latest .
 ```
 
-**2. Build Docker image:**
-
-```bash
-docker build -t tac-strands-server:latest -f Dockerfile .
-```
-
-**3. Publish to AWS ECR:**
+**2. Publish to AWS ECR:**
 
 Publish your Docker image to AWS ECR. You'll need the ECR image URI for Step 1.
 
@@ -149,11 +145,9 @@ Example URI format: `123456789012.dkr.ecr.us-east-1.amazonaws.com/tac-strands-se
 
 ### Step 1: Deploy CloudFormation Stack
 
-Deploy the infrastructure first:
+Deploy the infrastructure (from the strands_aws_fargate directory):
 
 ```bash
-cd strands_aws_fargate
-
 aws cloudformation deploy \
   --template-file cloudformation.yaml \
   --stack-name TACStack \

@@ -19,11 +19,13 @@ This deployment runs a voice and SMS AI agent using:
 - **AWS Bedrock** - LLM inference (Amazon Nova Pro, Claude, etc.)
 - **TAC (Twilio Agent Connect)** - Integration middleware
 
-The system handles incoming calls and SMS messages, routes them through an AI agent deployed on AgentCore Runtime, and manages conversation state using Twilio's Maestro (Conversations API) and Memory services.
+The system handles incoming calls and SMS messages, routes them through an AI agent deployed on AgentCore Runtime, and manages conversation state using Twilio's Conversation Orchestrator and Memory services.
 
 ---
 
 ## Architecture
+
+### High-Level Architecture
 
 ```mermaid
 graph TB
@@ -31,7 +33,7 @@ graph TB
 
     subgraph Twilio["☁️ Twilio Cloud"]
         Phone[📱 Phone Number<br/>+1-XXX-XXX-XXXX]
-        Maestro[💬 Conversations<br/>Maestro API]
+        Orchestrator[💬 Conversations<br/>Conversation Orchestrator]
         Memory[🧠 Memory Service<br/>Profile & Context]
     end
 
@@ -62,7 +64,7 @@ graph TB
     Phone -->|2. Webhook POST| HTTPS
     HTTPS -->|3. HTTP Request<br/>/twiml or /webhook| ALB
     ALB -->|4. Forward to| ECS
-    ECS -->|5. Create Conversation| Maestro
+    ECS -->|5. Create Conversation| Orchestrator
     ECS -->|6. Retrieve Profile| Memory
     ECS -->|7. Invoke AgentCore| Agent
     Agent -->|8. Session State| AgentMemory
@@ -140,31 +142,49 @@ graph TB
   - Conversation Configuration ID from Conversation Orchestrator
 
 **Where to find Twilio credentials:**
-- Account SID: Twilio Console → Account Dashboard (top section)
-- Auth Token & API Keys: Twilio Console → Account → API Keys & Tokens
+- Account SID & Auth Token: Twilio Console → Account → API Keys & Tokens
+- API Key & Secret: Twilio Console → Account → API Keys & Tokens
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration
 
 ### Part 1: Deploy Agent to AgentCore
 
 The `agent/` folder contains a simple Strands agent ready for deployment.
 
-**Step 1: Install AgentCore CLI**
+**Step 1: Install Dependencies**
 
 ```bash
-cd agentcore_aws_fargate/agent
+# From the agentcore_aws_fargate directory
+cd agent
 
+# Create virtual environment (optional)
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Install AgentCore toolkit
 pip install bedrock-agentcore-starter-toolkit
 ```
 
 **Step 2: Configure Agent for Deployment**
 
 ```bash
+# Configure the agent (non-interactive)
 agentcore configure --entrypoint agent.py --name simpleagent --non-interactive
 ```
+
+This creates `.bedrock_agentcore.yaml` with:
+- Agent name: `simpleagent`
+- Deployment type: Direct Code Deploy
+- Runtime: Python 3.13
+- Auto-create execution role and S3 bucket
+- Memory: Short-term memory (30-day retention)
 
 **Step 3: Deploy to AWS AgentCore**
 
 ```bash
+# Deploy to AWS
 agentcore launch
 ```
 
@@ -177,6 +197,7 @@ agentcore launch
 **Step 4: Test Deployed Agent**
 
 ```bash
+# Test the deployed agent
 agentcore invoke '{"prompt": "Hello"}'
 ```
 
@@ -198,20 +219,14 @@ Example: `arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/simpleagent-X
 
 ### Step 0: Build and Publish Docker Image
 
-**1. Build wheels:**
+**1. Build Docker image:**
 
 ```bash
-cd agentcore_aws_fargate
-./build-wheels.sh
+# From the agentcore_aws_fargate directory
+docker build -t tac-agentcore-server:latest .
 ```
 
-**2. Build Docker image:**
-
-```bash
-docker build -t tac-agentcore-server:latest -f Dockerfile .
-```
-
-**3. Publish to AWS ECR:**
+**2. Publish to AWS ECR:**
 
 Publish your Docker image to AWS ECR. You'll need the ECR image URI for Step 1.
 
@@ -219,11 +234,9 @@ Example URI format: `123456789012.dkr.ecr.us-east-1.amazonaws.com/tac-agentcore-
 
 ### Step 1: Deploy CloudFormation Stack
 
-Deploy the infrastructure first:
+Deploy the infrastructure (from the agentcore_aws_fargate directory):
 
 ```bash
-cd agentcore_aws_fargate
-
 aws cloudformation deploy \
   --template-file cloudformation.yaml \
   --stack-name TACAgentCoreStack \

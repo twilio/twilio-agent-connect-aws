@@ -1,13 +1,13 @@
 """
 TAC Server with AWS Bedrock Agent Connector
 
-Dependencies are managed via pyproject.toml.
-Requires twilio-agent-connect-aws[bedrock,server] version 1.0.0 or later.
-
 Prerequisites:
-- Deploy an agent to AWS Bedrock Agent
-- Set required TAC environment variables (see README.md)
-- Configure AWS credentials (IAM permission: bedrock:InvokeAgent)
+    pip install twilio-agent-connect-aws[bedrock,server]
+
+Environment Variables:
+    BEDROCK_AGENT_ID - Bedrock Agent ID
+    BEDROCK_AGENT_ALIAS_ID - Bedrock Agent Alias ID (default: TSTALIASID)
+    AWS_REGION - AWS Region (default: us-east-1)
 """
 
 from __future__ import annotations
@@ -20,26 +20,21 @@ from tac import TAC
 from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
-from tac.server import TACFastAPIServer
 
 from tac_aws.connectors import BedrockConnector
+from tac_aws.server import TACAWSFastAPIServer
 
 load_dotenv()
 
 tac = TAC(config=TACConfig.from_env())
 
-# Get Bedrock Agent configuration from environment
 agent_id = os.getenv("BEDROCK_AGENT_ID")
 agent_alias_id = os.getenv("BEDROCK_AGENT_ALIAS_ID", "TSTALIASID")
 region = os.getenv("AWS_REGION", "us-east-1")
 
 if not agent_id:
-    raise ValueError(
-        "BEDROCK_AGENT_ID environment variable is required. "
-        "Set it to your Bedrock Agent ID"
-    )
+    raise ValueError("BEDROCK_AGENT_ID environment variable is required")
 
-# Create Bedrock Agent Runtime client
 bedrock_client = boto3.client("bedrock-agent-runtime", region_name=region)
 
 # Simple config-based approach (recommended)
@@ -55,8 +50,7 @@ connector = BedrockConnector(
     sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
-# TAC Server uses connector's channels for HTTP routing
-server = TACFastAPIServer(
+server = TACAWSFastAPIServer(
     tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
 )
 

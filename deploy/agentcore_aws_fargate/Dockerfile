@@ -4,17 +4,14 @@ FROM python:3.13.5 AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy wheel files for private dependencies
-COPY agentcore_aws_fargate/wheels/*.whl /app/wheels/
+# Dependency versions (twilio-agent-connect-aws always uses latest)
+ARG PYTHON_DOTENV_VERSION=1.0.0
 
-# Copy requirements file (without git-sourced packages)
-COPY agentcore_aws_fargate/requirements.txt /app/requirements.txt
-
-# Install the git-sourced packages from wheels first (without dependencies)
-RUN pip install --no-cache-dir --no-deps /app/wheels/twilio_agent_connect-1.0.0-py3-none-any.whl /app/wheels/tac_aws-1.0.0-py3-none-any.whl
-
-# Install all other dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies from PyPI
+# Note: bedrock-agentcore, boto3, and type stubs are managed by twilio-agent-connect-aws
+RUN pip install --no-cache-dir \
+    'twilio-agent-connect-aws[agentcore,server]' \
+    "python-dotenv==${PYTHON_DOTENV_VERSION}"
 
 # Final stage
 FROM python:3.13.5
@@ -34,7 +31,7 @@ COPY --from=builder /usr/local/lib/python3.13/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
-COPY agentcore_aws_fargate/agentcore_server.py ./
+COPY agentcore_server.py ./
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \

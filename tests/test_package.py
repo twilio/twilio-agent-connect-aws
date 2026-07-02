@@ -16,24 +16,12 @@ class TestPackageImports:
         assert isinstance(tac_aws.__version__, str)
 
     def test_strands_connector_import(self) -> None:
-        """Test that StrandsConnector can be imported from package root."""
-        from tac_aws import StrandsConnector
-
-        assert StrandsConnector is not None
-
-    def test_strands_connector_direct_import(self) -> None:
         """Test that StrandsConnector can be imported from connectors module."""
         from tac_aws.connectors import StrandsConnector
 
         assert StrandsConnector is not None
 
     def test_bedrock_connector_import(self) -> None:
-        """Test that BedrockAgentCoreConnector can be imported from package root."""
-        from tac_aws import BedrockAgentCoreConnector
-
-        assert BedrockAgentCoreConnector is not None
-
-    def test_bedrock_connector_direct_import(self) -> None:
         """Test that BedrockAgentCoreConnector can be imported from connectors module."""
         from tac_aws.connectors import BedrockAgentCoreConnector
 
@@ -53,15 +41,26 @@ class TestPackageImports:
         assert create_memory_tool is not None
         assert callable(create_memory_tool)
 
+    def test_aws_server_import(self) -> None:
+        """Test that TACAWSFastAPIServer can be imported from server module."""
+        try:
+            from tac_aws.server import TACAWSFastAPIServer
+
+            assert TACAWSFastAPIServer is not None
+        except ImportError:
+            # Server dependencies might not be installed
+            pytest.skip("Server dependencies not installed")
+
     def test_package_all_exports(self) -> None:
         """Test that __all__ exports are correct."""
         import tac_aws
 
         # Check __all__ contains expected exports
         assert hasattr(tac_aws, "__all__")
-        assert "StrandsConnector" in tac_aws.__all__
-        assert "BedrockAgentCoreConnector" in tac_aws.__all__
         assert "__version__" in tac_aws.__all__
+
+        # Only version is exported from root (connectors are in submodules)
+        assert len(tac_aws.__all__) == 1
 
     def test_connectors_module_exports(self) -> None:
         """Test that connectors module exports are correct."""

@@ -1,0 +1,15 @@
+# This is the list of Twilio Agent Connect AWS authors for copyright purposes.
+#
+# This does not necessarily list everyone who has contributed code, since in
+# some cases, their employer may be the copyright holder. To see the full list
+# of contributors, see the revision history in source control or the contributors
+# page on GitHub.
+#
+# Note: This repository was migrated from a previous location, so some early
+# contribution history may not be fully reflected in the git log.
+
+Twilio Inc.
+Christopher Lintz <clintz@twilio.com>
+Huang <jahuang@twilio.com>
+Ryan Rishi <ryan@ryanrishi.com>
+Ryan Rouleau <ryan@ryanrouleau.com>
