@@ -2177,16 +2177,16 @@ wheels = [
 
 [[package]]
 name = "twilio-agent-connect"
-version = "1.0.0"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
     { name = "twilio" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8b/46/00899d8c94e0f21d5490700767a92fa08093c72d9084c0712d5297041c32/twilio_agent_connect-1.0.0.tar.gz", hash = "sha256:a08b8d6c63757436b073d92e2d88cba1e10c796cf61c16509276c6171c13568b", size = 277777, upload-time = "2026-05-05T16:21:58.461Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2f/f2/792ac8115aa396ccbccf7dc109324718262c10df0b8bd730a503b0d2d75b/twilio_agent_connect-1.0.1.tar.gz", hash = "sha256:9c17eb7f9c38e21bd55615baad1480708d4db1382e1f404516c73fa7b6bf8d85", size = 85825, upload-time = "2026-05-07T11:21:52.076Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/43/2b/a4859d8dad192dc066e7e819d3af7033286e6447abc2d3591a19b28b07bd/twilio_agent_connect-1.0.0-py3-none-any.whl", hash = "sha256:564a8da2afd6dd14688f48b3637b3222397b76cfffe25f0d5aa756ebf285f862", size = 115045, upload-time = "2026-05-05T16:21:55.274Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/8a/cf17bcb06e1b24e421d5f657d12bd21738e065e6a1dab6d351a184960e69/twilio_agent_connect-1.0.1-py3-none-any.whl", hash = "sha256:a115c140f1fde2ab125bec7858cd1e8f009be18f2791248c8947cfe2e6417b44", size = 115221, upload-time = "2026-05-07T11:21:50.746Z" },
 ]
 
 [package.optional-dependencies]
