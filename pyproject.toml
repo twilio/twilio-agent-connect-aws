@@ -1,6 +1,6 @@
 [project]
 name = "twilio-agent-connect-aws"
-version = "1.0.2"
+version = "1.1.0"
 description = "AWS integrations for Twilio Agent Connect (TAC) - adapters and servers for AWS agent runtimes"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -154,6 +154,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "websockets"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "twilio.*"
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

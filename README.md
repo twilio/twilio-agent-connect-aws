@@ -33,21 +33,27 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
 
 ## Features
 
-- **StrandsConnector** - AWS Strands SDK integration
-  - Per-conversation agent isolation with SessionManager support
-  - Context-aware agent factories
-- **BedrockConnector** - AWS Bedrock Agents integration
-  - Connect console-created agents to Twilio
-  - Managed agent service with action groups and knowledge bases
-- **BedrockAgentCoreConnector** - AWS Bedrock AgentCore integration
-  - Deploy custom agent code (Strands, LangGraph, OpenAI SDK)
-  - Managed runtime with built-in memory
-- **TACAWSFastAPIServer** - AWS-optimized server for ALB deployments
-  - Automatic header fixing for Twilio signature validation
-  - Works with AWS ALB + ngrok for testing
-  - Handles both HTTP (SMS) and WebSocket (Voice)
-- Multi-channel support (SMS + Voice)
-- Automatic TAC memory injection
+### Agent Runtime Integration
+- **AWS Strands SDK** - Build conversational agents with persistent session management and context-aware configuration
+- **AWS Bedrock Agents** - Connect console-created agents with managed action groups and knowledge bases
+- **AWS Bedrock AgentCore** - Deploy custom agent code (any framework: Strands, LangGraph, OpenAI SDK) with managed runtime
+  - **Lambda Deployment** ⭐ **Recommended** - Serverless deployment with Lambda Function URL webhook proxy (no container infrastructure)
+  - **Fargate Deployment** - Container-based deployment with `BedrockAgentCoreConnector` and FastAPI server on AWS Fargate
+
+### Multi-Channel Communication
+- **Voice and SMS support** - Single codebase handles both phone calls and text messages
+- **Automatic conversation routing** - Messages route to the correct agent instance per conversation
+- **Memory injection** - Customer history and preferences automatically included in agent context
+
+### Deployment Options
+- **FastAPI server** - Production-ready server with AWS ALB optimization and ngrok support for local testing (Fargate deployments)
+- **Lambda Function URL proxy** - Serverless webhook handler with Twilio signature validation for AgentCore deployments
+- **AgentCore runtime integration** - Server adapter for Bedrock AgentCore with HTTP (SMS) and WebSocket (voice) support
+
+### Production Ready
+- **Twilio webhook validation** - Automatic signature verification for secure integrations
+- **Session persistence** - Continue conversations across interactions with built-in session management
+- **Error handling** - Robust error handling and fallbacks for production reliability
 
 ## Installation
 
@@ -106,9 +112,21 @@ Full examples available in [`getting_started/examples/`](getting_started/example
 ## Deployment
 
 See [`deploy/README.md`](deploy/README.md) for production deployment guides:
-- **Strands AWS Fargate** - Deploy Strands SDK agents
-- **Bedrock Agents AWS Fargate** - Deploy console-created Bedrock agents
-- **Bedrock AgentCore AWS Fargate** - Deploy custom agent code to AgentCore runtime
+
+### Container-based (Fargate)
+- **Strands on Fargate** - Deploy Strands SDK agents with FastAPI server
+- **Bedrock Agents on Fargate** - Deploy console-created Bedrock agents
+- **AgentCore Connector on Fargate** - Deploy custom agent code with `BedrockAgentCoreConnector` and FastAPI server
+  - Full control over server configuration
+  - Use TAC connectors for multi-channel management
+
+### Serverless (Lambda) ⭐ Recommended for AgentCore
+- **AgentCore with Lambda** - Deploy AgentCore runtime with Lambda Function URL webhook proxy
+  - No container infrastructure required
+  - Automatic scaling with Lambda and AgentCore
+  - Simpler deployment and lower operational overhead
+  - Uses `AgentCoreLambdaProxy` and `TACAgentCoreApp` utilities
+  - See [`deploy/agentcore_aws_lambda/`](deploy/agentcore_aws_lambda/) for setup guide
 
 ## Development
 
