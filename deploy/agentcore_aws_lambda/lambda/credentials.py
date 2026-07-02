@@ -41,16 +41,16 @@ def fetch_twilio_auth_token(secret_arn: str, region: str | None = None) -> str:
         response = secrets_client.get_secret_value(SecretId=secret_arn)
         credentials = json.loads(response["SecretString"])
 
-        # Validate and extract auth token
+        # Validate and extract auth token: must be a non-empty string
         auth_token = credentials.get("TWILIO_AUTH_TOKEN")
-        if not auth_token:
+        if not isinstance(auth_token, str) or not auth_token:
             raise ValueError(
-                "Secret missing TWILIO_AUTH_TOKEN. "
+                "Secret missing or invalid TWILIO_AUTH_TOKEN (expected a non-empty string). "
                 "Run 'make secret-update' to populate Twilio credentials."
             )
 
         logger.info("Successfully loaded Twilio auth token from Secrets Manager")
-        return str(auth_token)
+        return auth_token
 
     except Exception as e:
         logger.error(f"Failed to fetch Twilio auth token: {e}", exc_info=True)
