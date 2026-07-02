@@ -1,0 +1,31 @@
+{
+  "name": "tac-agentcore-cdk",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "bin": {
+    "app": "dist/bin/app.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "npm run build && cdk",
+    "clean": "rm -rf dist",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "aws-cdk": "^2.172.0",
+    "prettier": "^3.4.2",
+    "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-lambda-python-alpha": "^2.172.0-alpha.0",
+    "@aws/agentcore-cdk": "^0.1.0-alpha.35",
+    "aws-cdk-lib": "^2.172.0",
+    "constructs": "^10.0.0",
+    "dotenv": "^17.4.2"
+  }
+}
