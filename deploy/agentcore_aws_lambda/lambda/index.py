@@ -9,7 +9,8 @@ Endpoints:
 import os
 
 from credentials import fetch_twilio_auth_token
-from proxy import AgentCoreLambdaProxy
+
+from tac_aws.proxy import AgentCoreLambdaProxy
 
 # Environment variables
 AGENTCORE_RUNTIME_ARN = os.environ["AGENTCORE_RUNTIME_ARN"]
