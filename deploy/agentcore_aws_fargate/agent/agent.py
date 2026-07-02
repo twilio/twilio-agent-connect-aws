@@ -1,5 +1,7 @@
 import json
 import logging
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
 from strands import Agent
@@ -19,7 +21,7 @@ app = BedrockAgentCoreApp()
 
 
 @app.entrypoint
-async def invoke(payload):
+async def invoke(payload: dict[str, Any]) -> AsyncGenerator[dict[str, Any], None]:
     """HTTP streaming entrypoint - yields tokens for streaming response"""
     user_message = payload.get("prompt", "Hello")
     logger.info(f"HTTP invocation with message: {user_message[:50]}...")
@@ -34,7 +36,7 @@ async def invoke(payload):
 
 
 @app.websocket
-async def websocket_handler(websocket, context):
+async def websocket_handler(websocket: Any, context: Any) -> None:
     """WebSocket entrypoint - low-latency streaming for voice"""
     await websocket.accept()
     logger.info(f"WebSocket connection accepted for session: {context.session_id}")

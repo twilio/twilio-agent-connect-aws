@@ -2,6 +2,7 @@
 
 import json
 import os
+from typing import Any
 
 import boto3
 from tac import TACConfig
@@ -10,14 +11,14 @@ from tac.core.logging import get_logger
 logger = get_logger(__name__)
 
 
-def get_twilio_credentials() -> dict:
+def get_twilio_credentials() -> dict[str, Any]:
     """Fetch Twilio credentials from AWS Secrets Manager."""
     secret_arn = os.environ["TWILIO_SECRET_ARN"]
     secrets_client = boto3.client("secretsmanager", region_name=os.environ["AWS_REGION"])
 
     try:
         response = secrets_client.get_secret_value(SecretId=secret_arn)
-        credentials = json.loads(response["SecretString"])
+        credentials: dict[str, Any] = json.loads(response["SecretString"])
         logger.info("Successfully loaded Twilio credentials from Secrets Manager")
         return credentials
     except Exception as e:
