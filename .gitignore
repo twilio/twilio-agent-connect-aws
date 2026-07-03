@@ -169,6 +169,16 @@ $RECYCLE.BIN/
 .Trash-*
 .nfs*
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# CDK
+cdk.out/
+.cdk.staging/
+
 # Project specific
 *.swp
 *.swo
