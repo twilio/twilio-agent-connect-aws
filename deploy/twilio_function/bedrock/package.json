@@ -1,0 +1,20 @@
+{
+  "name": "tac-bedrock-twilio-function",
+  "version": "1.0.0",
+  "description": "Twilio Function: Bedrock Agent over SMS via Conversation Orchestrator",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "twilio-run deploy",
+    "start": "twilio-run start",
+    "dev": "twilio-run dev"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.1078.0"
+  },
+  "devDependencies": {
+    "twilio-run": "^5.0.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
