@@ -1123,10 +1123,12 @@ handles signature validation and webhook routing internally.</p>
 
 
         <p>Lambda proxy for routing Twilio webhooks to AWS Bedrock AgentCore.</p>
-<p>This proxy handles:
-- Signature validation for Twilio webhooks
-- Voice call routing (generates TwiML with presigned WebSocket URL)
-- Conversation webhook routing (forwards to AgentCore via HTTP)</p>
+<p>This proxy handles:</p>
+<ul>
+<li>Signature validation for Twilio webhooks</li>
+<li>Voice call routing (generates TwiML with presigned WebSocket URL)</li>
+<li>Conversation webhook routing (forwards to AgentCore via HTTP)</li>
+</ul>
 
 
 <p><span class="doc-section-title">Attributes:</span></p>
@@ -1530,10 +1532,12 @@ AWS_REGION env var, boto3 session, or AWS config)</p>
     <div class="doc doc-contents ">
 
         <p>Validate Twilio webhook signature from Lambda event.</p>
-<p>Handles different content types:
-- Form-encoded: Parses body with blank values preserved
-- JSON with bodySHA256: Validates using body string
-- Other: Validates using body string</p>
+<p>Handles different content types:</p>
+<ul>
+<li>Form-encoded: Parses body with blank values preserved</li>
+<li>JSON with bodySHA256: Validates using body string</li>
+<li>Other: Validates using body string</li>
+</ul>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>

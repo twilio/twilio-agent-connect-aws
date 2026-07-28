@@ -1048,9 +1048,11 @@ and conversation handling.</p>
 
 
         <p>Connector for AWS Bedrock Agent Core with dual-runtime pattern.</p>
-<p>Provides two runtime modes:
-- HTTP invocation (required): For both voice and SMS channels
-- WebSocket streaming (optional): For voice channel low-latency optimization (~50ms vs ~200ms)</p>
+<p>Provides two runtime modes:</p>
+<ul>
+<li>HTTP invocation (required): For both voice and SMS channels</li>
+<li>WebSocket streaming (optional): For voice channel low-latency optimization (~50ms vs ~200ms)</li>
+</ul>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1089,17 +1091,21 @@ and conversation handling.</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Agent runtime configuration (RuntimeConfig or dict):
-- http: Function to invoke agent via HTTP (required)
+                <p>Agent runtime configuration (RuntimeConfig or dict):</p>
+<ul>
+<li>http: Function to invoke agent via HTTP (required)
     Signature: (context, user_message, memory_context) -&gt; InvokeAgentRuntimeResponseTypeDef
-    Users control all invoke_agent_runtime() parameters
-- websocket: Optional WebSocketConfig for voice optimization:
-    - factory: Async function to create WebSocket connection
-        Signature: (context) -&gt; WebSocketClientProtocol
-        Called once per session for connection pooling
-    - payload_fn: Function to build WebSocket message payload
-        Signature: (context, user_message, memory_context) -&gt; dict[str, Any]
-        Called every message - users control payload format</p>
+    Users control all invoke_agent_runtime() parameters</li>
+<li>websocket: Optional WebSocketConfig for voice optimization:<ul>
+<li>factory: Async function to create WebSocket connection
+    Signature: (context) -&gt; WebSocketClientProtocol
+    Called once per session for connection pooling</li>
+<li>payload_fn: Function to build WebSocket message payload
+    Signature: (context, user_message, memory_context) -&gt; dict[str, Any]
+    Called every message - users control payload format</li>
+</ul>
+</li>
+</ul>
               </div>
             </td>
             <td>
@@ -1400,9 +1406,11 @@ and conversation handling.</p>
 
 
         <p>Connector for AWS Bedrock Agents with multi-channel support.</p>
-<p>Supports two usage patterns:
-1. Simple config-based (recommended for most users)
-2. Custom invoke function (for advanced use cases needing dynamic behavior)</p>
+<p>Supports two usage patterns:</p>
+<ol>
+<li>Simple config-based (recommended for most users)</li>
+<li>Custom invoke function (for advanced use cases needing dynamic behavior)</li>
+</ol>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -1475,11 +1483,13 @@ are auto-injected by connector. (required if using config pattern)</p>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Custom function to invoke agent. Receives:
-- context: ConversationSession with conversation_id, channel, etc.
-- user_message: The user's message text
-- memory_context: Optional memory context string (from TAC memory)
-Returns: InvokeAgentResponseTypeDef from client.invoke_agent()
+                <p>Custom function to invoke agent. Receives:</p>
+<ul>
+<li>context: ConversationSession with conversation_id, channel, etc.</li>
+<li>user_message: The user's message text</li>
+<li>memory_context: Optional memory context string (from TAC memory)</li>
+</ul>
+<p>Returns: InvokeAgentResponseTypeDef from client.invoke_agent()
 (required if not using config pattern)</p>
               </div>
             </td>
@@ -1805,10 +1815,12 @@ Returns: InvokeAgentResponseTypeDef from client.invoke_agent()
 
 
         <p>Connector for AWS Strands SDK with multi-channel support.</p>
-<p>Combines agent management with channel handling:
-- Creates one Strands agent instance per conversation for proper isolation
-- Manages Voice and SMS channels
-- Handles memory injection and message routing</p>
+<p>Combines agent management with channel handling:</p>
+<ul>
+<li>Creates one Strands agent instance per conversation for proper isolation</li>
+<li>Manages Voice and SMS channels</li>
+<li>Handles memory injection and message routing</li>
+</ul>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
