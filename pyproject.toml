@@ -80,7 +80,7 @@ docs = [
 
 [project.urls]
 Homepage = "https://github.com/twilio/twilio-agent-connect-aws"
-Documentation = "https://twilio.github.io/twilio-agent-connect-aws/"
+Documentation = "https://www.twilio.com/docs/platform/tac/overview"
 Repository = "https://github.com/twilio/twilio-agent-connect-aws"
 Issues = "https://github.com/twilio/twilio-agent-connect-aws/issues"
 
