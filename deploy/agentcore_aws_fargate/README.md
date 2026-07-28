@@ -14,6 +14,7 @@ Complete guide for deploying Twilio Agent Connect (TAC) with AWS Bedrock AgentCo
 ## Overview
 
 This deployment runs a voice and SMS AI agent using:
+
 - **Twilio** - Voice/SMS communication platform
 - **AWS Bedrock AgentCore** - Managed agent runtime with built-in memory and observability
 - **AWS Bedrock** - LLM inference (Amazon Nova Pro, Claude, etc.)
@@ -119,6 +120,7 @@ graph TB
 ### Prerequisites
 
 **Part 1 - Agent Deployment:**
+
 - AWS CLI configured with appropriate credentials
 - Python 3.10+ (Python 3.13 recommended)
 - pip or uv package manager
@@ -128,6 +130,7 @@ graph TB
   - Region: us-east-1 (or your preferred region)
 
 **Part 2 - TAC Server Deployment:**
+
 - Docker installed
 - AWS ECR repository (to store your Docker image)
 - HTTPS endpoint (choose one):
@@ -142,6 +145,7 @@ graph TB
   - Conversation Configuration ID from Conversation Orchestrator
 
 **Where to find Twilio credentials:**
+
 - Account SID & Auth Token: Twilio Console → Account → API Keys & Tokens
 - API Key & Secret: Twilio Console → Account → API Keys & Tokens
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration
@@ -175,6 +179,7 @@ agentcore configure --entrypoint agent.py --name simpleagent --non-interactive
 ```
 
 This creates `.bedrock_agentcore.yaml` with:
+
 - Agent name: `simpleagent`
 - Deployment type: Direct Code Deploy
 - Runtime: Python 3.13
@@ -278,11 +283,13 @@ ngrok http TAC-ALB-xxx.us-east-1.elb.amazonaws.com:80 --domain=your-domain.ngrok
 ### Step 4: Configure Twilio Webhooks
 
 **Voice (Phone Numbers):**
+
 1. Go to Twilio Console → Phone Numbers → Active Numbers
 2. Select your phone number
 3. Set **Voice URL:** `https://your-https-domain.com/twiml` (POST)
 
 **SMS (Conversation Orchestrator):**
+
 1. Go to Twilio Console → Conversation Orchestrator
 2. Select your Conversation Service
 3. Configure webhook

@@ -14,6 +14,7 @@ Complete guide for deploying Twilio Agent Connect (TAC) with Strands agent frame
 ## Overview
 
 This deployment runs a voice and SMS AI agent using:
+
 - **Twilio** - Voice/SMS communication platform
 - **AWS Bedrock** - LLM inference (Amazon Nova Pro)
 - **Strands** - Agent orchestration framework
@@ -108,6 +109,7 @@ graph TB
 ### Prerequisites
 
 **Required:**
+
 - AWS CLI configured with appropriate credentials
 - Docker installed
 - Python 3.10+ with `uv` package manager
@@ -124,6 +126,7 @@ graph TB
   - Conversation Configuration ID from Conversation Orchestrator
 
 **Where to find Twilio credentials:**
+
 - Account SID & Auth Token: Twilio Console → Account → API Keys & Tokens
 - API Key & Secret: Twilio Console → Account → API Keys & Tokens
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration
@@ -188,11 +191,13 @@ ngrok http TAC-ALB-xxx.us-east-1.elb.amazonaws.com:80 --domain=your-domain.ngrok
 ### Step 4: Configure Twilio Webhooks
 
 **Voice (Phone Numbers):**
+
 1. Go to Twilio Console → Phone Numbers → Active Numbers
 2. Select your phone number
 3. Set **Voice URL:** `https://your-https-domain.com/twiml` (POST)
 
 **SMS (Conversation Orchestrator):**
+
 1. Go to Twilio Console → Conversation Orchestrator
 2. Select your Conversation Service
 3. Configure webhook

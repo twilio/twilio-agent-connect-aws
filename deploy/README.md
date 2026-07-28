@@ -9,6 +9,7 @@ Production deployment options for twilio-agent-connect-aws.
 **Architecture:** Twilio Conversation Relay connects directly to AgentCore via WebSocket. Lambda functions handle Twilio webhooks.
 
 **Key features:**
+
 - Direct WebSocket connection (best performance)
 - No Fargate, ALB, or VPC required
 - Fully serverless (pay-per-request)
@@ -25,6 +26,7 @@ Production deployment options for twilio-agent-connect-aws.
 **Architecture:** TAC Server runs on Fargate behind ALB. Server connects to AgentCore runtime via HTTP/WebSocket.
 
 **Key features:**
+
 - Custom agent code deployment to AgentCore
 - TAC Server on ECS Fargate + ALB
 - Docker containerized deployment
@@ -41,6 +43,7 @@ Production deployment options for twilio-agent-connect-aws.
 **Architecture:** TAC Server runs on Fargate behind ALB. Server invokes console-created Bedrock Agents via API.
 
 **Key features:**
+
 - Console-created agents with action groups and knowledge bases
 - Fully managed agent service
 - TAC Server on ECS Fargate + ALB
@@ -57,6 +60,7 @@ Production deployment options for twilio-agent-connect-aws.
 **Architecture:** TAC Server runs on Fargate behind ALB. Strands agents created per-conversation with direct Bedrock LLM calls.
 
 **Key features:**
+
 - Strands SDK agent framework
 - Per-conversation agent instances
 - TAC Server on ECS Fargate + ALB

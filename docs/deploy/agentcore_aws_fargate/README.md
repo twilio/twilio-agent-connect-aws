@@ -1,0 +1,1 @@
+--8<-- "deploy/agentcore_aws_fargate/README.md"

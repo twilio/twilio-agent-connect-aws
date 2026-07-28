@@ -1,0 +1,1 @@
+--8<-- "deploy/bedrock_aws_fargate/README.md"

@@ -42,6 +42,7 @@ class TwilioSignatureValidator:
         """Validate Twilio webhook signature from Lambda event.
 
         Handles different content types:
+
         - Form-encoded: Parses body with blank values preserved
         - JSON with bodySHA256: Validates using body string
         - Other: Validates using body string
