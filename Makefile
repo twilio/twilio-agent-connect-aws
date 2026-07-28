@@ -18,7 +18,7 @@ help:
 	@echo "  make clean       - Clean build artifacts"
 
 sync:
-	uv sync --all-extras --all-packages --all-groups
+	uv sync --all-extras --all-packages
 
 dev-setup: sync
 	@echo "Setting up development environment..."
