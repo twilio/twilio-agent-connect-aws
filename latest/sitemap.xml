@@ -25,19 +25,19 @@
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/agentcore_fargate/</loc>
+         <loc>https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/agentcore_aws_fargate/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/agentcore_lambda/</loc>
+         <loc>https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/agentcore_aws_lambda/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/bedrock_fargate/</loc>
+         <loc>https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/bedrock_aws_fargate/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
     <url>
-         <loc>https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/strands_fargate/</loc>
+         <loc>https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/strands_aws_fargate/</loc>
          <lastmod>2026-07-28</lastmod>
     </url>
 </urlset>

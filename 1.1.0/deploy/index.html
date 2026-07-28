@@ -16,7 +16,7 @@
         <link rel="prev" href="../api/tools/">
       
       
-        <link rel="next" href="agentcore_lambda/">
+        <link rel="next" href="agentcore_aws_lambda/">
       
       
         
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#deployment" class="md-skip">
+        <a href="#twilio-agent-connect-aws-deployment-guide" class="md-skip">
           Skip to content
         </a>
       
@@ -576,46 +576,63 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#agentcore-on-lambda-recommended" class="md-nav__link">
+  <a href="#deployments" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AgentCore on Lambda — recommended
+        Deployments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aws-lambda-bedrock-agentcore-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS Lambda + Bedrock AgentCore (Recommended)
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#agentcore-on-fargate" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aws-fargate-bedrock-agentcore" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AgentCore on Fargate
+        AWS Fargate + Bedrock AgentCore
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#bedrock-agents-on-fargate" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aws-fargate-bedrock-agents" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bedrock Agents on Fargate
+        AWS Fargate + Bedrock Agents
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#strands-on-fargate" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aws-fargate-strands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Strands on Fargate
+        AWS Fargate + Strands
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -635,7 +652,7 @@
   
   
     <li class="md-nav__item">
-      <a href="agentcore_lambda/" class="md-nav__link">
+      <a href="agentcore_aws_lambda/" class="md-nav__link">
         
   
   
@@ -663,7 +680,7 @@
   
   
     <li class="md-nav__item">
-      <a href="agentcore_fargate/" class="md-nav__link">
+      <a href="agentcore_aws_fargate/" class="md-nav__link">
         
   
   
@@ -691,7 +708,7 @@
   
   
     <li class="md-nav__item">
-      <a href="bedrock_fargate/" class="md-nav__link">
+      <a href="bedrock_aws_fargate/" class="md-nav__link">
         
   
   
@@ -719,7 +736,7 @@
   
   
     <li class="md-nav__item">
-      <a href="strands_fargate/" class="md-nav__link">
+      <a href="strands_aws_fargate/" class="md-nav__link">
         
   
   
@@ -774,46 +791,63 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#agentcore-on-lambda-recommended" class="md-nav__link">
+  <a href="#deployments" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AgentCore on Lambda — recommended
+        Deployments
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Deployments">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#aws-lambda-bedrock-agentcore-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS Lambda + Bedrock AgentCore (Recommended)
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#agentcore-on-fargate" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aws-fargate-bedrock-agentcore" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AgentCore on Fargate
+        AWS Fargate + Bedrock AgentCore
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#bedrock-agents-on-fargate" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aws-fargate-bedrock-agents" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bedrock Agents on Fargate
+        AWS Fargate + Bedrock Agents
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#strands-on-fargate" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#aws-fargate-strands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Strands on Fargate
+        AWS Fargate + Strands
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -837,35 +871,48 @@
   
 
 
-<h1 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h1>
-<p>Production deployment options for <code>twilio-agent-connect-aws</code>. Each guide ships
-with runnable code and CloudFormation/CDK templates in the
-<a href="https://github.com/twilio/twilio-agent-connect-aws/tree/main/deploy"><code>deploy/</code></a>
-directory of the repository.</p>
-<h2 id="agentcore-on-lambda-recommended"><a href="agentcore_lambda/">AgentCore on Lambda</a> — recommended<a class="headerlink" href="#agentcore-on-lambda-recommended" title="Permanent link">&para;</a></h2>
-<p>Twilio ConversationRelay connects directly to AgentCore over WebSocket, while
-Lambda Function URLs handle the Twilio webhooks.</p>
-<ul>
-<li>Direct WebSocket connection (best latency)</li>
-<li>No Fargate, ALB or VPC required</li>
-<li>Fully serverless, pay-per-request</li>
-<li>Single CDK command to deploy</li>
-</ul>
-<p><strong>Best for:</strong> production agents with custom code (Strands, LangGraph, OpenAI SDK).</p>
-<h2 id="agentcore-on-fargate"><a href="agentcore_fargate/">AgentCore on Fargate</a><a class="headerlink" href="#agentcore-on-fargate" title="Permanent link">&para;</a></h2>
-<p>TAC Server runs on Fargate behind an ALB and connects to the AgentCore runtime
-over HTTP/WebSocket using
-<a class="autorefs autorefs-internal" title="BedrockAgentCoreConnector" href="../api/connectors/#tac_aws.connectors.BedrockAgentCoreConnector"><code>BedrockAgentCoreConnector</code></a>.</p>
-<p><strong>Best for:</strong> existing Fargate infrastructure or specific VPC requirements.</p>
-<h2 id="bedrock-agents-on-fargate"><a href="bedrock_fargate/">Bedrock Agents on Fargate</a><a class="headerlink" href="#bedrock-agents-on-fargate" title="Permanent link">&para;</a></h2>
-<p>TAC Server runs on Fargate behind an ALB and invokes console-created Bedrock
-Agents via <a class="autorefs autorefs-internal" title="BedrockConnector" href="../api/connectors/#tac_aws.connectors.BedrockConnector"><code>BedrockConnector</code></a>.</p>
-<p><strong>Best for:</strong> agents created in the AWS Console with action groups and knowledge bases.</p>
-<h2 id="strands-on-fargate"><a href="strands_fargate/">Strands on Fargate</a><a class="headerlink" href="#strands-on-fargate" title="Permanent link">&para;</a></h2>
-<p>TAC Server runs on Fargate behind an ALB and creates per-conversation Strands
-agents via <a class="autorefs autorefs-internal" title="StrandsConnector" href="../api/connectors/#tac_aws.connectors.StrandsConnector"><code>StrandsConnector</code></a>, calling
-Bedrock LLMs directly.</p>
-<p><strong>Best for:</strong> the Strands framework with per-conversation state management.</p>
+<h1 id="twilio-agent-connect-aws-deployment-guide">twilio-agent-connect-aws Deployment Guide<a class="headerlink" href="#twilio-agent-connect-aws-deployment-guide" title="Permanent link">&para;</a></h1>
+<p>Production deployment options for twilio-agent-connect-aws.</p>
+<h2 id="deployments">Deployments<a class="headerlink" href="#deployments" title="Permanent link">&para;</a></h2>
+<h3 id="aws-lambda-bedrock-agentcore-recommended">AWS Lambda + Bedrock AgentCore (Recommended)<a class="headerlink" href="#aws-lambda-bedrock-agentcore-recommended" title="Permanent link">&para;</a></h3>
+<p><strong>Architecture:</strong> Twilio Conversation Relay connects directly to AgentCore via WebSocket. Lambda functions handle Twilio webhooks.</p>
+<p><strong>Key features:</strong>
+- Direct WebSocket connection (best performance)
+- No Fargate, ALB, or VPC required
+- Fully serverless (pay-per-request)
+- Single CDK command deployment</p>
+<p><strong>Guide:</strong> <a href="agentcore_aws_lambda/"><code>agentcore_aws_lambda/README.md</code></a></p>
+<p><strong>Best for:</strong> Production agents with custom code (Strands, LangGraph, OpenAI SDK)</p>
+<hr />
+<h3 id="aws-fargate-bedrock-agentcore">AWS Fargate + Bedrock AgentCore<a class="headerlink" href="#aws-fargate-bedrock-agentcore" title="Permanent link">&para;</a></h3>
+<p><strong>Architecture:</strong> TAC Server runs on Fargate behind ALB. Server connects to AgentCore runtime via HTTP/WebSocket.</p>
+<p><strong>Key features:</strong>
+- Custom agent code deployment to AgentCore
+- TAC Server on ECS Fargate + ALB
+- Docker containerized deployment
+- CloudFormation templates</p>
+<p><strong>Guide:</strong> <a href="agentcore_aws_fargate/"><code>agentcore_aws_fargate/README.md</code></a></p>
+<p><strong>Best for:</strong> Existing Fargate infrastructure or specific VPC requirements</p>
+<hr />
+<h3 id="aws-fargate-bedrock-agents">AWS Fargate + Bedrock Agents<a class="headerlink" href="#aws-fargate-bedrock-agents" title="Permanent link">&para;</a></h3>
+<p><strong>Architecture:</strong> TAC Server runs on Fargate behind ALB. Server invokes console-created Bedrock Agents via API.</p>
+<p><strong>Key features:</strong>
+- Console-created agents with action groups and knowledge bases
+- Fully managed agent service
+- TAC Server on ECS Fargate + ALB
+- CloudFormation templates</p>
+<p><strong>Guide:</strong> <a href="bedrock_aws_fargate/"><code>bedrock_aws_fargate/README.md</code></a></p>
+<p><strong>Best for:</strong> Using AWS Bedrock Agents created in AWS Console</p>
+<hr />
+<h3 id="aws-fargate-strands">AWS Fargate + Strands<a class="headerlink" href="#aws-fargate-strands" title="Permanent link">&para;</a></h3>
+<p><strong>Architecture:</strong> TAC Server runs on Fargate behind ALB. Strands agents created per-conversation with direct Bedrock LLM calls.</p>
+<p><strong>Key features:</strong>
+- Strands SDK agent framework
+- Per-conversation agent instances
+- TAC Server on ECS Fargate + ALB
+- CloudFormation templates</p>
+<p><strong>Guide:</strong> <a href="strands_aws_fargate/"><code>strands_aws_fargate/README.md</code></a></p>
+<p><strong>Best for:</strong> Strands framework with per-conversation state management</p>
 
 
 

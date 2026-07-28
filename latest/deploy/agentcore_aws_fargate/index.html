@@ -10,11 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/strands_fargate/">
+        <link rel="canonical" href="https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/agentcore_aws_fargate/">
       
       
-        <link rel="prev" href="../bedrock_fargate/">
+        <link rel="prev" href="../agentcore_aws_lambda/">
       
+      
+        <link rel="next" href="../bedrock_aws_fargate/">
       
       
         
@@ -25,7 +27,7 @@
     
     
       
-        <title>Strands on Fargate - Twilio Agent Connect (AWS)</title>
+        <title>AgentCore on Fargate - Twilio Agent Connect (AWS)</title>
       
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#tac-strands-server-aws-fargate-deployment" class="md-skip">
+        <a href="#tac-agentcore-server-aws-fargate-deployment" class="md-skip">
           Skip to content
         </a>
       
@@ -117,7 +119,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Strands on Fargate
+              AgentCore on Fargate
             
           </span>
         </div>
@@ -542,7 +544,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../agentcore_lambda/" class="md-nav__link">
+      <a href="../agentcore_aws_lambda/" class="md-nav__link">
         
   
   
@@ -550,62 +552,6 @@
     
   
     AgentCore on Lambda
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../agentcore_fargate/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AgentCore on Fargate
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../bedrock_fargate/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Bedrock Agents on Fargate
   
 
     
@@ -642,7 +588,7 @@
   <span class="md-ellipsis">
     
   
-    Strands on Fargate
+    AgentCore on Fargate
   
 
     
@@ -660,7 +606,7 @@
   <span class="md-ellipsis">
     
   
-    Strands on Fargate
+    AgentCore on Fargate
   
 
     
@@ -798,6 +744,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#part-1-deploy-agent-to-agentcore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Part 1: Deploy Agent to AgentCore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#part-2-deploy-tac-server-on-fargate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Part 2: Deploy TAC Server on Fargate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#step-0-build-and-publish-docker-image" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -872,6 +840,62 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bedrock_aws_fargate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bedrock Agents on Fargate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strands_aws_fargate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strands on Fargate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1023,6 +1047,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#part-1-deploy-agent-to-agentcore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Part 1: Deploy Agent to AgentCore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#part-2-deploy-tac-server-on-fargate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Part 2: Deploy TAC Server on Fargate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#step-0-build-and-publish-docker-image" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1113,8 +1159,8 @@
   
 
 
-<h1 id="tac-strands-server-aws-fargate-deployment">TAC Strands Server - AWS Fargate Deployment<a class="headerlink" href="#tac-strands-server-aws-fargate-deployment" title="Permanent link">&para;</a></h1>
-<p>Complete guide for deploying Twilio Agent Connect (TAC) with Strands agent framework on AWS Fargate.</p>
+<h1 id="tac-agentcore-server-aws-fargate-deployment">TAC AgentCore Server - AWS Fargate Deployment<a class="headerlink" href="#tac-agentcore-server-aws-fargate-deployment" title="Permanent link">&para;</a></h1>
+<p>Complete guide for deploying Twilio Agent Connect (TAC) with AWS Bedrock AgentCore on AWS Fargate.</p>
 <h2 id="table-of-contents">Table of Contents<a class="headerlink" href="#table-of-contents" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="#overview">Overview</a></li>
@@ -1126,10 +1172,10 @@
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>This deployment runs a voice and SMS AI agent using:
 - <strong>Twilio</strong> - Voice/SMS communication platform
-- <strong>AWS Bedrock</strong> - LLM inference (Amazon Nova Pro)
-- <strong>Strands</strong> - Agent orchestration framework
+- <strong>AWS Bedrock AgentCore</strong> - Managed agent runtime with built-in memory and observability
+- <strong>AWS Bedrock</strong> - LLM inference (Amazon Nova Pro, Claude, etc.)
 - <strong>TAC (Twilio Agent Connect)</strong> - Integration middleware</p>
-<p>The system handles incoming calls and SMS messages, routes them through an AI agent powered by AWS Bedrock, and manages conversation state using Twilio's Conversation Orchestrator and Memory services.</p>
+<p>The system handles incoming calls and SMS messages, routes them through an AI agent deployed on AgentCore Runtime, and manages conversation state using Twilio's Conversation Orchestrator and Memory services.</p>
 <hr />
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <h3 id="high-level-architecture">High-Level Architecture<a class="headerlink" href="#high-level-architecture" title="Permanent link">&para;</a></h3>
@@ -1153,11 +1199,16 @@
                 Subnet2[📍 Subnet 2&lt;br/&gt;10.0.2.0/24&lt;br/&gt;us-east-1b]
             end
 
-            ECS[📦 ECS Fargate Task&lt;br/&gt;TAC Server&lt;br/&gt;512 CPU / 1GB RAM&lt;br/&gt;Port 8000]
+            ECS[📦 ECS Fargate Task&lt;br/&gt;TAC Server&lt;br/&gt;BedrockAgentCoreConnector&lt;br/&gt;512 CPU / 1GB RAM&lt;br/&gt;Port 8000]
         end
 
-        Bedrock[🤖 AWS Bedrock&lt;br/&gt;Amazon Nova Pro&lt;br/&gt;Strands Agent]
-        Logs[📊 CloudWatch Logs&lt;br/&gt;/ecs/tac-server-alb]
+        subgraph AgentCore["🤖 Bedrock AgentCore Runtime"]
+            Agent[🧠 AgentCore Agent&lt;br/&gt;Strands / LangGraph /&lt;br/&gt;OpenAI / Google ADK]
+            AgentMemory[💾 Agent Memory&lt;br/&gt;Session Manager]
+        end
+
+        Bedrock[🤖 AWS Bedrock&lt;br/&gt;Amazon Nova Pro / Claude&lt;br/&gt;Foundation Models]
+        Logs[📊 CloudWatch Logs&lt;br/&gt;/ecs/tac-agentcore-server]
     end
 
     Customer --&gt;|1. Call/SMS| Phone
@@ -1166,10 +1217,12 @@
     ALB --&gt;|4. Forward to| ECS
     ECS --&gt;|5. Create Conversation| Orchestrator
     ECS --&gt;|6. Retrieve Profile| Memory
-    ECS --&gt;|7. LLM Inference| Bedrock
-    ECS --&gt;|8. Write Logs| Logs
-    ECS --&gt;|9. WebSocket Audio&lt;br/&gt;or SMS Response| Phone
-    Phone --&gt;|10. Response| Customer
+    ECS --&gt;|7. Invoke AgentCore| Agent
+    Agent --&gt;|8. Session State| AgentMemory
+    Agent --&gt;|9. LLM Inference| Bedrock
+    ECS --&gt;|10. Write Logs| Logs
+    ECS --&gt;|11. WebSocket Audio&lt;br/&gt;or SMS Response| Phone
+    Phone --&gt;|12. Response| Customer
 
     style Customer fill:#e1f5ff
     style Twilio fill:#f0f0f0
@@ -1177,6 +1230,9 @@
     style AWS fill:#fff4e6
     style VPC fill:#e8f5e9
     style ECS fill:#fff9c4
+    style AgentCore fill:#f3e5f5
+    style Agent fill:#e1bee7
+    style AgentMemory fill:#f8bbd0
     style Bedrock fill:#f3e5f5
     style Logs fill:#e3f2fd</code></pre>
 <hr />
@@ -1191,6 +1247,10 @@
 </thead>
 <tbody>
 <tr>
+<td><strong>Bedrock AgentCore Runtime</strong></td>
+<td>Managed agent hosting with built-in memory and observability</td>
+</tr>
+<tr>
 <td><strong>ECS Fargate</strong></td>
 <td>Container runtime for TAC server</td>
 </tr>
@@ -1200,7 +1260,7 @@
 </tr>
 <tr>
 <td><strong>AWS Bedrock</strong></td>
-<td>LLM inference - Amazon Nova Pro (pay-per-token)</td>
+<td>LLM inference - Amazon Nova Pro, Claude, etc. (pay-per-token)</td>
 </tr>
 <tr>
 <td><strong>VPC</strong></td>
@@ -1220,7 +1280,7 @@
 </tr>
 <tr>
 <td><strong>IAM Roles</strong></td>
-<td>AWS permissions management (Bedrock access)</td>
+<td>AWS permissions management (Bedrock, AgentCore access)</td>
 </tr>
 </tbody>
 </table>
@@ -1250,10 +1310,16 @@
 <hr />
 <h2 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
-<p><strong>Required:</strong>
+<p><strong>Part 1 - Agent Deployment:</strong>
 - AWS CLI configured with appropriate credentials
+- Python 3.10+ (Python 3.13 recommended)
+- pip or uv package manager
+- AWS account with:
+  - Bedrock model access (Amazon Nova Pro)
+  - IAM permissions for AgentCore, S3, CloudWatch
+  - Region: us-east-1 (or your preferred region)</p>
+<p><strong>Part 2 - TAC Server Deployment:</strong>
 - Docker installed
-- Python 3.10+ with <code>uv</code> package manager
 - AWS ECR repository (to store your Docker image)
 - HTTPS endpoint (choose one):
   - <strong>ngrok</strong> - For testing and development
@@ -1269,19 +1335,67 @@
 - Account SID &amp; Auth Token: Twilio Console → Account → API Keys &amp; Tokens
 - API Key &amp; Secret: Twilio Console → Account → API Keys &amp; Tokens
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration</p>
+<h3 id="part-1-deploy-agent-to-agentcore">Part 1: Deploy Agent to AgentCore<a class="headerlink" href="#part-1-deploy-agent-to-agentcore" title="Permanent link">&para;</a></h3>
+<p>The <code>agent/</code> folder contains a simple Strands agent ready for deployment.</p>
+<p><strong>Step 1: Install Dependencies</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># From the agentcore_aws_fargate directory</span>
+<span class="nb">cd</span><span class="w"> </span>agent
+
+<span class="c1"># Create virtual environment (optional)</span>
+python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate<span class="w">  </span><span class="c1"># On Windows: .venv\Scripts\activate</span>
+
+<span class="c1"># Install dependencies</span>
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="c1"># Install AgentCore toolkit</span>
+pip<span class="w"> </span>install<span class="w"> </span>bedrock-agentcore-starter-toolkit
+</code></pre></div>
+<p><strong>Step 2: Configure Agent for Deployment</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Configure the agent (non-interactive)</span>
+agentcore<span class="w"> </span>configure<span class="w"> </span>--entrypoint<span class="w"> </span>agent.py<span class="w"> </span>--name<span class="w"> </span>simpleagent<span class="w"> </span>--non-interactive
+</code></pre></div>
+<p>This creates <code>.bedrock_agentcore.yaml</code> with:
+- Agent name: <code>simpleagent</code>
+- Deployment type: Direct Code Deploy
+- Runtime: Python 3.13
+- Auto-create execution role and S3 bucket
+- Memory: Short-term memory (30-day retention)</p>
+<p><strong>Step 3: Deploy to AWS AgentCore</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Deploy to AWS</span>
+agentcore<span class="w"> </span>launch
+</code></pre></div>
+<p><strong>Expected output:</strong>
+<div class="highlight"><pre><span></span><code>✅ Deployment completed successfully
+   Agent ARN: arn:aws:bedrock-agentcore:us-east-1:ACCOUNT:runtime/simpleagent-XXX
+</code></pre></div></p>
+<p><strong>Step 4: Test Deployed Agent</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Test the deployed agent</span>
+agentcore<span class="w"> </span>invoke<span class="w"> </span><span class="s1">&#39;{&quot;prompt&quot;: &quot;Hello&quot;}&#39;</span>
+</code></pre></div>
+<p><strong>Expected response:</strong>
+<div class="highlight"><pre><span></span><code>Response:
+Hello! It&#39;s nice to have you here. I&#39;m here to help with whatever you might
+need. Whether you have a question, need assistance with a topic, or just want to
+chat, feel free to let me know how I can assist you. What&#39;s on your mind today?
+</code></pre></div></p>
+<p><strong>Step 5: Get Agent ARN</strong></p>
+<p>Save the <strong>Agent ARN</strong> from the deployment output - you'll need it for the TAC server configuration in Part 2.</p>
+<p>Example: <code>arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/simpleagent-XXX</code></p>
+<h3 id="part-2-deploy-tac-server-on-fargate">Part 2: Deploy TAC Server on Fargate<a class="headerlink" href="#part-2-deploy-tac-server-on-fargate" title="Permanent link">&para;</a></h3>
 <h3 id="step-0-build-and-publish-docker-image">Step 0: Build and Publish Docker Image<a class="headerlink" href="#step-0-build-and-publish-docker-image" title="Permanent link">&para;</a></h3>
 <p><strong>1. Build Docker image:</strong></p>
-<div class="highlight"><pre><span></span><code><span class="c1"># From the strands_aws_fargate directory</span>
-docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>tac-strands-server:latest<span class="w"> </span>.
+<div class="highlight"><pre><span></span><code><span class="c1"># From the agentcore_aws_fargate directory</span>
+docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </span>tac-agentcore-server:latest<span class="w"> </span>.
 </code></pre></div>
 <p><strong>2. Publish to AWS ECR:</strong></p>
 <p>Publish your Docker image to AWS ECR. You'll need the ECR image URI for Step 1.</p>
-<p>Example URI format: <code>123456789012.dkr.ecr.us-east-1.amazonaws.com/tac-strands-server:latest</code></p>
+<p>Example URI format: <code>123456789012.dkr.ecr.us-east-1.amazonaws.com/tac-agentcore-server:latest</code></p>
 <h3 id="step-1-deploy-cloudformation-stack">Step 1: Deploy CloudFormation Stack<a class="headerlink" href="#step-1-deploy-cloudformation-stack" title="Permanent link">&para;</a></h3>
-<p>Deploy the infrastructure (from the strands_aws_fargate directory):</p>
+<p>Deploy the infrastructure (from the agentcore_aws_fargate directory):</p>
 <div class="highlight"><pre><span></span><code>aws<span class="w"> </span>cloudformation<span class="w"> </span>deploy<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--template-file<span class="w"> </span>cloudformation.yaml<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span>TACStack<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>TACAgentCoreStack<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--parameter-overrides<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="nv">ImageURI</span><span class="o">=</span>YOUR_ECR_URI:latest<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="nv">TwilioAccountSid</span><span class="o">=</span>YOUR_ACCOUNT_SID<span class="w"> </span><span class="se">\</span>
@@ -1291,19 +1405,20 @@ docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </
 <span class="w">    </span><span class="nv">TwilioPhoneNumber</span><span class="o">=</span>YOUR_PHONE_NUMBER<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="nv">TwilioConversationConfigurationId</span><span class="o">=</span>YOUR_CONVERSATION_CONFIGURATION_ID<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span><span class="nv">TwilioVoicePublicDomain</span><span class="o">=</span>YOUR_HTTPS_DOMAIN<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="nv">BedrockAgentCoreAgentArn</span><span class="o">=</span>YOUR_AGENT_ARN<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--capabilities<span class="w"> </span>CAPABILITY_IAM<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--region<span class="w"> </span>us-east-1
 </code></pre></div>
 <h3 id="step-2-get-alb-dns-name">Step 2: Get ALB DNS Name<a class="headerlink" href="#step-2-get-alb-dns-name" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>aws<span class="w"> </span>cloudformation<span class="w"> </span>describe-stacks<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--stack-name<span class="w"> </span>TACStack<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--stack-name<span class="w"> </span>TACAgentCoreStack<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--query<span class="w"> </span><span class="s1">&#39;Stacks[0].Outputs[?OutputKey==`LoadBalancerDNS`].OutputValue&#39;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--output<span class="w"> </span>text<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--region<span class="w"> </span>us-east-1
 </code></pre></div>
 <p><strong>Output example:</strong> <code>TAC-ALB-xxx.us-east-1.elb.amazonaws.com</code></p>
 <h3 id="step-3-connect-https-endpoint-to-alb">Step 3: Connect HTTPS Endpoint to ALB<a class="headerlink" href="#step-3-connect-https-endpoint-to-alb" title="Permanent link">&para;</a></h3>
-<p>Point your HTTPS endpoint to the ALB DNS from Step 2.</p>
+<p>Point your HTTPS endpoint to the ALB DNS from Step 3.</p>
 <p>For example, if using ngrok:
 <div class="highlight"><pre><span></span><code>ngrok<span class="w"> </span>http<span class="w"> </span>TAC-ALB-xxx.us-east-1.elb.amazonaws.com:80<span class="w"> </span>--domain<span class="o">=</span>your-domain.ngrok.app
 </code></pre></div></p>
