@@ -49,8 +49,8 @@ pre-commit:
 	uv run pre-commit run --all-files
 
 docs:
-	@echo "Building documentation into site/..."
-	uv run --group docs mkdocs build
+	@echo "Building documentation into site/ (--strict: warnings fail the build)..."
+	uv run --group docs mkdocs build --strict
 
 docs-serve:
 	@echo "Serving docs at http://127.0.0.1:8000 (live reload)..."

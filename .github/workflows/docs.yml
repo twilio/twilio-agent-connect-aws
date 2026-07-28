@@ -55,6 +55,15 @@ jobs:
               print(tomllib.load(f)['project']['version'])
           ")
           fi
+
+          # mike uses VERSION as a directory name under gh-pages, so a
+          # crafted workflow_dispatch input (e.g. containing "/" or "..")
+          # could otherwise write outside the intended path.
+          if [[ ! "$VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+            echo "::error::Version '$VERSION' is not a safe mike version label (expected alphanumerics, '.', '_', '-' only)"
+            exit 1
+          fi
+
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Publishing docs for version $VERSION"
 
