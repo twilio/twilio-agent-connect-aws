@@ -1436,11 +1436,13 @@
 <h3 id="2-configure-aws-cli-profile">2. Configure AWS CLI Profile<a class="headerlink" href="#2-configure-aws-cli-profile" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>aws<span class="w"> </span>configure<span class="w"> </span>--profile<span class="w"> </span>your-profile-name
 </code></pre></div>
-<p>When prompted, enter:
-- <strong>AWS Access Key ID:</strong> Paste the access key from step 1
-- <strong>AWS Secret Access Key:</strong> Paste the secret key from step 1
-- <strong>Default region name:</strong> <code>us-east-1</code> (or your preferred region)
-- <strong>Default output format:</strong> <code>json</code></p>
+<p>When prompted, enter:</p>
+<ul>
+<li><strong>AWS Access Key ID:</strong> Paste the access key from step 1</li>
+<li><strong>AWS Secret Access Key:</strong> Paste the secret key from step 1</li>
+<li><strong>Default region name:</strong> <code>us-east-1</code> (or your preferred region)</li>
+<li><strong>Default output format:</strong> <code>json</code></li>
+</ul>
 <h3 id="3-verify-configuration">3. Verify Configuration<a class="headerlink" href="#3-verify-configuration" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity<span class="w"> </span>--profile<span class="w"> </span>your-profile-name
 </code></pre></div>
@@ -1473,14 +1475,18 @@
 <span class="nv">TWILIO_PHONE_NUMBER</span><span class="o">=</span>+1234567890
 <span class="nv">TWILIO_CONVERSATION_CONFIGURATION_ID</span><span class="o">=</span>WRxxxx
 </code></pre></div>
-<p><strong>Where to find Twilio values:</strong>
-- Account SID &amp; Auth Token: Twilio Console → Account → API Keys &amp; Tokens
-- API Key &amp; Secret: Create new API Key
-- Phone Number: Twilio Console → Phone Numbers
-- Conversation Configuration ID: Twilio Console → Conversation Orchestrator</p>
-<p><strong>Security Model:</strong>
-- Credentials (Account SID, Auth Token, API Key, API Secret) are stored in AWS Secrets Manager
-- Configuration (Phone Number, Conversation Configuration ID) are passed as environment variables during deployment</p>
+<p><strong>Where to find Twilio values:</strong></p>
+<ul>
+<li>Account SID &amp; Auth Token: Twilio Console → Account → API Keys &amp; Tokens</li>
+<li>API Key &amp; Secret: Create new API Key</li>
+<li>Phone Number: Twilio Console → Phone Numbers</li>
+<li>Conversation Configuration ID: Twilio Console → Conversation Orchestrator</li>
+</ul>
+<p><strong>Security Model:</strong></p>
+<ul>
+<li>Credentials (Account SID, Auth Token, API Key, API Secret) are stored in AWS Secrets Manager</li>
+<li>Configuration (Phone Number, Conversation Configuration ID) are passed as environment variables during deployment</li>
+</ul>
 <h3 id="2-bootstrap-cdk-one-time-setup">2. Bootstrap CDK (One-Time Setup)<a class="headerlink" href="#2-bootstrap-cdk-one-time-setup" title="Permanent link">&para;</a></h3>
 <p>⚠️ <strong>Must complete step 1 first</strong> - <code>make bootstrap</code> requires <code>.env</code> file.</p>
 <div class="highlight"><pre><span></span><code>make<span class="w"> </span>bootstrap
@@ -1490,11 +1496,13 @@
 <h3 id="3-deploy-everything">3. Deploy Everything<a class="headerlink" href="#3-deploy-everything" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code>make<span class="w"> </span>deploy
 </code></pre></div>
-<p>This command:
-1. Builds the Python agent code
-2. Compiles the CDK TypeScript
-3. Deploys both AgentCore runtime and Lambda webhook proxy
-4. Handles cross-stack references automatically</p>
+<p>This command:</p>
+<ol>
+<li>Builds the Python agent code</li>
+<li>Compiles the CDK TypeScript</li>
+<li>Deploys both AgentCore runtime and Lambda webhook proxy</li>
+<li>Handles cross-stack references automatically</li>
+</ol>
 <p><strong>Deployment output:</strong></p>
 <div class="highlight"><pre><span></span><code>✓ All stacks deployed!
 
@@ -1557,10 +1565,12 @@ TacLambdaStack.ConversationWebhookUrl = https://xxxxx.lambda-url.us-east-1.on.aw
 <span class="w">    </span>--public-access-block-configuration<span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>aws://123456789012/us-east-1
 </code></pre></div>
-<p><strong>Better alternatives:</strong>
-1. Work with your AWS administrator to adjust organization-level S3 policies
-2. Use a CDK bootstrap configuration that aligns with your organization's security requirements
-3. Consider using a separate AWS account without organization-level restrictions for development</p>
+<p><strong>Better alternatives:</strong></p>
+<ol>
+<li>Work with your AWS administrator to adjust organization-level S3 policies</li>
+<li>Use a CDK bootstrap configuration that aligns with your organization's security requirements</li>
+<li>Consider using a separate AWS account without organization-level restrictions for development</li>
+</ol>
 <h3 id="nodejs-not-found-or-npm-commands-fail">Node.js not found or npm commands fail<a class="headerlink" href="#nodejs-not-found-or-npm-commands-fail" title="Permanent link">&para;</a></h3>
 <p><strong>Symptom:</strong> <code>npm: command not found</code> or <code>node: command not found</code> after installing Node.js via Homebrew.</p>
 <p><strong>Cause:</strong> Homebrew installs some Node.js versions as "keg-only" (not automatically linked to PATH).</p>

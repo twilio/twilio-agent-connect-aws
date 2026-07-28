@@ -1170,11 +1170,13 @@
 </ul>
 <hr />
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
-<p>This deployment runs a voice and SMS AI agent using:
-- <strong>Twilio</strong> - Voice/SMS communication platform
-- <strong>AWS Bedrock AgentCore</strong> - Managed agent runtime with built-in memory and observability
-- <strong>AWS Bedrock</strong> - LLM inference (Amazon Nova Pro, Claude, etc.)
-- <strong>TAC (Twilio Agent Connect)</strong> - Integration middleware</p>
+<p>This deployment runs a voice and SMS AI agent using:</p>
+<ul>
+<li><strong>Twilio</strong> - Voice/SMS communication platform</li>
+<li><strong>AWS Bedrock AgentCore</strong> - Managed agent runtime with built-in memory and observability</li>
+<li><strong>AWS Bedrock</strong> - LLM inference (Amazon Nova Pro, Claude, etc.)</li>
+<li><strong>TAC (Twilio Agent Connect)</strong> - Integration middleware</li>
+</ul>
 <p>The system handles incoming calls and SMS messages, routes them through an AI agent deployed on AgentCore Runtime, and manages conversation state using Twilio's Conversation Orchestrator and Memory services.</p>
 <hr />
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
@@ -1310,31 +1312,37 @@
 <hr />
 <h2 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
-<p><strong>Part 1 - Agent Deployment:</strong>
-- AWS CLI configured with appropriate credentials
-- Python 3.10+ (Python 3.13 recommended)
-- pip or uv package manager
-- AWS account with:
-  - Bedrock model access (Amazon Nova Pro)
-  - IAM permissions for AgentCore, S3, CloudWatch
-  - Region: us-east-1 (or your preferred region)</p>
-<p><strong>Part 2 - TAC Server Deployment:</strong>
-- Docker installed
-- AWS ECR repository (to store your Docker image)
-- HTTPS endpoint (choose one):
-  - <strong>ngrok</strong> - For testing and development
-  - <strong>CloudFront</strong> - For production with AWS-provided HTTPS domain
-  - <strong>Route53 + ACM</strong> - For production with custom domain
-- Twilio account with:
-  - Account SID
-  - Auth Token
-  - API Key and Secret
-  - Phone number
-  - Conversation Configuration ID from Conversation Orchestrator</p>
-<p><strong>Where to find Twilio credentials:</strong>
-- Account SID &amp; Auth Token: Twilio Console → Account → API Keys &amp; Tokens
-- API Key &amp; Secret: Twilio Console → Account → API Keys &amp; Tokens
-- Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration</p>
+<p><strong>Part 1 - Agent Deployment:</strong></p>
+<ul>
+<li>AWS CLI configured with appropriate credentials</li>
+<li>Python 3.10+ (Python 3.13 recommended)</li>
+<li>pip or uv package manager</li>
+<li>AWS account with:</li>
+<li>Bedrock model access (Amazon Nova Pro)</li>
+<li>IAM permissions for AgentCore, S3, CloudWatch</li>
+<li>Region: us-east-1 (or your preferred region)</li>
+</ul>
+<p><strong>Part 2 - TAC Server Deployment:</strong></p>
+<ul>
+<li>Docker installed</li>
+<li>AWS ECR repository (to store your Docker image)</li>
+<li>HTTPS endpoint (choose one):</li>
+<li><strong>ngrok</strong> - For testing and development</li>
+<li><strong>CloudFront</strong> - For production with AWS-provided HTTPS domain</li>
+<li><strong>Route53 + ACM</strong> - For production with custom domain</li>
+<li>Twilio account with:</li>
+<li>Account SID</li>
+<li>Auth Token</li>
+<li>API Key and Secret</li>
+<li>Phone number</li>
+<li>Conversation Configuration ID from Conversation Orchestrator</li>
+</ul>
+<p><strong>Where to find Twilio credentials:</strong></p>
+<ul>
+<li>Account SID &amp; Auth Token: Twilio Console → Account → API Keys &amp; Tokens</li>
+<li>API Key &amp; Secret: Twilio Console → Account → API Keys &amp; Tokens</li>
+<li>Conversation Configuration ID: Twilio Console → Conversation Orchestrator → Configuration</li>
+</ul>
 <h3 id="part-1-deploy-agent-to-agentcore">Part 1: Deploy Agent to AgentCore<a class="headerlink" href="#part-1-deploy-agent-to-agentcore" title="Permanent link">&para;</a></h3>
 <p>The <code>agent/</code> folder contains a simple Strands agent ready for deployment.</p>
 <p><strong>Step 1: Install Dependencies</strong></p>
@@ -1355,12 +1363,14 @@ pip<span class="w"> </span>install<span class="w"> </span>bedrock-agentcore-star
 <div class="highlight"><pre><span></span><code><span class="c1"># Configure the agent (non-interactive)</span>
 agentcore<span class="w"> </span>configure<span class="w"> </span>--entrypoint<span class="w"> </span>agent.py<span class="w"> </span>--name<span class="w"> </span>simpleagent<span class="w"> </span>--non-interactive
 </code></pre></div>
-<p>This creates <code>.bedrock_agentcore.yaml</code> with:
-- Agent name: <code>simpleagent</code>
-- Deployment type: Direct Code Deploy
-- Runtime: Python 3.13
-- Auto-create execution role and S3 bucket
-- Memory: Short-term memory (30-day retention)</p>
+<p>This creates <code>.bedrock_agentcore.yaml</code> with:</p>
+<ul>
+<li>Agent name: <code>simpleagent</code></li>
+<li>Deployment type: Direct Code Deploy</li>
+<li>Runtime: Python 3.13</li>
+<li>Auto-create execution role and S3 bucket</li>
+<li>Memory: Short-term memory (30-day retention)</li>
+</ul>
 <p><strong>Step 3: Deploy to AWS AgentCore</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Deploy to AWS</span>
 agentcore<span class="w"> </span>launch
@@ -1423,15 +1433,19 @@ docker<span class="w"> </span>build<span class="w"> </span>-t<span class="w"> </
 <div class="highlight"><pre><span></span><code>ngrok<span class="w"> </span>http<span class="w"> </span>TAC-ALB-xxx.us-east-1.elb.amazonaws.com:80<span class="w"> </span>--domain<span class="o">=</span>your-domain.ngrok.app
 </code></pre></div></p>
 <h3 id="step-4-configure-twilio-webhooks">Step 4: Configure Twilio Webhooks<a class="headerlink" href="#step-4-configure-twilio-webhooks" title="Permanent link">&para;</a></h3>
-<p><strong>Voice (Phone Numbers):</strong>
-1. Go to Twilio Console → Phone Numbers → Active Numbers
-2. Select your phone number
-3. Set <strong>Voice URL:</strong> <code>https://your-https-domain.com/twiml</code> (POST)</p>
-<p><strong>SMS (Conversation Orchestrator):</strong>
-1. Go to Twilio Console → Conversation Orchestrator
-2. Select your Conversation Service
-3. Configure webhook
-4. Set <strong>Webhook URL:</strong> <code>https://your-https-domain.com/webhook</code> (POST)</p>
+<p><strong>Voice (Phone Numbers):</strong></p>
+<ol>
+<li>Go to Twilio Console → Phone Numbers → Active Numbers</li>
+<li>Select your phone number</li>
+<li>Set <strong>Voice URL:</strong> <code>https://your-https-domain.com/twiml</code> (POST)</li>
+</ol>
+<p><strong>SMS (Conversation Orchestrator):</strong></p>
+<ol>
+<li>Go to Twilio Console → Conversation Orchestrator</li>
+<li>Select your Conversation Service</li>
+<li>Configure webhook</li>
+<li>Set <strong>Webhook URL:</strong> <code>https://your-https-domain.com/webhook</code> (POST)</li>
+</ol>
 <h3 id="step-5-test-your-deployment">Step 5: Test Your Deployment<a class="headerlink" href="#step-5-test-your-deployment" title="Permanent link">&para;</a></h3>
 <p>Make a phone call or send an SMS message to your Twilio phone number to test the deployment.</p>
 

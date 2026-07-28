@@ -876,41 +876,49 @@
 <h2 id="deployments">Deployments<a class="headerlink" href="#deployments" title="Permanent link">&para;</a></h2>
 <h3 id="aws-lambda-bedrock-agentcore-recommended">AWS Lambda + Bedrock AgentCore (Recommended)<a class="headerlink" href="#aws-lambda-bedrock-agentcore-recommended" title="Permanent link">&para;</a></h3>
 <p><strong>Architecture:</strong> Twilio Conversation Relay connects directly to AgentCore via WebSocket. Lambda functions handle Twilio webhooks.</p>
-<p><strong>Key features:</strong>
-- Direct WebSocket connection (best performance)
-- No Fargate, ALB, or VPC required
-- Fully serverless (pay-per-request)
-- Single CDK command deployment</p>
+<p><strong>Key features:</strong></p>
+<ul>
+<li>Direct WebSocket connection (best performance)</li>
+<li>No Fargate, ALB, or VPC required</li>
+<li>Fully serverless (pay-per-request)</li>
+<li>Single CDK command deployment</li>
+</ul>
 <p><strong>Guide:</strong> <a href="agentcore_aws_lambda/"><code>agentcore_aws_lambda/README.md</code></a></p>
 <p><strong>Best for:</strong> Production agents with custom code (Strands, LangGraph, OpenAI SDK)</p>
 <hr />
 <h3 id="aws-fargate-bedrock-agentcore">AWS Fargate + Bedrock AgentCore<a class="headerlink" href="#aws-fargate-bedrock-agentcore" title="Permanent link">&para;</a></h3>
 <p><strong>Architecture:</strong> TAC Server runs on Fargate behind ALB. Server connects to AgentCore runtime via HTTP/WebSocket.</p>
-<p><strong>Key features:</strong>
-- Custom agent code deployment to AgentCore
-- TAC Server on ECS Fargate + ALB
-- Docker containerized deployment
-- CloudFormation templates</p>
+<p><strong>Key features:</strong></p>
+<ul>
+<li>Custom agent code deployment to AgentCore</li>
+<li>TAC Server on ECS Fargate + ALB</li>
+<li>Docker containerized deployment</li>
+<li>CloudFormation templates</li>
+</ul>
 <p><strong>Guide:</strong> <a href="agentcore_aws_fargate/"><code>agentcore_aws_fargate/README.md</code></a></p>
 <p><strong>Best for:</strong> Existing Fargate infrastructure or specific VPC requirements</p>
 <hr />
 <h3 id="aws-fargate-bedrock-agents">AWS Fargate + Bedrock Agents<a class="headerlink" href="#aws-fargate-bedrock-agents" title="Permanent link">&para;</a></h3>
 <p><strong>Architecture:</strong> TAC Server runs on Fargate behind ALB. Server invokes console-created Bedrock Agents via API.</p>
-<p><strong>Key features:</strong>
-- Console-created agents with action groups and knowledge bases
-- Fully managed agent service
-- TAC Server on ECS Fargate + ALB
-- CloudFormation templates</p>
+<p><strong>Key features:</strong></p>
+<ul>
+<li>Console-created agents with action groups and knowledge bases</li>
+<li>Fully managed agent service</li>
+<li>TAC Server on ECS Fargate + ALB</li>
+<li>CloudFormation templates</li>
+</ul>
 <p><strong>Guide:</strong> <a href="bedrock_aws_fargate/"><code>bedrock_aws_fargate/README.md</code></a></p>
 <p><strong>Best for:</strong> Using AWS Bedrock Agents created in AWS Console</p>
 <hr />
 <h3 id="aws-fargate-strands">AWS Fargate + Strands<a class="headerlink" href="#aws-fargate-strands" title="Permanent link">&para;</a></h3>
 <p><strong>Architecture:</strong> TAC Server runs on Fargate behind ALB. Strands agents created per-conversation with direct Bedrock LLM calls.</p>
-<p><strong>Key features:</strong>
-- Strands SDK agent framework
-- Per-conversation agent instances
-- TAC Server on ECS Fargate + ALB
-- CloudFormation templates</p>
+<p><strong>Key features:</strong></p>
+<ul>
+<li>Strands SDK agent framework</li>
+<li>Per-conversation agent instances</li>
+<li>TAC Server on ECS Fargate + ALB</li>
+<li>CloudFormation templates</li>
+</ul>
 <p><strong>Guide:</strong> <a href="strands_aws_fargate/"><code>strands_aws_fargate/README.md</code></a></p>
 <p><strong>Best for:</strong> Strands framework with per-conversation state management</p>
 
