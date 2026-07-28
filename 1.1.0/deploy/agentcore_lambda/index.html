@@ -1,0 +1,1651 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AWS integrations for Twilio Agent Connect - connectors, servers and Lambda proxies for AWS agent runtimes">
+      
+      
+      
+        <link rel="canonical" href="https://twilio.github.io/twilio-agent-connect-aws/1.1.0/deploy/agentcore_lambda/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../agentcore_fargate/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/twilio-logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>AgentCore on Lambda - Twilio Agent Connect (AWS)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tac-agentcore-lambda-deployment" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Twilio Agent Connect (AWS)" class="md-header__button md-logo" aria-label="Twilio Agent Connect (AWS)" data-md-component="logo">
+      
+  <img src="../../assets/twilio-logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Twilio Agent Connect (AWS)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AgentCore on Lambda
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/twilio/twilio-agent-connect-aws" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    twilio/twilio-agent-connect-aws
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Twilio Agent Connect (AWS)" class="md-nav__button md-logo" aria-label="Twilio Agent Connect (AWS)" data-md-component="logo">
+      
+  <img src="../../assets/twilio-logo.svg" alt="logo">
+
+    </a>
+    Twilio Agent Connect (AWS)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/twilio/twilio-agent-connect-aws" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    twilio/twilio-agent-connect-aws
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/connectors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Connectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/proxy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Proxy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AgentCore on Lambda
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AgentCore on Lambda
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Components
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws-account-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS Account Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aws-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AWS Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-create-iam-user-and-access-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Create IAM User and Access Keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configure-aws-cli-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Configure AWS CLI Profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-verify-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Verify Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-configure-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Configure Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-bootstrap-cdk-one-time-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Bootstrap CDK (One-Time Setup)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-deploy-everything" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Deploy Everything
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#twilio-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Twilio Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Twilio Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configure-voice-webhook-phone-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure Voice Webhook (Phone Number)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-conversation-webhook-smsmessaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure Conversation Webhook (SMS/Messaging)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#view-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="View Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agentcore-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AgentCore Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lambda-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lambda Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cdk-bootstrap-fails-with-s3-public-access-block-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CDK bootstrap fails with S3 public access block errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodejs-not-found-or-npm-commands-fail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node.js not found or npm commands fail
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../agentcore_fargate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AgentCore on Fargate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bedrock_fargate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bedrock Agents on Fargate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../strands_fargate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strands on Fargate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deployment-components" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deployment Components
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aws-account-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS Account Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#aws-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AWS Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="AWS Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-create-iam-user-and-access-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Create IAM User and Access Keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configure-aws-cli-profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Configure AWS CLI Profile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-verify-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Verify Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-start" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Start
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quick Start">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-configure-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Configure Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-bootstrap-cdk-one-time-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Bootstrap CDK (One-Time Setup)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-deploy-everything" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Deploy Everything
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#twilio-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Twilio Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Twilio Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configure-voice-webhook-phone-number" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure Voice Webhook (Phone Number)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configure-conversation-webhook-smsmessaging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure Conversation Webhook (SMS/Messaging)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#view-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        View Logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="View Logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#agentcore-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AgentCore Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lambda-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lambda Logs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update Code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cdk-bootstrap-fails-with-s3-public-access-block-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CDK bootstrap fails with S3 public access block errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#nodejs-not-found-or-npm-commands-fail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node.js not found or npm commands fail
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="tac-agentcore-lambda-deployment">TAC AgentCore + Lambda Deployment<a class="headerlink" href="#tac-agentcore-lambda-deployment" title="Permanent link">&para;</a></h1>
+<p>Deploy Twilio Agent Connect with AWS Bedrock AgentCore and Lambda webhook proxy.</p>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph TB
+    Customer([👤 Customer&lt;br/&gt;Phone Call / SMS])
+
+    subgraph Twilio["☁️ Twilio Cloud"]
+        Phone[📱 Phone Number&lt;br/&gt;+1-XXX-XXX-XXXX]
+        Orchestrator[💬 Conversations&lt;br/&gt;Conversation Orchestrator]
+        Memory[🧠 Memory Service&lt;br/&gt;Profile &amp; Context]
+    end
+
+    subgraph AWS["☁️ AWS Account"]
+        Lambda[⚡ AWS Lambda&lt;br/&gt;Function URL]
+
+        subgraph AgentCore["🤖 Bedrock AgentCore Runtime"]
+            Agent[🧠 TAC Agent&lt;br/&gt;WebSocket/HTTP]
+        end
+    end
+
+    %% Voice Channel Flow (A-D)
+    Customer --&gt;|A. Phone Call| Phone
+    Phone --&gt;|B. POST /twiml| Lambda
+    Lambda --&gt;|C. TwiML with&lt;br/&gt;pre-signed WebSocket URL| Phone
+    Phone &lt;--&gt;|D. Twilio ConversationRelay| Agent
+
+    %% Messaging Channel Flow (1-4)
+    Customer --&gt;|1. SMS| Phone
+    Phone --&gt;|2. POST /webhook| Lambda
+    Lambda --&gt;|3. Forward Webhook| Agent
+    Agent --&gt;|4. SMS Response| Phone
+
+    %% AgentCore integrations
+    Agent --&gt; Orchestrator
+    Agent --&gt; Memory
+
+    Phone --&gt;|Response| Customer
+
+    style Customer fill:#e1f5ff
+    style Twilio fill:#f0f0f0
+    style AWS fill:#fff4e6
+    style Lambda fill:#fff9c4
+    style AgentCore fill:#f3e5f5
+    style Agent fill:#e1bee7</code></pre>
+<h2 id="deployment-components">Deployment Components<a class="headerlink" href="#deployment-components" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>AgentCore Runtime</strong> - AI agent with TAC integration, HTTP and WebSocket endpoints</li>
+<li><strong>Lambda Webhook Proxy</strong> - Serverless webhook router with Function URLs</li>
+</ul>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<h3 id="required-tools">Required Tools<a class="headerlink" href="#required-tools" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">AWS CLI</a></strong> - Command-line tool for AWS</li>
+<li><strong><a href="https://nodejs.org/">Node.js 24+</a></strong> - For CDK infrastructure</li>
+<li><strong><a href="https://www.python.org/downloads/">Python 3.10+</a></strong> - For agent code</li>
+<li><strong><a href="https://docs.astral.sh/uv/getting-started/installation/">uv</a></strong> - Python package manager</li>
+<li><strong><a href="https://docs.docker.com/get-docker/">Docker</a></strong> - For Lambda packaging (must be running)</li>
+</ul>
+<h3 id="aws-account-requirements">AWS Account Requirements<a class="headerlink" href="#aws-account-requirements" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Active AWS Account</strong> with access to:</li>
+<li><strong>Bedrock</strong> (Amazon Nova Pro or Claude models)</li>
+<li><strong>AgentCore</strong>, <strong>Lambda</strong>, <strong>CloudFormation</strong>, and <strong>IAM</strong></li>
+<li><strong>Recommended region:</strong> <code>us-east-1</code> (or your preferred region with Bedrock access)</li>
+</ul>
+<hr />
+<h2 id="aws-setup">AWS Setup<a class="headerlink" href="#aws-setup" title="Permanent link">&para;</a></h2>
+<h3 id="1-create-iam-user-and-access-keys">1. Create IAM User and Access Keys<a class="headerlink" href="#1-create-iam-user-and-access-keys" title="Permanent link">&para;</a></h3>
+<p><strong>Step 1: Create the policy</strong></p>
+<ol>
+<li>Sign in to <a href="https://console.aws.amazon.com">AWS Console</a></li>
+<li>Navigate to <strong>IAM</strong> → <strong>Policies</strong></li>
+<li>Click <strong>Create policy</strong></li>
+<li>Click the <strong>JSON</strong> tab</li>
+<li>Copy the contents of <a href="https://github.com/twilio/twilio-agent-connect-aws/blob/main/deploy/agentcore_aws_lambda/iam-policy.json"><code>iam-policy.json</code></a> and paste it</li>
+<li>Click <strong>Next</strong></li>
+<li>Enter a policy name (e.g., <code>TACDeploymentPolicy</code>)</li>
+<li>(Optional) Add a description</li>
+<li>Click <strong>Create policy</strong></li>
+</ol>
+<p><strong>Step 2: Create the user</strong></p>
+<ol>
+<li>Navigate to <strong>IAM</strong> → <strong>Users</strong></li>
+<li>Click <strong>Create user</strong></li>
+<li>Enter a <strong>User name</strong> (e.g., <code>tac-deployment-user</code>)</li>
+<li>Click <strong>Next</strong></li>
+<li>On "Set permissions" page, select <strong>Attach policies directly</strong></li>
+<li>Search for <code>TACDeploymentPolicy</code> (the policy you just created)</li>
+<li>Check the box next to it</li>
+<li>Click <strong>Next</strong></li>
+<li>Review and click <strong>Create user</strong></li>
+</ol>
+<p><strong>Step 3: Create access key</strong></p>
+<ol>
+<li>After user creation, click the <strong>Security credentials</strong> tab</li>
+<li>Under <strong>Access keys</strong>, click <strong>Create access key</strong></li>
+<li>Choose use case: <strong>Command Line Interface (CLI)</strong></li>
+<li>Check the confirmation box and click <strong>Next</strong></li>
+<li>(Optional) Add a description tag</li>
+<li>Click <strong>Create access key</strong></li>
+<li><strong>Save credentials</strong> (⚠️ secret key only shown once):</li>
+<li>Access key ID (e.g., <code>AKIAIOSFODNN7EXAMPLE</code>)</li>
+<li>Secret access key</li>
+<li>Click <strong>Done</strong></li>
+</ol>
+<p><strong>Note:</strong> The IAM policy in <a href="https://github.com/twilio/twilio-agent-connect-aws/blob/main/deploy/agentcore_aws_lambda/iam-policy.json"><code>iam-policy.json</code></a> follows the principle of least privilege, scoping permissions to only the resources needed for this deployment (CloudFormation stacks, S3 CDK assets, Lambda functions, BedrockAgentCore runtimes). For tighter security in production, replace <code>*</code> in account IDs with your specific AWS account ID.</p>
+<h3 id="2-configure-aws-cli-profile">2. Configure AWS CLI Profile<a class="headerlink" href="#2-configure-aws-cli-profile" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>configure<span class="w"> </span>--profile<span class="w"> </span>your-profile-name
+</code></pre></div>
+<p>When prompted, enter:
+- <strong>AWS Access Key ID:</strong> Paste the access key from step 1
+- <strong>AWS Secret Access Key:</strong> Paste the secret key from step 1
+- <strong>Default region name:</strong> <code>us-east-1</code> (or your preferred region)
+- <strong>Default output format:</strong> <code>json</code></p>
+<h3 id="3-verify-configuration">3. Verify Configuration<a class="headerlink" href="#3-verify-configuration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>aws<span class="w"> </span>sts<span class="w"> </span>get-caller-identity<span class="w"> </span>--profile<span class="w"> </span>your-profile-name
+</code></pre></div>
+<p>Expected output:
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;UserId&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;AIDAI...&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;Account&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;123456789012&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;Arn&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;arn:aws:iam::123456789012:user/your-username&quot;</span>
+<span class="p">}</span>
+</code></pre></div></p>
+<p>Save your <strong>Account ID</strong> (e.g., <code>123456789012</code>) - you'll need it for the <code>.env</code> file.</p>
+<hr />
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<h3 id="1-configure-environment">1. Configure Environment<a class="headerlink" href="#1-configure-environment" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>.env.example<span class="w"> </span>.env
+</code></pre></div>
+<p>Edit <code>.env</code> with your values:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># AWS Configuration</span>
+<span class="nv">AWS_PROFILE</span><span class="o">=</span>your-profile-name<span class="w">          </span><span class="c1"># Profile name from step 2</span>
+<span class="nv">AWS_ACCOUNT_ID</span><span class="o">=</span><span class="m">123456789012</span><span class="w">            </span><span class="c1"># Account ID from step 3</span>
+<span class="nv">AWS_REGION</span><span class="o">=</span>us-east-1
+
+<span class="c1"># Twilio Credentials (stored in AWS Secrets Manager)</span>
+<span class="nv">TWILIO_ACCOUNT_SID</span><span class="o">=</span>ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+<span class="nv">TWILIO_AUTH_TOKEN</span><span class="o">=</span>your_auth_token
+<span class="nv">TWILIO_API_KEY</span><span class="o">=</span>SKxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+<span class="nv">TWILIO_API_SECRET</span><span class="o">=</span>your_api_secret
+
+<span class="c1"># Twilio Configuration (passed as environment variables)</span>
+<span class="nv">TWILIO_PHONE_NUMBER</span><span class="o">=</span>+1234567890
+<span class="nv">TWILIO_CONVERSATION_CONFIGURATION_ID</span><span class="o">=</span>WRxxxx
+</code></pre></div>
+<p><strong>Where to find Twilio values:</strong>
+- Account SID &amp; Auth Token: Twilio Console → Account → API Keys &amp; Tokens
+- API Key &amp; Secret: Create new API Key
+- Phone Number: Twilio Console → Phone Numbers
+- Conversation Configuration ID: Twilio Console → Conversation Orchestrator</p>
+<p><strong>Security Model:</strong>
+- Credentials (Account SID, Auth Token, API Key, API Secret) are stored in AWS Secrets Manager
+- Configuration (Phone Number, Conversation Configuration ID) are passed as environment variables during deployment</p>
+<h3 id="2-bootstrap-cdk-one-time-setup">2. Bootstrap CDK (One-Time Setup)<a class="headerlink" href="#2-bootstrap-cdk-one-time-setup" title="Permanent link">&para;</a></h3>
+<p>⚠️ <strong>Must complete step 1 first</strong> - <code>make bootstrap</code> requires <code>.env</code> file.</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>bootstrap
+</code></pre></div>
+<p>This installs CDK dependencies and bootstraps your AWS account for CDK deployments.</p>
+<p><strong>Note:</strong> Only needs to be done once per account/region.</p>
+<h3 id="3-deploy-everything">3. Deploy Everything<a class="headerlink" href="#3-deploy-everything" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>deploy
+</code></pre></div>
+<p>This command:
+1. Builds the Python agent code
+2. Compiles the CDK TypeScript
+3. Deploys both AgentCore runtime and Lambda webhook proxy
+4. Handles cross-stack references automatically</p>
+<p><strong>Deployment output:</strong></p>
+<div class="highlight"><pre><span></span><code>✓ All stacks deployed!
+
+TacLambdaStack.VoiceWebhookUrl = https://xxxxx.lambda-url.us-east-1.on.aws/twiml
+TacLambdaStack.ConversationWebhookUrl = https://xxxxx.lambda-url.us-east-1.on.aws/webhook
+</code></pre></div>
+<p>Copy these webhook URLs for Twilio configuration.</p>
+<hr />
+<h2 id="twilio-configuration">Twilio Configuration<a class="headerlink" href="#twilio-configuration" title="Permanent link">&para;</a></h2>
+<h3 id="configure-voice-webhook-phone-number">Configure Voice Webhook (Phone Number)<a class="headerlink" href="#configure-voice-webhook-phone-number" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Go to <strong>Twilio Console → Phone Numbers → Active Numbers</strong></li>
+<li>Select your phone number</li>
+<li>Under "Voice Configuration":</li>
+<li><strong>A CALL COMES IN:</strong> Webhook</li>
+<li><strong>URL:</strong> Use the <code>VoiceWebhookUrl</code> from stack outputs</li>
+<li><strong>HTTP Method:</strong> POST</li>
+<li>Save</li>
+</ol>
+<h3 id="configure-conversation-webhook-smsmessaging">Configure Conversation Webhook (SMS/Messaging)<a class="headerlink" href="#configure-conversation-webhook-smsmessaging" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Go to <strong>Twilio Console → Conversation Orchestrator</strong></li>
+<li>Select your Conversation Configuration</li>
+<li>Under "Webhook Configuration":</li>
+<li><strong>Webhook URL:</strong> Use the <code>ConversationWebhookUrl</code> from stack outputs</li>
+<li><strong>HTTP Method:</strong> POST</li>
+<li>Save</li>
+</ol>
+<hr />
+<h2 id="view-logs">View Logs<a class="headerlink" href="#view-logs" title="Permanent link">&para;</a></h2>
+<p>CloudWatch log groups are created after the first invocation (phone call or SMS).</p>
+<h3 id="agentcore-logs">AgentCore Logs<a class="headerlink" href="#agentcore-logs" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Go to <a href="https://console.aws.amazon.com/cloudwatch/">CloudWatch Console</a></li>
+<li>In the left sidebar, click <strong>Logs</strong> → <strong>Log Management</strong> → <strong>Log groups</strong></li>
+<li>In the search box, type: <code>/aws/bedrock-agentcore/runtimes/tac_tac_agent-</code></li>
+</ol>
+<h3 id="lambda-logs">Lambda Logs<a class="headerlink" href="#lambda-logs" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Go to <a href="https://console.aws.amazon.com/cloudwatch/">CloudWatch Console</a></li>
+<li>In the left sidebar, click <strong>Logs</strong> → <strong>Log Management</strong> → <strong>Log groups</strong></li>
+<li>In the search box, type: <code>/aws/lambda/TacLambdaStack-</code></li>
+</ol>
+<hr />
+<h2 id="update-code">Update Code<a class="headerlink" href="#update-code" title="Permanent link">&para;</a></h2>
+<p>After editing agent or Lambda code:</p>
+<div class="highlight"><pre><span></span><code>make<span class="w"> </span>deploy
+</code></pre></div>
+<hr />
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="cdk-bootstrap-fails-with-s3-public-access-block-errors">CDK bootstrap fails with S3 public access block errors<a class="headerlink" href="#cdk-bootstrap-fails-with-s3-public-access-block-errors" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom:</strong> <code>make bootstrap</code> fails with an error about S3 public access block configuration, such as:
+<div class="highlight"><pre><span></span><code>Error: Failed to create S3 bucket: The S3 bucket that was created for the CDK bootstrap cannot be created with public access block enabled
+</code></pre></div></p>
+<p><strong>Cause:</strong> Some AWS accounts or organizations have strict S3 security policies that conflict with CDK's default bootstrap configuration.</p>
+<p><strong>Solution:</strong></p>
+<p>⚠️ <strong>Security Warning:</strong> Only use this workaround if absolutely necessary. Disabling public access block configuration weakens the security posture of your CDK bootstrap resources.</p>
+<p>If you encounter this error and have confirmed with your AWS administrator that it's acceptable, you can manually run bootstrap with the flag:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>cdk<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nv">AWS_PROFILE</span><span class="o">=</span>your-profile-name<span class="w"> </span>npx<span class="w"> </span>cdk<span class="w"> </span>bootstrap<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--public-access-block-configuration<span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>aws://123456789012/us-east-1
+</code></pre></div>
+<p><strong>Better alternatives:</strong>
+1. Work with your AWS administrator to adjust organization-level S3 policies
+2. Use a CDK bootstrap configuration that aligns with your organization's security requirements
+3. Consider using a separate AWS account without organization-level restrictions for development</p>
+<h3 id="nodejs-not-found-or-npm-commands-fail">Node.js not found or npm commands fail<a class="headerlink" href="#nodejs-not-found-or-npm-commands-fail" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom:</strong> <code>npm: command not found</code> or <code>node: command not found</code> after installing Node.js via Homebrew.</p>
+<p><strong>Cause:</strong> Homebrew installs some Node.js versions as "keg-only" (not automatically linked to PATH).</p>
+<p><strong>Solution:</strong></p>
+<p>Check your Node.js installation:
+<div class="highlight"><pre><span></span><code>brew<span class="w"> </span>list<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>node
+</code></pre></div></p>
+<p>If you see <code>node@24</code>, add it to your PATH:
+<div class="highlight"><pre><span></span><code><span class="c1"># For zsh (default macOS shell)</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=&quot;/opt/homebrew/opt/node@24/bin:$PATH&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.zshrc
+<span class="nb">source</span><span class="w"> </span>~/.zshrc
+
+<span class="c1"># For bash</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;export PATH=&quot;/opt/homebrew/opt/node@24/bin:$PATH&quot;&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.bash_profile
+<span class="nb">source</span><span class="w"> </span>~/.bash_profile
+</code></pre></div></p>
+<p>Verify:
+<div class="highlight"><pre><span></span><code>node<span class="w"> </span>--version<span class="w">  </span><span class="c1"># Should show v24.x.x</span>
+npm<span class="w"> </span>--version<span class="w">   </span><span class="c1"># Should show 10.x.x</span>
+</code></pre></div></p>
+<p><strong>Note:</strong> This project requires Node.js 24+ as specified in <code>cdk/package.json</code>. Make sure you install the correct version.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; Twilio
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.top", "navigation.instant", "content.code.copy", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"alias": true, "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
