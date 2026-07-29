@@ -1,0 +1,21 @@
+{
+  "name": "tac-agentcore-twilio-function",
+  "version": "1.0.0",
+  "description": "Twilio Function for TAC AgentCore integration",
+  "main": "index.js",
+  "scripts": {
+    "deploy": "twilio-run deploy",
+    "start": "twilio-run start",
+    "dev": "twilio-run dev"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-agentcore": "^3.996.0",
+    "bedrock-agentcore": "^0.2.4"
+  },
+  "devDependencies": {
+    "twilio-run": "^5.0.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
