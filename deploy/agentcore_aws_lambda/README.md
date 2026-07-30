@@ -82,7 +82,7 @@ graph TB
 2. Navigate to **IAM** → **Policies**
 3. Click **Create policy**
 4. Click the **JSON** tab
-5. Copy the contents of [`iam-policy.json`](./iam-policy.json) and paste it
+5. Copy the contents of [`iam-policy.json`](https://github.com/twilio/twilio-agent-connect-aws/blob/main/deploy/agentcore_aws_lambda/iam-policy.json) and paste it
 6. Click **Next**
 7. Enter a policy name (e.g., `TACDeploymentPolicy`)
 8. (Optional) Add a description
@@ -113,7 +113,7 @@ graph TB
    - Secret access key
 8. Click **Done**
 
-**Note:** The IAM policy in [`iam-policy.json`](./iam-policy.json) follows the principle of least privilege, scoping permissions to only the resources needed for this deployment (CloudFormation stacks, S3 CDK assets, Lambda functions, BedrockAgentCore runtimes). For tighter security in production, replace `*` in account IDs with your specific AWS account ID.
+**Note:** The IAM policy in [`iam-policy.json`](https://github.com/twilio/twilio-agent-connect-aws/blob/main/deploy/agentcore_aws_lambda/iam-policy.json) follows the principle of least privilege, scoping permissions to only the resources needed for this deployment (CloudFormation stacks, S3 CDK assets, Lambda functions, BedrockAgentCore runtimes). For tighter security in production, replace `*` in account IDs with your specific AWS account ID.
 
 ### 2. Configure AWS CLI Profile
 
@@ -122,6 +122,7 @@ aws configure --profile your-profile-name
 ```
 
 When prompted, enter:
+
 - **AWS Access Key ID:** Paste the access key from step 1
 - **AWS Secret Access Key:** Paste the secret key from step 1
 - **Default region name:** `us-east-1` (or your preferred region)
@@ -174,12 +175,14 @@ TWILIO_CONVERSATION_CONFIGURATION_ID=WRxxxx
 ```
 
 **Where to find Twilio values:**
+
 - Account SID & Auth Token: Twilio Console → Account → API Keys & Tokens
 - API Key & Secret: Create new API Key
 - Phone Number: Twilio Console → Phone Numbers
 - Conversation Configuration ID: Twilio Console → Conversation Orchestrator
 
 **Security Model:**
+
 - Credentials (Account SID, Auth Token, API Key, API Secret) are stored in AWS Secrets Manager
 - Configuration (Phone Number, Conversation Configuration ID) are passed as environment variables during deployment
 
@@ -202,6 +205,7 @@ make deploy
 ```
 
 This command:
+
 1. Builds the Python agent code
 2. Compiles the CDK TypeScript
 3. Deploys both AgentCore runtime and Lambda webhook proxy
@@ -295,6 +299,7 @@ cd cdk && AWS_PROFILE=your-profile-name npx cdk bootstrap \
 ```
 
 **Better alternatives:**
+
 1. Work with your AWS administrator to adjust organization-level S3 policies
 2. Use a CDK bootstrap configuration that aligns with your organization's security requirements
 3. Consider using a separate AWS account without organization-level restrictions for development

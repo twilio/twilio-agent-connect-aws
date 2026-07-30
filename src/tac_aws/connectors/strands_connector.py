@@ -27,6 +27,7 @@ class StrandsConnector:
     Connector for AWS Strands SDK with multi-channel support.
 
     Combines agent management with channel handling:
+
     - Creates one Strands agent instance per conversation for proper isolation
     - Manages Voice and SMS channels
     - Handles memory injection and message routing

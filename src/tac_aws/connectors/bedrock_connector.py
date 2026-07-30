@@ -31,6 +31,7 @@ class BedrockConnector:
     Connector for AWS Bedrock Agents with multi-channel support.
 
     Supports two usage patterns:
+
     1. Simple config-based (recommended for most users)
     2. Custom invoke function (for advanced use cases needing dynamic behavior)
 
@@ -41,9 +42,11 @@ class BedrockConnector:
             Required fields agentId, agentAliasId will be used. sessionId and inputText
             are auto-injected by connector. (required if using config pattern)
         invoke_fn: Custom function to invoke agent. Receives:
+
             - context: ConversationSession with conversation_id, channel, etc.
             - user_message: The user's message text
             - memory_context: Optional memory context string (from TAC memory)
+
             Returns: InvokeAgentResponseTypeDef from client.invoke_agent()
             (required if not using config pattern)
         sms_config: Optional SMS channel configuration (SMSChannelConfig or dict)

@@ -28,6 +28,9 @@ make lint              # Lint check only
 make type-check        # mypy strict mode
 make test              # Run pytest
 make check             # All checks (lint + type-check + test)
+make docs              # Build the docs site into site/
+make docs-serve        # Serve docs locally with live reload
+make docs-versions     # List versioned docs published to gh-pages
 ```
 
 ## Package Structure
@@ -50,6 +53,7 @@ src/tac_aws/
 
 getting_started/examples/   # Full working examples (FastAPI servers)
 deploy/                     # Production deployment guides
+docs/                       # MkDocs sources for the published API reference
 ```
 
 ## Code Conventions
@@ -254,6 +258,16 @@ Tests should:
 - Test connector implementations
 - Test server initialization and routing
 
+## Documentation
+
+- The public API reference is published at https://twilio.github.io/twilio-agent-connect-aws/ — versioned with `mike`, deployed from `.github/workflows/docs.yml` on each GitHub release.
+- API docs are generated from docstrings by MkDocs Material + mkdocstrings, so **docstrings are published documentation** — write them for both source readers and the rendered site.
+- Use **Markdown** in docstrings: `**bold**` for emphasis, `- ` bullet lists, backticks for identifiers, and fenced code blocks for examples. Leave a blank line before a list or fenced block so mkdocstrings parses it correctly.
+- TAC core types (`TAC`, `ConversationSession`, ...) resolve to the TAC Python docs via the `inventories` entry in `mkdocs.yml`, so annotating with real TAC types produces cross-repo links for free.
+- `docs/api/proxy.md` and `docs/api/server.md` target **individual modules**, not their packages: `tac_aws/proxy/__init__.py` and `tac_aws/server/__init__.py` build `__all__` at runtime inside `try/except ModuleNotFoundError`, which griffe cannot resolve statically. When you add a module to either package, add it to the corresponding docs page.
+- `docs/index.md` and `docs/deploy/*.md` are one-line snippet includes of `README.md` and the `deploy/*/README.md` guides — edit the source Markdown, never the docs stub. Use **absolute** GitHub URLs for repo-only paths in those files (relative links break once included in the site).
+- Verify docs changes with `uv run --group docs mkdocs build --strict`, which turns broken links into build failures.
+
 ## Common Pitfalls
 
 1. **Don't import from internal tac_aws paths for TAC classes** - use `from tac.X import Y`
@@ -269,3 +283,4 @@ Tests should:
 - AWS Bedrock: [docs.aws.amazon.com/bedrock](https://docs.aws.amazon.com/bedrock/)
 - Examples: `getting_started/examples/`
 - Deployment: `deploy/README.md`
+- Published API reference: [twilio.github.io/twilio-agent-connect-aws](https://twilio.github.io/twilio-agent-connect-aws/)

@@ -1,6 +1,6 @@
 <div align="center">
   <div>
-    <img src="logo.svg" alt="Twilio Agent Connect AWS Logo" width="120" height="120">
+    <img src="https://raw.githubusercontent.com/twilio/twilio-agent-connect-aws/main/logo.svg" alt="Twilio Agent Connect AWS Logo" width="120" height="120">
   </div>
 
   <h1>
@@ -14,16 +14,17 @@
   <div align="center">
     <a href="https://pypi.org/project/twilio-agent-connect-aws/"><img alt="PyPI" src="https://img.shields.io/pypi/v/twilio-agent-connect-aws.svg"/></a>
     <a href="https://github.com/twilio/twilio-agent-connect-aws"><img alt="Python SDK" src="https://img.shields.io/badge/Python-3.10+-3776AB.svg"/></a>
-    <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg"/></a>
+    <a href="https://github.com/twilio/twilio-agent-connect-aws/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg"/></a>
     <a href="https://github.com/twilio/twilio-agent-connect-aws/actions/workflows/ci.yml"><img alt="CI Status" src="https://github.com/twilio/twilio-agent-connect-aws/actions/workflows/ci.yml/badge.svg"/></a>
-    <a href="getting_started/examples/"><img alt="Getting Started" src="https://img.shields.io/badge/Getting%20Started-Examples-F22F46.svg"/></a>
+    <a href="https://github.com/twilio/twilio-agent-connect-aws/tree/main/getting_started/examples"><img alt="Getting Started" src="https://img.shields.io/badge/Getting%20Started-Examples-F22F46.svg"/></a>
   </div>
   
   <p>
     <a href="https://www.twilio.com/docs/platform/tac/overview">Documentation</a>
+    ◆ <a href="https://twilio.github.io/twilio-agent-connect-aws/">API Reference</a>
     ◆ <a href="https://github.com/twilio/twilio-agent-connect-python">Python SDK</a>
-    ◆ <a href="getting_started/examples/">Examples</a>
-    ◆ <a href="deploy/">Deployment</a>
+    ◆ <a href="https://github.com/twilio/twilio-agent-connect-aws/tree/main/getting_started/examples">Examples</a>
+    ◆ <a href="https://github.com/twilio/twilio-agent-connect-aws/tree/main/deploy">Deployment</a>
   </p>
 </div>
 
@@ -103,7 +104,7 @@ TWILIO_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
 
 ## Examples
 
-Full examples available in [`getting_started/examples/`](getting_started/examples/):
+Full examples available in [`getting_started/examples/`](https://github.com/twilio/twilio-agent-connect-aws/tree/main/getting_started/examples):
 
 - **`strands_agents.py`** - Strands SDK with per-conversation agent management
 - **`bedrock_agents.py`** - AWS Bedrock Agents (console-created agents)
@@ -111,7 +112,7 @@ Full examples available in [`getting_started/examples/`](getting_started/example
 
 ## Deployment
 
-See [`deploy/README.md`](deploy/README.md) for production deployment guides:
+See the [deployment guides](https://github.com/twilio/twilio-agent-connect-aws/tree/main/deploy) for production deployment options:
 
 ### Container-based (Fargate)
 - **Strands on Fargate** - Deploy Strands SDK agents with FastAPI server
@@ -126,7 +127,7 @@ See [`deploy/README.md`](deploy/README.md) for production deployment guides:
   - Automatic scaling with Lambda and AgentCore
   - Simpler deployment and lower operational overhead
   - Uses `AgentCoreLambdaProxy` and `TACAgentCoreApp` utilities
-  - See [`deploy/agentcore_aws_lambda/`](deploy/agentcore_aws_lambda/) for setup guide
+  - See [`deploy/agentcore_aws_lambda/`](https://github.com/twilio/twilio-agent-connect-aws/tree/main/deploy/agentcore_aws_lambda) for setup guide
 
 ## Development
 
@@ -166,9 +167,16 @@ make check
 ## Dependencies
 
 twilio-agent-connect-aws depends on:
+
 - **tac** - Core Twilio Agent Connect framework (installed from GitHub)
   - Requires `tac[server]` extra for TAC Server support
 - **strands-agents** (optional) - AWS Strands SDK
+
+## Documentation
+
+- **[API Reference](https://twilio.github.io/twilio-agent-connect-aws/)** - Full API documentation generated from the source
+- **[CLAUDE.md](https://github.com/twilio/twilio-agent-connect-aws/blob/main/CLAUDE.md)** - Architecture, development guide, and API reference
+- **[Getting Started Guide](https://github.com/twilio/twilio-agent-connect-aws/blob/main/getting_started/README.md)** - Setup instructions, environment variables, and troubleshooting
 
 ## Contributing
 
@@ -176,5 +184,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](https://github.com/twilio/twilio-agent-connect-aws/blob/main/LICENSE) file for details.
 

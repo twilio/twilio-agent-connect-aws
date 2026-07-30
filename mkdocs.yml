@@ -1,0 +1,92 @@
+site_name: Twilio Agent Connect (AWS)
+site_description: AWS integrations for Twilio Agent Connect - connectors, servers and Lambda proxies for AWS agent runtimes
+site_url: https://twilio.github.io/twilio-agent-connect-aws/
+repo_url: https://github.com/twilio/twilio-agent-connect-aws
+repo_name: twilio/twilio-agent-connect-aws
+copyright: Copyright &copy; Twilio
+
+extra:
+  version:
+    provider: mike
+    alias: true
+
+theme:
+  name: material
+  logo: assets/twilio-logo.svg
+  favicon: assets/twilio-logo.svg
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.instant
+    - content.code.copy
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          # Resolve TAC core types (TAC, ConversationSession, ...) against the
+          # published TAC Python docs so cross-repo signatures link out.
+          inventories:
+            - https://twilio.github.io/twilio-agent-connect-python/latest/objects.inv
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            show_if_no_docstring: false
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+            merge_init_into_class: true
+            filters: ["!^_"]
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        # Deployment guides use ```mermaid architecture diagrams.
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets:
+      # Allow docs pages to include files from the repo root (e.g. README.md).
+      base_path: ["."]
+      check_paths: true
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - Connectors: api/connectors.md
+      - Server: api/server.md
+      - Proxy: api/proxy.md
+      - Tools: api/tools.md
+  # Mirrors the deploy/ directory layout so the relative links inside the
+  # included READMEs resolve to the right in-site pages.
+  - Deployment:
+      - Overview: deploy/index.md
+      - AgentCore on Lambda: deploy/agentcore_aws_lambda/README.md
+      - AgentCore on Fargate: deploy/agentcore_aws_fargate/README.md
+      - Bedrock Agents on Fargate: deploy/bedrock_aws_fargate/README.md
+      - Strands on Fargate: deploy/strands_aws_fargate/README.md

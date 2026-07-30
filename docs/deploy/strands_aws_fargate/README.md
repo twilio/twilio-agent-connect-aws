@@ -1,0 +1,1 @@
+--8<-- "deploy/strands_aws_fargate/README.md"

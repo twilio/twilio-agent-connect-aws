@@ -1,4 +1,4 @@
-.PHONY: help sync dev-setup format lint type-check test check pre-commit clean
+.PHONY: help sync dev-setup format lint type-check test check pre-commit clean docs docs-serve docs-versions
 
 # Include local customizations (optional)
 -include Makefile.local
@@ -13,6 +13,8 @@ help:
 	@echo "  make test        - Run pytest"
 	@echo "  make check       - Run all checks (lint + type-check + test)"
 	@echo "  make pre-commit  - Run pre-commit hooks"
+	@echo "  make docs        - Build the API documentation into site/"
+	@echo "  make docs-serve  - Serve the docs locally with live reload"
 	@echo "  make clean       - Clean build artifacts"
 
 sync:
@@ -45,6 +47,17 @@ check: lint type-check test
 
 pre-commit:
 	uv run pre-commit run --all-files
+
+docs:
+	@echo "Building documentation into site/ (--strict: warnings fail the build)..."
+	uv run --group docs mkdocs build --strict
+
+docs-serve:
+	@echo "Serving docs at http://127.0.0.1:8000 (live reload)..."
+	uv run --group docs mkdocs serve
+
+docs-versions:
+	uv run --group docs mike list
 
 clean:
 	@echo "Cleaning build artifacts..."

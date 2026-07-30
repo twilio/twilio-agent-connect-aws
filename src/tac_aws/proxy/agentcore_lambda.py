@@ -45,6 +45,7 @@ class AgentCoreLambdaProxy:
     """Lambda proxy for routing Twilio webhooks to AWS Bedrock AgentCore.
 
     This proxy handles:
+
     - Signature validation for Twilio webhooks
     - Voice call routing (generates TwiML with presigned WebSocket URL)
     - Conversation webhook routing (forwards to AgentCore via HTTP)

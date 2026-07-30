@@ -29,12 +29,14 @@ class BedrockAgentCoreConnector:
     Connector for AWS Bedrock Agent Core with dual-runtime pattern.
 
     Provides two runtime modes:
+
     - HTTP invocation (required): For both voice and SMS channels
     - WebSocket streaming (optional): For voice channel low-latency optimization (~50ms vs ~200ms)
 
     Args:
         tac: TAC instance for channel integration
         runtime: Agent runtime configuration (RuntimeConfig or dict):
+
             - http: Function to invoke agent via HTTP (required)
                 Signature: (context, user_message, memory_context) -> InvokeAgentRuntimeResponseTypeDef
                 Users control all invoke_agent_runtime() parameters
