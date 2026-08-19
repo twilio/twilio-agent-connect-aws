@@ -28,8 +28,6 @@ proxy = AgentCoreLambdaProxy(
     # ConversationRelay TwiML customization. Every <ConversationRelay>
     # attribute is available here (voice, language, interruptible, ...);
     # for per-call overrides use proxy.on_inbound_call_twiml().
-    # The agent passes welcome_message=None to TACAgentCoreApp so this greeting
-    # isn't spoken twice.
     twiml_options=TwiMLOptions(welcome_greeting="Hi! How can I help you today?"),
 )
 
