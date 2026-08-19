@@ -7,14 +7,18 @@ from typing import TYPE_CHECKING, Any
 
 from tac import PartnerConnector
 from tac.adapters import MemoryPromptBuilder
-from tac.channels.sms import SMSChannel, SMSChannelConfig
-from tac.channels.voice import VoiceChannel, VoiceChannelConfig
+from tac.channels.chat import ChatChannelConfig
+from tac.channels.rcs import RCSChannelConfig
+from tac.channels.sms import SMSChannelConfig
+from tac.channels.voice import VoiceChannelConfig
+from tac.channels.whatsapp import WhatsAppChannelConfig
 from tac.core.logging import get_logger
 from tac.core.tac import TAC
 from tac.models.session import ConversationSession
 from tac.models.tac import TACMemoryResponse
 
 from tac_aws._version import __version__ as _tac_aws_version
+from tac_aws.connectors.channels import ConnectorChannels
 
 if TYPE_CHECKING:
     from strands import Agent
@@ -29,7 +33,7 @@ class StrandsConnector:
     Combines agent management with channel handling:
 
     - Creates one Strands agent instance per conversation for proper isolation
-    - Manages Voice and SMS channels
+    - Manages every channel TAC supports — Voice, SMS, RCS, WhatsApp, and Chat
     - Handles memory injection and message routing
 
     Args:
@@ -39,10 +43,21 @@ class StrandsConnector:
             and context-aware agent configuration.
         sms_config: Optional SMS channel configuration (SMSChannelConfig or dict)
         voice_config: Optional Voice channel configuration (VoiceChannelConfig or dict)
+        rcs_config: RCS channel configuration. Pass it — `{}` for defaults — to
+            enable RCS. Requires `TWILIO_RCS_SENDER_ID`.
+        whatsapp_config: WhatsApp channel configuration. Pass it — `{}` for
+            defaults — to enable WhatsApp. Requires `TWILIO_WHATSAPP_NUMBER`.
+        chat_config: Chat channel configuration. Pass it — `{}` for defaults —
+            to enable web chat.
 
     Attributes:
+        channels: The full `ConnectorChannels` set. `channels.messaging` is the
+            list to hand a server as `messaging_channels=`.
         voice: VoiceChannel instance for voice conversations
         sms: SMSChannel instance for SMS conversations
+        rcs: RCSChannel, or None when `rcs_config` was not given
+        whatsapp: WhatsAppChannel, or None when `whatsapp_config` was not given
+        chat: ChatChannel, or None when `chat_config` was not given
 
     Example:
         ```python
@@ -66,11 +81,17 @@ class StrandsConnector:
                 )
             )
 
-        # Create connector with agent factory
-        connector = StrandsConnector(tac=tac, agent_factory=create_agent)
+        # Create connector with agent factory, plus WhatsApp alongside SMS
+        connector = StrandsConnector(
+            tac=tac, agent_factory=create_agent, whatsapp_config={}
+        )
 
         # Use connector's channels for server
-        server = TACFastAPIServer(tac=tac, voice_channel=connector.voice, sms_channel=connector.sms)
+        server = TACFastAPIServer(
+            tac=tac,
+            voice_channel=connector.voice,
+            messaging_channels=connector.channels.messaging,
+        )
         server.start()
         ```
     """
@@ -81,6 +102,9 @@ class StrandsConnector:
         agent_factory: Callable[[ConversationSession], Agent],
         sms_config: SMSChannelConfig | dict[str, Any] | None = None,
         voice_config: VoiceChannelConfig | dict[str, Any] | None = None,
+        rcs_config: RCSChannelConfig | dict[str, Any] | None = None,
+        whatsapp_config: WhatsAppChannelConfig | dict[str, Any] | None = None,
+        chat_config: ChatChannelConfig | dict[str, Any] | None = None,
     ) -> None:
         """
         Initialize Strands connector with agent factory and channel configs.
@@ -91,6 +115,9 @@ class StrandsConnector:
                 Receives ConversationSession context as parameter.
             sms_config: Optional SMS channel configuration
             voice_config: Optional Voice channel configuration
+            rcs_config: RCS channel configuration; pass it to enable RCS
+            whatsapp_config: WhatsApp channel configuration; pass it to enable WhatsApp
+            chat_config: Chat channel configuration; pass it to enable web chat
         """
         self.tac = tac
         self.tac.register_partner_connector(PartnerConnector.AWS_STRANDS, _tac_aws_version)
@@ -100,8 +127,19 @@ class StrandsConnector:
         self.conversation_agents: dict[str, Agent] = {}
 
         # Create channels (from handler)
-        self.voice = VoiceChannel(tac=tac, config=voice_config)
-        self.sms = SMSChannel(tac=tac, config=sms_config)
+        self.channels = ConnectorChannels(
+            tac,
+            voice_config=voice_config,
+            sms_config=sms_config,
+            rcs_config=rcs_config,
+            whatsapp_config=whatsapp_config,
+            chat_config=chat_config,
+        )
+        self.voice = self.channels.voice
+        self.sms = self.channels.sms
+        self.rcs = self.channels.rcs
+        self.whatsapp = self.channels.whatsapp
+        self.chat = self.channels.chat
 
         # Track which sessions have been initialized (for memory injection)
         self.initialized_sessions: set[str] = set()
@@ -154,19 +192,7 @@ class StrandsConnector:
             response_text = str(result)
 
             # Route response to the appropriate channel
-            if context.channel == "voice" and self.voice:
-                await self.voice.send_response(
-                    context.conversation_id, response_text, role="assistant"
-                )
-            elif context.channel == "sms" and self.sms:
-                await self.sms.send_response(
-                    context.conversation_id, response_text, role="assistant"
-                )
-            else:
-                logger.error(
-                    f"No channel handler for {context.channel}",
-                    conversation_id=context.conversation_id,
-                )
+            await self.channels.send(context, response_text)
 
         except Exception as e:
             logger.error(
@@ -177,10 +203,7 @@ class StrandsConnector:
             )
             # Send error response
             error_msg = "I encountered an error processing your message. Please try again."
-            if context.channel == "voice" and self.voice:
-                await self.voice.send_response(context.conversation_id, error_msg, role="assistant")
-            elif context.channel == "sms" and self.sms:
-                await self.sms.send_response(context.conversation_id, error_msg, role="assistant")
+            await self.channels.send(context, error_msg)
 
         return None
 

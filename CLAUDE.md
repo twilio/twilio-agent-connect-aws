@@ -39,6 +39,7 @@ make docs-versions     # List versioned docs published to gh-pages
 src/tac_aws/
 ├── __init__.py         # Package exports
 ├── connectors/         # AWS agent connectors (runtime + channels)
+│   ├── channels.py                        # ConnectorChannels (shared channel set + routing)
 │   ├── strands_connector.py               # StrandsConnector
 │   ├── bedrock_connector.py               # BedrockConnector
 │   └── bedrock_agentcore_connector.py     # BedrockAgentCoreConnector
@@ -69,7 +70,7 @@ docs/                       # MkDocs sources for the published API reference
 
 ```toml
 dependencies = [
-    "twilio-agent-connect>=1.0.0,<2",
+    "twilio-agent-connect>=2.3.0,<3",
 ]
 ```
 
@@ -87,10 +88,16 @@ dependencies = [
 
 Connectors combine agent runtime integration with multi-channel conversation management:
 - Create and manage per-conversation agent instances
-- Create Voice and SMS channels
+- Build the channel set via `ConnectorChannels` (`connectors/channels.py`) — Voice
+  and SMS always, plus RCS / WhatsApp / Chat when their config is passed
 - Inject TAC memory context using `MemoryPromptBuilder`
-- Route responses to appropriate channels
+- Route responses back on the channel a message arrived on, via
+  `connector.channels.send(context, response)` — no per-connector if/elif chains
 - Register with TAC via `on_message_ready()` callback
+
+**ConnectorChannels**: shared by all three connectors. `channels.messaging` is the
+list to hand a server as `messaging_channels=`; `channels.send()` buffers a streamed
+response for messaging channels and passes it through token-by-token for voice.
 
 **StrandsConnector**: AWS Strands SDK integration with per-conversation agent management and SessionManager support.
 
@@ -100,7 +107,7 @@ Connectors combine agent runtime integration with multi-channel conversation man
 
 ### Server Utilities
 
-**TACAWSFastAPIServer**: FastAPI server with AWS ALB header fixing for Twilio signature validation.
+**TACAWSFastAPIServer**: FastAPI server with AWS ALB header fixing for Twilio signature validation. Reads the public domain from `TACConfig.voice_public_domain` (TAC 2.x moved it off `TACServerConfig`).
 
 **TACAgentCoreApp**: TAC adapter for AgentCore runtime. Registers HTTP (SMS) and WebSocket (Voice) handlers.
 
@@ -108,7 +115,7 @@ Connectors combine agent runtime integration with multi-channel conversation man
 
 ### Proxy Utilities (Lambda)
 
-**AgentCoreLambdaProxy**: Routes Twilio webhooks to AgentCore runtime. Handles signature validation, voice TwiML generation, and webhook forwarding.
+**AgentCoreLambdaProxy**: Routes Twilio webhooks to AgentCore runtime. Handles signature validation, voice TwiML generation, and webhook forwarding. Exposes TAC's ConversationRelay TwiML customization for Lambda deployments (no `VoiceChannel` exists there): static `twiml_options=TwiMLOptions(...)` plus a per-call `on_inbound_call_twiml(...)` customizer, merged over the presigned `websocket_url` and `conversation_configuration` defaults.
 
 **TwilioSignatureValidator**: Webhook signature validation for Lambda events (form-encoded and JSON).
 

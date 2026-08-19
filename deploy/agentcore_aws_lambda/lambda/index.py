@@ -9,6 +9,7 @@ Endpoints:
 import os
 
 from credentials import fetch_twilio_auth_token
+from tac.models.voice import TwiMLOptions
 
 from tac_aws.proxy import AgentCoreLambdaProxy
 
@@ -24,6 +25,12 @@ proxy = AgentCoreLambdaProxy(
     agentcore_runtime_arn=AGENTCORE_RUNTIME_ARN,
     conversation_configuration_id=TWILIO_CONVERSATION_CONFIGURATION_ID,
     twilio_auth_token=twilio_auth_token,
+    # ConversationRelay TwiML customization. Every <ConversationRelay>
+    # attribute is available here (voice, language, interruptible, ...);
+    # for per-call overrides use proxy.on_inbound_call_twiml().
+    # The agent passes welcome_message=None to TACAgentCoreApp so this greeting
+    # isn't spoken twice.
+    twiml_options=TwiMLOptions(welcome_greeting="Hi! How can I help you today?"),
 )
 
 # Expose lambda_handler for AWS Lambda runtime

@@ -51,7 +51,10 @@ connector = StrandsConnector(
 tac_app = TACAgentCoreApp(
     tac=tac,
     voice_channel=connector.voice,
-    sms_channel=connector.sms,
+    messaging_channels=connector.channels.messaging,
+    # The Lambda proxy sets welcomeGreeting in the TwiML, so ConversationRelay
+    # already speaks the greeting — don't send a second one over the WebSocket.
+    welcome_message=None,
 )
 
 # For AgentCore deployment

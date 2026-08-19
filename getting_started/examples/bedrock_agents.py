@@ -21,6 +21,7 @@ from tac import TAC
 from tac.channels.sms import SMSChannelConfig
 from tac.channels.voice import VoiceChannelConfig
 from tac.core.config import TACConfig
+from tac.models.voice import TwiMLOptions
 
 from tac_aws.connectors import BedrockConnector
 from tac_aws.server import TACAWSFastAPIServer
@@ -47,12 +48,22 @@ connector = BedrockConnector(
         "agentId": agent_id,
         "agentAliasId": agent_alias_id,
     },
-    voice_config=VoiceChannelConfig(memory_mode="always"),
+    voice_config=VoiceChannelConfig(
+        memory_mode="always",
+        # ConversationRelay TwiML customization. Every <ConversationRelay>
+        # attribute is available here (voice, language, interruptible, ...);
+        # for per-call overrides use connector.voice.on_inbound_call_twiml().
+        default_twiml_options=TwiMLOptions(welcome_greeting="Hi! How can I help you today?"),
+    ),
     sms_config=SMSChannelConfig(memory_mode="always"),
 )
 
 server = TACAWSFastAPIServer(
-    tac=tac, voice_channel=connector.voice, messaging_channels=[connector.sms]
+    tac=tac,
+    voice_channel=connector.voice,
+    # Every messaging channel the connector enabled (SMS here; add rcs_config /
+    # whatsapp_config / chat_config above to enable more).
+    messaging_channels=connector.channels.messaging,
 )
 
 if __name__ == "__main__":

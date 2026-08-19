@@ -48,6 +48,17 @@ TWILIO_CONVERSATION_CONFIGURATION_ID=conv_configuration_xxx
 TWILIO_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.app
 ```
 
+### Optional Channels
+
+Voice and SMS work with the required variables above. RCS and WhatsApp need one
+more each, then enable the channel on the connector with `rcs_config={}` /
+`whatsapp_config={}` (Chat needs no env var — `chat_config={}`):
+
+```bash
+TWILIO_RCS_SENDER_ID=your_rcs_sender_id
+TWILIO_WHATSAPP_NUMBER=whatsapp:+1234567890
+```
+
 ### AWS Service Specific
 
 **Bedrock Agents:**

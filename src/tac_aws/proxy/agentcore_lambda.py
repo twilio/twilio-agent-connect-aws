@@ -24,10 +24,12 @@ Example usage:
     lambda_handler = proxy.lambda_handler
 """
 
+import asyncio
 import base64
 import binascii
 import json
 import os
+from collections.abc import Awaitable, Callable
 from typing import Any
 from urllib.parse import parse_qs
 
@@ -35,10 +37,14 @@ import boto3
 from bedrock_agentcore.runtime import AgentCoreRuntimeClient
 from tac.channels.voice.twiml import generate_twiml
 from tac.core.logging import get_logger
+from tac.models.voice import TwiMLOptions, TwiMLRequest
 
 from .validation import TwilioSignatureValidator
 
 logger = get_logger(__name__)
+
+InboundCallTwiMLHandler = Callable[[TwiMLRequest], TwiMLOptions | Awaitable[TwiMLOptions]]
+"""Per-call TwiML customizer. Sync or async; see ``on_inbound_call_twiml``."""
 
 
 class AgentCoreLambdaProxy:
@@ -50,11 +56,54 @@ class AgentCoreLambdaProxy:
     - Voice call routing (generates TwiML with presigned WebSocket URL)
     - Conversation webhook routing (forwards to AgentCore via HTTP)
 
+    **TwiML customization**: the ConversationRelay TwiML is built from the same
+    `TwiMLOptions` model the TAC voice channel uses, layered highest precedence
+    first:
+
+    1. The customizer registered via `on_inbound_call_twiml(...)` — per call.
+    2. `twiml_options` — static, applied to every call.
+    3. Proxy defaults — the presigned `websocket_url` and
+       `conversation_configuration`.
+
+    Only fields a layer explicitly sets override lower layers, so setting a
+    greeting doesn't drop the presigned WebSocket URL.
+
     Attributes:
         agentcore_runtime_arn: ARN of the AgentCore runtime
         conversation_configuration_id: Twilio Conversation Configuration ID
         signature_validator: TwilioSignatureValidator instance
         aws_region: AWS region for clients
+        twiml_options: Static TwiMLOptions applied to every inbound call
+
+    Example:
+        ```python
+        from tac.models.voice import TwiMLOptions, TwiMLRequest
+        from tac_aws.proxy import AgentCoreLambdaProxy
+
+        proxy = AgentCoreLambdaProxy(
+            agentcore_runtime_arn=RUNTIME_ARN,
+            conversation_configuration_id=CONFIG_ID,
+            twilio_auth_token=AUTH_TOKEN,
+            # Applies to every call
+            twiml_options=TwiMLOptions(
+                welcome_greeting="Hi! How can I help?",
+                voice="en-US-Journey-O",
+                interruptible="speech",
+            ),
+        )
+
+
+        # Per-call overrides
+        def by_country(req: TwiMLRequest) -> TwiMLOptions:
+            if req.caller_country == "MX":
+                return TwiMLOptions(language="es-MX", welcome_greeting="¡Hola!")
+            return TwiMLOptions()
+
+
+        proxy.on_inbound_call_twiml(by_country)
+
+        lambda_handler = proxy.lambda_handler
+        ```
     """
 
     def __init__(
@@ -63,6 +112,7 @@ class AgentCoreLambdaProxy:
         conversation_configuration_id: str,
         twilio_auth_token: str,
         aws_region: str | None = None,
+        twiml_options: TwiMLOptions | dict[str, Any] | None = None,
     ) -> None:
         """Initialize AgentCore Lambda proxy.
 
@@ -72,6 +122,10 @@ class AgentCoreLambdaProxy:
             twilio_auth_token: Twilio auth token for webhook signature validation
             aws_region: AWS region for boto3 clients (optional, auto-detected from
                 AWS_REGION env var, boto3 session, or AWS config)
+            twiml_options: Static `TwiMLOptions` (or dict) applied to every
+                inbound call — welcome greeting, voice, language, interruption
+                behavior, and so on. Per-call overrides go through
+                `on_inbound_call_twiml`.
 
         Raises:
             ValueError: If AWS region cannot be determined
@@ -79,6 +133,10 @@ class AgentCoreLambdaProxy:
         self.agentcore_runtime_arn = agentcore_runtime_arn
         self.conversation_configuration_id = conversation_configuration_id
         self.signature_validator = TwilioSignatureValidator(twilio_auth_token)
+        self.twiml_options = (
+            TwiMLOptions(**twiml_options) if isinstance(twiml_options, dict) else twiml_options
+        )
+        self._on_inbound_call_twiml: InboundCallTwiMLHandler | None = None
 
         # Resolve AWS region: explicit parameter > AWS_REGION env var > boto3 session
         self.aws_region = aws_region or os.environ.get("AWS_REGION") or boto3.Session().region_name
@@ -90,6 +148,35 @@ class AgentCoreLambdaProxy:
 
         self.agent_core_client = boto3.client("bedrock-agentcore", region_name=self.aws_region)
         self.agentcore_runtime_client = AgentCoreRuntimeClient(region=self.aws_region)
+
+    def on_inbound_call_twiml(self, callback: InboundCallTwiMLHandler) -> None:
+        """Register a callback producing per-call TwiML overrides for inbound calls.
+
+        Mirrors `VoiceChannel.on_inbound_call_twiml` in TAC core: the callback
+        receives a `TwiMLRequest` parsed from the Twilio voice webhook form
+        (From, To, CallSid, CallerCountry, …) and returns a `TwiMLOptions`.
+        Only fields it explicitly sets override `twiml_options` and the proxy
+        defaults; unset fields fall through.
+
+        Both sync and async callbacks are accepted — an async one is run to
+        completion on a fresh event loop, since the Lambda handler is sync.
+
+        Example:
+            ```python
+            def by_country(req: TwiMLRequest) -> TwiMLOptions:
+                if req.caller_country == "MX":
+                    return TwiMLOptions(language="es-MX", welcome_greeting="¡Hola!")
+                return TwiMLOptions()
+
+
+            proxy.on_inbound_call_twiml(by_country)
+            ```
+
+        Args:
+            callback: Function called with the inbound `TwiMLRequest`, returning
+                `TwiMLOptions` overrides for that call.
+        """
+        self._on_inbound_call_twiml = callback
 
     def lambda_handler(self, event: dict[str, Any], context: Any) -> dict[str, Any]:
         """Route requests to appropriate handler.
@@ -134,7 +221,9 @@ class AgentCoreLambdaProxy:
             Dict containing statusCode 200 with TwiML body, or error response
         """
         try:
-            call_sid = self._extract_call_sid(event)
+            form = self._parse_form(event)
+            twiml_request = TwiMLRequest.from_form(form)
+            call_sid = twiml_request.call_sid
             if not call_sid:
                 logger.warning("Missing CallSid in voice webhook request")
                 return {
@@ -147,12 +236,7 @@ class AgentCoreLambdaProxy:
                 runtime_arn=self.agentcore_runtime_arn, session_id=call_sid, expires=300
             )
 
-            twiml = generate_twiml(
-                options={
-                    "websocket_url": websocket_url,
-                    "conversation_configuration": self.conversation_configuration_id,
-                }
-            )
+            twiml = generate_twiml(options=self._build_twiml_options(websocket_url, twiml_request))
 
             return {
                 "statusCode": 200,
@@ -168,6 +252,61 @@ class AgentCoreLambdaProxy:
                 "body": json.dumps({"error": "Internal server error"}),
             }
 
+    def _build_twiml_options(self, websocket_url: str, twiml_request: TwiMLRequest) -> TwiMLOptions:
+        """Layer TwiML options for one inbound call, lowest precedence first.
+
+        Proxy defaults (presigned ``websocket_url`` + ``conversation_configuration``)
+        → static ``twiml_options`` → the ``on_inbound_call_twiml`` customizer.
+        Only fields a layer explicitly set (Pydantic's ``model_fields_set``)
+        are applied, so a layer that says nothing about the WebSocket URL can't
+        clobber the presigned one.
+        """
+        merged = TwiMLOptions(
+            websocket_url=websocket_url,
+            conversation_configuration=self.conversation_configuration_id,
+        )
+        for layer in (self.twiml_options, self._resolve_per_call_options(twiml_request)):
+            if layer is None:
+                continue
+            for field in layer.model_fields_set:
+                setattr(merged, field, getattr(layer, field))
+        return merged
+
+    def _resolve_per_call_options(self, twiml_request: TwiMLRequest) -> TwiMLOptions | None:
+        """Run the registered customizer, awaiting it when it's async.
+
+        The Lambda handler is sync, so an async customizer gets its own event
+        loop via ``asyncio.run`` — there is no running loop to reuse here.
+        """
+        if self._on_inbound_call_twiml is None:
+            return None
+        result = self._on_inbound_call_twiml(twiml_request)
+        if isinstance(result, TwiMLOptions):
+            return result
+
+        async def resolve() -> TwiMLOptions:
+            return await result
+
+        return asyncio.run(resolve())
+
+    def _parse_form(self, event: dict[str, Any]) -> dict[str, str]:
+        """Parse a form-encoded Lambda event body into a flat dict.
+
+        Returns an empty dict for a missing body or one that fails to decode —
+        callers treat absent fields (notably CallSid) as the error case.
+        """
+        body = event.get("body") or ""
+        if not body:
+            return {}
+        if event.get("isBase64Encoded"):
+            try:
+                body = base64.b64decode(body).decode("utf-8")
+            except (TypeError, binascii.Error, UnicodeDecodeError) as e:
+                logger.warning(f"Failed to decode request body: {e}")
+                return {}
+        params: dict[str, list[str]] = parse_qs(body)
+        return {key: values[0] for key, values in params.items() if values}
+
     def _extract_call_sid(self, event: dict[str, Any]) -> str | None:
         """Extract CallSid from Lambda event POST body (form-encoded).
 
@@ -177,21 +316,7 @@ class AgentCoreLambdaProxy:
         Returns:
             CallSid string if found, None otherwise
         """
-        # Normalize body (handle None from body: null in event)
-        body = event.get("body") or ""
-        if body:
-            if event.get("isBase64Encoded"):
-                try:
-                    body = base64.b64decode(body).decode("utf-8")
-                except (TypeError, binascii.Error, UnicodeDecodeError) as e:
-                    logger.warning(f"Failed to decode request body: {e}")
-                    return None
-            params: dict[str, list[str]] = parse_qs(body)
-            call_sid_list = params.get("CallSid", [])
-            if call_sid_list:
-                return call_sid_list[0]
-
-        return None
+        return self._parse_form(event).get("CallSid")
 
     def _normalize_headers(
         self, headers: dict[str, str] | dict[str, str | None] | None

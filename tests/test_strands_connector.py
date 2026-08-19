@@ -19,8 +19,8 @@ class TestStrandsConnector:
     def test_initialization(self, mock_tac: MagicMock, mock_agent_factory: MagicMock) -> None:
         """Test connector initialization."""
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
         ):
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)
 
@@ -42,8 +42,8 @@ class TestStrandsConnector:
         voice_config = {"memory_mode": "never"}
 
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel") as mock_voice,
-            patch("tac_aws.connectors.strands_connector.SMSChannel") as mock_sms,
+            patch("tac_aws.connectors.channels.VoiceChannel") as mock_voice,
+            patch("tac_aws.connectors.channels.SMSChannel") as mock_sms,
         ):
             connector = StrandsConnector(
                 tac=mock_tac,
@@ -67,8 +67,8 @@ class TestStrandsConnector:
     ) -> None:
         """Test that handling a message creates an agent for new conversations."""
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
             patch("tac_aws.connectors.strands_connector.MemoryPromptBuilder"),
         ):
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)
@@ -103,8 +103,8 @@ class TestStrandsConnector:
     ) -> None:
         """Test that handling messages for the same conversation reuses the agent."""
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
             patch("tac_aws.connectors.strands_connector.MemoryPromptBuilder"),
         ):
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)
@@ -143,8 +143,8 @@ class TestStrandsConnector:
     ) -> None:
         """Test that memory context is injected for new sessions."""
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
             patch(
                 "tac_aws.connectors.strands_connector.MemoryPromptBuilder"
             ) as mock_memory_builder,
@@ -183,11 +183,11 @@ class TestStrandsConnector:
         mock_conversation_session: MagicMock,
     ) -> None:
         """Test that responses are routed to voice channel."""
-        mock_conversation_session.channel = "voice"
+        mock_conversation_session.channel = "VOICE"
 
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
             patch("tac_aws.connectors.strands_connector.MemoryPromptBuilder"),
         ):
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)
@@ -217,11 +217,11 @@ class TestStrandsConnector:
         mock_conversation_session: MagicMock,
     ) -> None:
         """Test that responses are routed to SMS channel."""
-        mock_conversation_session.channel = "sms"
+        mock_conversation_session.channel = "SMS"
 
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
             patch("tac_aws.connectors.strands_connector.MemoryPromptBuilder"),
         ):
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)
@@ -255,8 +255,8 @@ class TestStrandsConnector:
         mock_agent.invoke_async = AsyncMock(side_effect=Exception("Test error"))
 
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
             patch("tac_aws.connectors.strands_connector.MemoryPromptBuilder"),
         ):
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)
@@ -284,8 +284,8 @@ class TestStrandsConnector:
     ) -> None:
         """Test that agent factory receives ConversationSession context."""
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
             patch("tac_aws.connectors.strands_connector.MemoryPromptBuilder"),
         ):
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)
@@ -303,7 +303,7 @@ class TestStrandsConnector:
 
             # Verify context attributes are accessible
             assert mock_conversation_session.conversation_id == "test_conv_123"
-            assert mock_conversation_session.channel == "voice"
+            assert mock_conversation_session.channel == "VOICE"
             assert mock_conversation_session.customer_id == "customer_123"
 
     def test_automatic_cleanup_on_conversation_ended(
@@ -315,8 +315,8 @@ class TestStrandsConnector:
     ) -> None:
         """Test that conversation ended callback triggers automatic cleanup."""
         with (
-            patch("tac_aws.connectors.strands_connector.VoiceChannel"),
-            patch("tac_aws.connectors.strands_connector.SMSChannel"),
+            patch("tac_aws.connectors.channels.VoiceChannel"),
+            patch("tac_aws.connectors.channels.SMSChannel"),
             patch("tac_aws.connectors.strands_connector.MemoryPromptBuilder"),
         ):
             connector = StrandsConnector(tac=mock_tac, agent_factory=mock_agent_factory)

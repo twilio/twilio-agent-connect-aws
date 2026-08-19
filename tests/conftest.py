@@ -42,7 +42,7 @@ def mock_conversation_session() -> MagicMock:
     """Create a mock ConversationSession."""
     session = MagicMock()
     session.conversation_id = "test_conv_123"
-    session.channel = "voice"
+    session.channel = "VOICE"
     session.customer_id = "customer_123"
     return session
 

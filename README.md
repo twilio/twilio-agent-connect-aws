@@ -110,6 +110,95 @@ Full examples available in [`getting_started/examples/`](https://github.com/twil
 - **`bedrock_agents.py`** - AWS Bedrock Agents (console-created agents)
 - **`bedrock_agentcore_agents.py`** - AWS Bedrock AgentCore (custom agent code deployment)
 
+## Channels
+
+Connectors manage every channel TAC supports. Voice and SMS are always created;
+RCS, WhatsApp, and Chat are created when you pass their config — `{}` for
+defaults — because each needs something extra up front:
+
+| Channel | Enable with | Requires |
+| --- | --- | --- |
+| Voice | always on | `TWILIO_VOICE_PUBLIC_DOMAIN` |
+| SMS | always on | `TWILIO_PHONE_NUMBER` |
+| RCS | `rcs_config={}` | `TWILIO_RCS_SENDER_ID` |
+| WhatsApp | `whatsapp_config={}` | `TWILIO_WHATSAPP_NUMBER` |
+| Chat | `chat_config={}` | — |
+
+```python
+connector = StrandsConnector(
+    tac=tac,
+    agent_factory=create_agent,
+    sms_config=SMSChannelConfig(memory_mode="always"),
+    whatsapp_config={},
+    rcs_config={},
+)
+
+server = TACAWSFastAPIServer(
+    tac=tac,
+    voice_channel=connector.voice,
+    messaging_channels=connector.channels.messaging,
+)
+```
+
+`connector.channels.messaging` is every enabled messaging channel, ready to hand
+to a server. Individual channels are on the connector too — `connector.sms`,
+`connector.whatsapp`, and so on (`None` when not enabled). Inbound messages route
+to the agent and responses go back out on the channel they arrived on, with no
+per-channel code in your handler.
+
+## Voice: ConversationRelay TwiML customization
+
+Voice TwiML — greeting, voice, language, interruption behavior, `<Language>`
+children, and anything else on `<ConversationRelay>` — is configured with TAC's
+`TwiMLOptions` model. Two layers, highest precedence first: a per-call
+customizer, then static options. Fields a layer doesn't set fall through, so
+overriding a greeting never drops the WebSocket URL.
+
+**Server deployments** use the TAC voice channel the connector creates:
+
+```python
+from tac.channels.voice import VoiceChannelConfig
+from tac.models.voice import TwiMLOptions, TwiMLRequest
+
+connector = StrandsConnector(
+    tac=tac,
+    agent_factory=create_agent,
+    voice_config=VoiceChannelConfig(
+        default_twiml_options=TwiMLOptions(
+            welcome_greeting="Hello! How can I help?",
+            voice="en-US-Journey-O",
+            interruptible="speech",
+        ),
+    ),
+)
+
+
+async def by_country(req: TwiMLRequest) -> TwiMLOptions:
+    if req.caller_country == "MX":
+        return TwiMLOptions(language="es-MX", welcome_greeting="¡Hola!")
+    return TwiMLOptions()
+
+
+connector.voice.on_inbound_call_twiml(by_country)
+```
+
+**Lambda deployments** generate TwiML in `AgentCoreLambdaProxy`, before the
+AgentCore runtime is reached, so the same two layers live on the proxy (the
+customizer may be sync or async):
+
+```python
+proxy = AgentCoreLambdaProxy(
+    agentcore_runtime_arn=AGENTCORE_RUNTIME_ARN,
+    conversation_configuration_id=TWILIO_CONVERSATION_CONFIGURATION_ID,
+    twilio_auth_token=twilio_auth_token,
+    twiml_options=TwiMLOptions(welcome_greeting="Hello! How can I help?"),
+)
+proxy.on_inbound_call_twiml(by_country)
+```
+
+When the TwiML sets a `welcomeGreeting`, pass `welcome_message=None` to
+`TACAgentCoreApp` so the caller doesn't hear the greeting twice.
+
 ## Deployment
 
 See the [deployment guides](https://github.com/twilio/twilio-agent-connect-aws/tree/main/deploy) for production deployment options:
