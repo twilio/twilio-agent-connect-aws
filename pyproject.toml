@@ -119,6 +119,8 @@ exclude = [
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+# Local scratch work, untracked and never seen by CI.
+extend-exclude = ["drafts"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "C4", "UP", "N"]

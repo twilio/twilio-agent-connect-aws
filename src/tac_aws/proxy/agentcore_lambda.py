@@ -30,6 +30,7 @@ import binascii
 import json
 import os
 from collections.abc import Awaitable, Callable
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 from urllib.parse import parse_qs
 
@@ -275,8 +276,11 @@ class AgentCoreLambdaProxy:
     def _resolve_per_call_options(self, twiml_request: TwiMLRequest) -> TwiMLOptions | None:
         """Run the registered customizer, awaiting it when it's async.
 
-        The Lambda handler is sync, so an async customizer gets its own event
-        loop via ``asyncio.run`` — there is no running loop to reuse here.
+        Under the Lambda runtime the handler is sync with no loop running, so an
+        async customizer gets its own loop via ``asyncio.run``. When the handler
+        is instead driven from inside a running loop — async tests, a local ASGI
+        runner — ``asyncio.run`` would raise, so the coroutine is completed on a
+        worker thread with its own loop.
         """
         if self._on_inbound_call_twiml is None:
             return None
@@ -287,7 +291,13 @@ class AgentCoreLambdaProxy:
         async def resolve() -> TwiMLOptions:
             return await result
 
-        return asyncio.run(resolve())
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(resolve())
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(asyncio.run, resolve()).result()
 
     def _parse_form(self, event: dict[str, Any]) -> dict[str, str]:
         """Parse a form-encoded Lambda event body into a flat dict.
@@ -306,17 +316,6 @@ class AgentCoreLambdaProxy:
                 return {}
         params: dict[str, list[str]] = parse_qs(body)
         return {key: values[0] for key, values in params.items() if values}
-
-    def _extract_call_sid(self, event: dict[str, Any]) -> str | None:
-        """Extract CallSid from Lambda event POST body (form-encoded).
-
-        Args:
-            event: Lambda event containing HTTP request data
-
-        Returns:
-            CallSid string if found, None otherwise
-        """
-        return self._parse_form(event).get("CallSid")
 
     def _normalize_headers(
         self, headers: dict[str, str] | dict[str, str | None] | None

@@ -42,7 +42,7 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
   - **Fargate Deployment** - Container-based deployment with `BedrockAgentCoreConnector` and FastAPI server on AWS Fargate
 
 ### Multi-Channel Communication
-- **Voice and SMS support** - Single codebase handles both phone calls and text messages
+- **Every TAC channel** - One codebase handles Voice, SMS, RCS, WhatsApp, and Chat
 - **Automatic conversation routing** - Messages route to the correct agent instance per conversation
 - **Memory injection** - Customer history and preferences automatically included in agent context
 
@@ -124,80 +124,32 @@ defaults — because each needs something extra up front:
 | WhatsApp | `whatsapp_config={}` | `TWILIO_WHATSAPP_NUMBER` |
 | Chat | `chat_config={}` | — |
 
-```python
-connector = StrandsConnector(
-    tac=tac,
-    agent_factory=create_agent,
-    sms_config=SMSChannelConfig(memory_mode="always"),
-    whatsapp_config={},
-    rcs_config={},
-)
-
-server = TACAWSFastAPIServer(
-    tac=tac,
-    voice_channel=connector.voice,
-    messaging_channels=connector.channels.messaging,
-)
-```
-
-`connector.channels.messaging` is every enabled messaging channel, ready to hand
-to a server. Individual channels are on the connector too — `connector.sms`,
-`connector.whatsapp`, and so on (`None` when not enabled). Inbound messages route
-to the agent and responses go back out on the channel they arrived on, with no
+Hand `connector.channels.messaging` to a server as `messaging_channels=` and
+every enabled messaging channel is wired up; individual channels are on the
+connector too (`connector.sms`, `connector.whatsapp`, …, `None` when not
+enabled). Responses go back out on the channel the message arrived on, with no
 per-channel code in your handler.
 
 ## Voice: ConversationRelay TwiML customization
 
 Voice TwiML — greeting, voice, language, interruption behavior, `<Language>`
-children, and anything else on `<ConversationRelay>` — is configured with TAC's
-`TwiMLOptions` model. Two layers, highest precedence first: a per-call
-customizer, then static options. Fields a layer doesn't set fall through, so
-overriding a greeting never drops the WebSocket URL.
+children, anything on `<ConversationRelay>` — is configured with TAC's
+`TwiMLOptions`, layered as a per-call customizer over static options. Fields a
+layer doesn't set fall through, so overriding a greeting never drops the
+WebSocket URL.
 
-**Server deployments** use the TAC voice channel the connector creates:
+- **Server deployments** use the connector's voice channel:
+  `voice_config=VoiceChannelConfig(default_twiml_options=...)` plus
+  `connector.voice.on_inbound_call_twiml(fn)`.
+- **Lambda deployments** generate TwiML in the proxy, before the AgentCore
+  runtime is reached, so the same two layers live there:
+  `AgentCoreLambdaProxy(twiml_options=...)` plus `proxy.on_inbound_call_twiml(fn)`
+  (sync or async). When the TwiML sets a `welcomeGreeting`, pass
+  `welcome_message=None` to `TACAgentCoreApp` so the caller doesn't hear it twice.
 
-```python
-from tac.channels.voice import VoiceChannelConfig
-from tac.models.voice import TwiMLOptions, TwiMLRequest
-
-connector = StrandsConnector(
-    tac=tac,
-    agent_factory=create_agent,
-    voice_config=VoiceChannelConfig(
-        default_twiml_options=TwiMLOptions(
-            welcome_greeting="Hello! How can I help?",
-            voice="en-US-Journey-O",
-            interruptible="speech",
-        ),
-    ),
-)
-
-
-async def by_country(req: TwiMLRequest) -> TwiMLOptions:
-    if req.caller_country == "MX":
-        return TwiMLOptions(language="es-MX", welcome_greeting="¡Hola!")
-    return TwiMLOptions()
-
-
-connector.voice.on_inbound_call_twiml(by_country)
-```
-
-**Lambda deployments** generate TwiML in `AgentCoreLambdaProxy`, before the
-AgentCore runtime is reached, so the same two layers live on the proxy (the
-customizer may be sync or async):
-
-```python
-proxy = AgentCoreLambdaProxy(
-    agentcore_runtime_arn=AGENTCORE_RUNTIME_ARN,
-    conversation_configuration_id=TWILIO_CONVERSATION_CONFIGURATION_ID,
-    twilio_auth_token=twilio_auth_token,
-    twiml_options=TwiMLOptions(welcome_greeting="Hello! How can I help?"),
-)
-proxy.on_inbound_call_twiml(by_country)
-```
-
-When the TwiML sets a `welcomeGreeting`, pass `welcome_message=None` to
-`TACAgentCoreApp` so the caller doesn't hear the greeting twice.
+See [`getting_started/examples/`](https://github.com/twilio/twilio-agent-connect-aws/tree/main/getting_started/examples)
+for both shapes, and the [API reference](https://twilio.github.io/twilio-agent-connect-aws/)
+for every field.
 
 ## Deployment
 

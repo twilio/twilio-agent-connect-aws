@@ -88,8 +88,8 @@ class TestAgentCoreLambdaProxy:
         result = proxy._normalize_headers({})
         assert result == {}
 
-    def test_extract_call_sid_from_post_body(self):
-        """Test that _extract_call_sid extracts CallSid from POST body."""
+    def test_parse_form_call_sid_from_post_body(self):
+        """Test that _parse_form extracts CallSid from a POST body."""
         proxy = AgentCoreLambdaProxy(
             agentcore_runtime_arn="arn:aws:bedrock:us-east-1:123456789012:runtime/test",
             conversation_configuration_id="test-config",
@@ -102,11 +102,11 @@ class TestAgentCoreLambdaProxy:
             "isBase64Encoded": False,
         }
 
-        call_sid = proxy._extract_call_sid(event)
+        call_sid = proxy._parse_form(event).get("CallSid")
         assert call_sid == "CA1234567890abcdef"
 
-    def test_extract_call_sid_missing(self):
-        """Test that _extract_call_sid returns None when CallSid is missing."""
+    def test_parse_form_call_sid_missing(self):
+        """Test that _parse_form omits CallSid when it is missing."""
         proxy = AgentCoreLambdaProxy(
             agentcore_runtime_arn="arn:aws:bedrock:us-east-1:123456789012:runtime/test",
             conversation_configuration_id="test-config",
@@ -119,11 +119,11 @@ class TestAgentCoreLambdaProxy:
             "isBase64Encoded": False,
         }
 
-        call_sid = proxy._extract_call_sid(event)
+        call_sid = proxy._parse_form(event).get("CallSid")
         assert call_sid is None
 
-    def test_extract_call_sid_base64_encoded(self):
-        """Test that _extract_call_sid handles base64-encoded bodies."""
+    def test_parse_form_call_sid_base64_encoded(self):
+        """Test that _parse_form handles base64-encoded bodies."""
         import base64
 
         proxy = AgentCoreLambdaProxy(
@@ -141,11 +141,11 @@ class TestAgentCoreLambdaProxy:
             "isBase64Encoded": True,
         }
 
-        call_sid = proxy._extract_call_sid(event)
+        call_sid = proxy._parse_form(event).get("CallSid")
         assert call_sid == "CA1234567890abcdef"
 
-    def test_extract_call_sid_none_body(self):
-        """Test that _extract_call_sid handles None body gracefully."""
+    def test_parse_form_call_sid_none_body(self):
+        """Test that _parse_form handles a None body gracefully."""
         proxy = AgentCoreLambdaProxy(
             agentcore_runtime_arn="arn:aws:bedrock:us-east-1:123456789012:runtime/test",
             conversation_configuration_id="test-config",
@@ -157,7 +157,7 @@ class TestAgentCoreLambdaProxy:
             "body": None,  # AWS events can have body: null
         }
 
-        call_sid = proxy._extract_call_sid(event)
+        call_sid = proxy._parse_form(event).get("CallSid")
         assert call_sid is None
 
 
@@ -247,6 +247,28 @@ class TestAgentCoreLambdaProxyTwiML:
         proxy.on_inbound_call_twiml(customize)
 
         assert 'welcomeGreeting="From async"' in proxy.lambda_handler(VOICE_EVENT, None)["body"]
+
+    def test_async_customizer_from_running_event_loop(self):
+        """An async customizer still resolves when the handler is called inside a loop.
+
+        The Lambda runtime calls `lambda_handler` synchronously with no loop
+        running, but async tests and local ASGI runners do have one — where a
+        bare `asyncio.run` would raise.
+        """
+        import asyncio
+
+        from tac.models.voice import TwiMLOptions, TwiMLRequest
+
+        async def customize(req: TwiMLRequest) -> TwiMLOptions:
+            return TwiMLOptions(welcome_greeting="From async")
+
+        proxy = _twiml_proxy()
+        proxy.on_inbound_call_twiml(customize)
+
+        async def call_from_loop() -> dict:
+            return proxy.lambda_handler(VOICE_EVENT, None)
+
+        assert 'welcomeGreeting="From async"' in asyncio.run(call_from_loop())["body"]
 
     def test_customizer_can_override_websocket_url(self):
         from tac.models.voice import TwiMLOptions, TwiMLRequest

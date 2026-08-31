@@ -19,18 +19,18 @@ CHANNEL_PATCHES = (
 )
 
 
-def _patch_channels():
-    """Patch every TAC channel class ConnectorChannels constructs."""
-    return {
-        name: patch(f"tac_aws.connectors.channels.{name}").start() for name in CHANNEL_PATCHES
-    }
-
-
 @pytest.fixture
 def channel_classes():
-    mocks = _patch_channels()
+    """Patch every TAC channel class ConnectorChannels constructs.
+
+    Stops only the patchers this fixture started — `patch.stopall()` would also
+    stop patches owned by other fixtures, making the suite order-dependent.
+    """
+    patchers = {name: patch(f"tac_aws.connectors.channels.{name}") for name in CHANNEL_PATCHES}
+    mocks = {name: patcher.start() for name, patcher in patchers.items()}
     yield mocks
-    patch.stopall()
+    for patcher in patchers.values():
+        patcher.stop()
 
 
 def _session(channel: str) -> MagicMock:
@@ -124,9 +124,7 @@ class TestRouting:
         channel_name: str,
         attr: str,
     ) -> None:
-        channels = ConnectorChannels(
-            mock_tac, rcs_config={}, whatsapp_config={}, chat_config={}
-        )
+        channels = ConnectorChannels(mock_tac, rcs_config={}, whatsapp_config={}, chat_config={})
         for name in ("voice", "sms", "rcs", "whatsapp", "chat"):
             getattr(channels, name).send_response = AsyncMock()
 
@@ -165,9 +163,7 @@ class TestRouting:
         await channels.send(_session("VOICE"), generator)
 
         # Voice streams token by token — the generator itself is handed over
-        channels.voice.send_response.assert_awaited_once_with(
-            "conv_1", generator, role="assistant"
-        )
+        channels.voice.send_response.assert_awaited_once_with("conv_1", generator, role="assistant")
 
     @pytest.mark.asyncio
     async def test_stream_is_buffered_for_messaging(
