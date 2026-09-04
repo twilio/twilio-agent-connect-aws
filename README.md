@@ -114,7 +114,8 @@ Full examples available in [`getting_started/examples/`](https://github.com/twil
 
 Connectors create Voice and SMS automatically, and add RCS, WhatsApp, or Chat
 when you pass their config (`rcs_config={}`, `whatsapp_config={}`,
-`chat_config={}`). Pass `connector.channels.messaging` to a server as
+`chat_config={}`) — each also needs its sender configured, e.g.
+`TWILIO_RCS_SENDER_ID`. Pass `connector.channels.messaging` to a server as
 `messaging_channels=` and replies go out on whichever channel the message
 arrived on.
 
