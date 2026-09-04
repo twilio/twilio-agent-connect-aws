@@ -28,9 +28,14 @@ class TACAgentCoreWebSocketAdapter:
     Required for Twilio ConversationRelay with conversationConfiguration.
     Without an initial greeting, ConversationRelay won't activate speech detection.
 
-    Pass `welcome_message=None` to skip it — do that when the TwiML already
-    carries a `welcomeGreeting` (e.g. `AgentCoreLambdaProxy(twiml_options=...)`),
-    otherwise the caller hears both greetings.
+    A TwiML `welcomeGreeting` is not a substitute on AgentCore: Twilio plays it
+    only after the WebSocket is established, and AgentCore defers that
+    handshake until the per-session microVM boots (~6s for a fresh session
+    vs ~0.3s once it exists). With one session per call, it never reaches the
+    caller. This greeting works because it is sent after setup.
+
+    `welcome_message=None` skips it, leaving the call silent until the caller
+    speaks.
     """
 
     def __init__(
@@ -89,8 +94,8 @@ class TACAgentCoreApp:
             is offered to every channel; a channel ignores the ones that aren't
             its own, exactly as `TACFastAPIServer` does.
         welcome_message: Greeting spoken once the ConversationRelay session is
-            set up. Set to `None` when the TwiML already sets a
-            `welcomeGreeting` — see `TACAgentCoreWebSocketAdapter`.
+            set up. Keep it — a TwiML `welcomeGreeting` never reaches the
+            caller on AgentCore; see `TACAgentCoreWebSocketAdapter`.
     """
 
     def __init__(

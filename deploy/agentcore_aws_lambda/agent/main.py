@@ -3,6 +3,8 @@ TAC Agent for AWS Bedrock AgentCore with Strands AI
 Simplified using StrandsConnector and TACAWSBedrockAgentCoreServer
 """
 
+import os
+
 from strands import Agent
 from strands.models import BedrockModel
 from strands.session import FileSessionManager
@@ -45,6 +47,9 @@ connector = StrandsConnector(
     agent_factory=create_agent,
     voice_config=VoiceChannelConfig(memory_mode="once"),
     sms_config=SMSChannelConfig(memory_mode="always"),
+    # Enabled only when a sender is set — these channels require one up front.
+    rcs_config={} if os.environ.get("TWILIO_RCS_SENDER_ID") else None,
+    whatsapp_config={} if os.environ.get("TWILIO_WHATSAPP_NUMBER") else None,
 )
 
 # Create app
@@ -52,9 +57,9 @@ tac_app = TACAgentCoreApp(
     tac=tac,
     voice_channel=connector.voice,
     messaging_channels=connector.channels.messaging,
-    # The Lambda proxy sets welcomeGreeting in the TwiML, so ConversationRelay
-    # already speaks the greeting — don't send a second one over the WebSocket.
-    welcome_message=None,
+    # Sent over the WebSocket: a TwiML welcomeGreeting never reaches the caller
+    # on AgentCore. See TACAgentCoreWebSocketAdapter.
+    welcome_message="Hello! How can I assist you today?",
 )
 
 # For AgentCore deployment

@@ -138,6 +138,9 @@ combine-as-imports = true
 [tool.mypy]
 python_version = "3.10"
 plugins = ["pydantic.mypy"]
+# CDK synth output vendors libraries that shadow the real ones (gitignored, so
+# CI never sees it, but it breaks `make check` after a local deploy).
+exclude = "cdk\\.out/"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

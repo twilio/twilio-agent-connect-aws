@@ -13,6 +13,10 @@ export interface TacEnvConfig {
   // Twilio Configuration (non-secret)
   twilioPhoneNumber: string;
   twilioConversationConfigurationId: string;
+  // Optional
+  twilioRcsSenderId?: string;
+  twilioWhatsappNumber?: string;
+  twilioLogLevel?: string;
 }
 
 /**
@@ -51,6 +55,9 @@ export function loadEnvConfig(configRoot: string): TacEnvConfig {
     awsRegion: process.env.AWS_REGION!,
     twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER!,
     twilioConversationConfigurationId: process.env.TWILIO_CONVERSATION_CONFIGURATION_ID!,
+    twilioRcsSenderId: process.env.TWILIO_RCS_SENDER_ID,
+    twilioWhatsappNumber: process.env.TWILIO_WHATSAPP_NUMBER,
+    twilioLogLevel: process.env.TWILIO_LOG_LEVEL,
   };
 }
 

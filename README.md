@@ -144,8 +144,12 @@ WebSocket URL.
 - **Lambda deployments** generate TwiML in the proxy, before the AgentCore
   runtime is reached, so the same two layers live there:
   `AgentCoreLambdaProxy(twiml_options=...)` plus `proxy.on_inbound_call_twiml(fn)`
-  (sync or async). When the TwiML sets a `welcomeGreeting`, pass
-  `welcome_message=None` to `TACAgentCoreApp` so the caller doesn't hear it twice.
+  (sync or async).
+
+One exception: `welcome_greeting` has no effect on AgentCore, because Twilio
+plays it only after the WebSocket is established and AgentCore defers that
+handshake until the per-session microVM boots. Use `TACAgentCoreApp`'s
+`welcome_message` there instead. Other attributes are unaffected.
 
 See [`getting_started/examples/`](https://github.com/twilio/twilio-agent-connect-aws/tree/main/getting_started/examples)
 for both shapes, and the [API reference](https://twilio.github.io/twilio-agent-connect-aws/)

@@ -28,7 +28,9 @@ proxy = AgentCoreLambdaProxy(
     # ConversationRelay TwiML customization. Every <ConversationRelay>
     # attribute is available here (voice, language, interruptible, ...);
     # for per-call overrides use proxy.on_inbound_call_twiml().
-    twiml_options=TwiMLOptions(welcome_greeting="Hi! How can I help you today?"),
+    # No welcome_greeting here — it never reaches the caller on AgentCore; the
+    # agent sends it over the WebSocket instead (see agent/main.py).
+    twiml_options=TwiMLOptions(interruptible="speech"),
 )
 
 # Expose lambda_handler for AWS Lambda runtime
