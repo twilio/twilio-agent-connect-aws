@@ -112,48 +112,15 @@ Full examples available in [`getting_started/examples/`](https://github.com/twil
 
 ## Channels
 
-Connectors manage every channel TAC supports. Voice and SMS are always created;
-RCS, WhatsApp, and Chat are created when you pass their config — `{}` for
-defaults — because each needs something extra up front:
+Connectors create Voice and SMS automatically, and add RCS, WhatsApp, or Chat
+when you pass their config (`rcs_config={}`, `whatsapp_config={}`,
+`chat_config={}`). Pass `connector.channels.messaging` to a server as
+`messaging_channels=` and replies go out on whichever channel the message
+arrived on.
 
-| Channel | Enable with | Requires |
-| --- | --- | --- |
-| Voice | always on | `TWILIO_VOICE_PUBLIC_DOMAIN` |
-| SMS | always on | `TWILIO_PHONE_NUMBER` |
-| RCS | `rcs_config={}` | `TWILIO_RCS_SENDER_ID` |
-| WhatsApp | `whatsapp_config={}` | `TWILIO_WHATSAPP_NUMBER` |
-| Chat | `chat_config={}` | — |
-
-Hand `connector.channels.messaging` to a server as `messaging_channels=` and
-every enabled messaging channel is wired up; individual channels are on the
-connector too (`connector.sms`, `connector.whatsapp`, …, `None` when not
-enabled). Responses go back out on the channel the message arrived on, with no
-per-channel code in your handler.
-
-## Voice: ConversationRelay TwiML customization
-
-Voice TwiML — greeting, voice, language, interruption behavior, `<Language>`
-children, anything on `<ConversationRelay>` — is configured with TAC's
-`TwiMLOptions`, layered as a per-call customizer over static options. Fields a
-layer doesn't set fall through, so overriding a greeting never drops the
-WebSocket URL.
-
-- **Server deployments** use the connector's voice channel:
-  `voice_config=VoiceChannelConfig(default_twiml_options=...)` plus
-  `connector.voice.on_inbound_call_twiml(fn)`.
-- **Lambda deployments** generate TwiML in the proxy, before the AgentCore
-  runtime is reached, so the same two layers live there:
-  `AgentCoreLambdaProxy(twiml_options=...)` plus `proxy.on_inbound_call_twiml(fn)`
-  (sync or async).
-
-One exception: `welcome_greeting` has no effect on AgentCore, because Twilio
-plays it only after the WebSocket is established and AgentCore defers that
-handshake until the per-session microVM boots. Use `TACAgentCoreApp`'s
-`welcome_message` there instead. Other attributes are unaffected.
-
-See [`getting_started/examples/`](https://github.com/twilio/twilio-agent-connect-aws/tree/main/getting_started/examples)
-for both shapes, and the [API reference](https://twilio.github.io/twilio-agent-connect-aws/)
-for every field.
+Voice TwiML — greeting, voice, language, interruption behavior — is set
+statically or per call with `TwiMLOptions`. See the
+[API reference](https://twilio.github.io/twilio-agent-connect-aws/) for both.
 
 ## Deployment
 
