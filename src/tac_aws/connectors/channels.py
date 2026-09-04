@@ -30,32 +30,40 @@ logger = get_logger(__name__)
 ChannelResponse = str | AsyncGenerator[str, None]
 """A response to deliver: complete text, or a stream of tokens."""
 
+_SENDER_HINTS = {
+    "RCS": " Set TWILIO_RCS_SENDER_ID (or TACConfig.rcs_sender_id) to enable it.",
+    "WHATSAPP": " Set TWILIO_WHATSAPP_NUMBER (or TACConfig.whatsapp_number) to enable it.",
+}
+"""The env var that turns on each sender-gated channel, for the routing error."""
+
 
 class ConnectorChannels:
     """The TAC channels a connector owns, and the routing between them.
 
-    Voice and SMS are always created. RCS, WhatsApp, and Chat are created only
-    when you pass their config, because each needs something extra that the
-    channel constructor requires up front — `TWILIO_RCS_SENDER_ID` for RCS,
-    `TWILIO_WHATSAPP_NUMBER` for WhatsApp, and an agent identity for Chat.
-    Pass an empty dict (`rcs_config={}`) to enable one with default settings.
+    Voice, SMS, and Chat are always created. RCS and WhatsApp are created only
+    when their Twilio sender is configured — `TWILIO_RCS_SENDER_ID` /
+    `TACConfig.rcs_sender_id` for RCS, `TWILIO_WHATSAPP_NUMBER` /
+    `TACConfig.whatsapp_number` for WhatsApp — because `RCSChannel` and
+    `WhatsAppChannel` raise `ValueError` at construction without one. The
+    `*_config` arguments are tuning only (`memory_mode`, dedup, agent identity);
+    they never enable or disable a channel.
 
     Attributes:
         voice: `VoiceChannel` for voice conversations
         sms: `SMSChannel` for SMS conversations
-        rcs: `RCSChannel`, or None when `rcs_config` was not given
-        whatsapp: `WhatsAppChannel`, or None when `whatsapp_config` was not given
-        chat: `ChatChannel`, or None when `chat_config` was not given
-        messaging: Every enabled messaging channel, ready to hand to a server as
+        chat: `ChatChannel` for web chat conversations
+        rcs: `RCSChannel`, or None when no RCS sender ID is configured
+        whatsapp: `WhatsAppChannel`, or None when no WhatsApp number is configured
+        messaging: Every available messaging channel, ready to hand to a server as
             `messaging_channels=...`
 
     Example:
         ```python
+        # With TWILIO_WHATSAPP_NUMBER set, connector.whatsapp is ready to use.
         connector = StrandsConnector(
             tac=tac,
             agent_factory=create_agent,
             sms_config=SMSChannelConfig(memory_mode="always"),
-            whatsapp_config={},  # enable WhatsApp with defaults
         )
 
         server = TACAWSFastAPIServer(
@@ -77,13 +85,13 @@ class ConnectorChannels:
     ) -> None:
         self.voice = VoiceChannel(tac=tac, config=voice_config)
         self.sms = SMSChannel(tac=tac, config=sms_config)
-        self.rcs = RCSChannel(tac=tac, config=rcs_config) if rcs_config is not None else None
+        self.chat = ChatChannel(tac=tac, config=chat_config)
+        # RCS and WhatsApp follow their Twilio sender: the TAC channel requires
+        # one at construction, so without it there is nothing to build.
+        self.rcs = RCSChannel(tac=tac, config=rcs_config) if tac.config.rcs_sender_id else None
         self.whatsapp = (
-            WhatsAppChannel(tac=tac, config=whatsapp_config)
-            if whatsapp_config is not None
-            else None
+            WhatsAppChannel(tac=tac, config=whatsapp_config) if tac.config.whatsapp_number else None
         )
-        self.chat = ChatChannel(tac=tac, config=chat_config) if chat_config is not None else None
 
         self.messaging: list[MessagingChannel] = [
             channel
@@ -104,10 +112,10 @@ class ConnectorChannels:
             if channel is not None
         }
 
-        logger.debug(f"Channels enabled: {', '.join(self._by_name)}")
+        logger.debug(f"Channels available: {', '.join(self._by_name)}")
 
     def get(self, channel_name: str) -> BaseChannel | None:
-        """The enabled channel with this TAC channel name, or None."""
+        """The available channel with this TAC channel name, or None."""
         return self._by_name.get(channel_name)
 
     async def send(
@@ -127,14 +135,15 @@ class ConnectorChannels:
             role: Message role passed through to the channel.
 
         Returns:
-            True if a channel handled it; False when no channel is enabled for
+            True if a channel handled it; False when no channel is available for
             `context.channel` (logged as an error — the message is dropped).
         """
         channel = self.get(context.channel)
         if channel is None:
+            hint = _SENDER_HINTS.get(context.channel, "")
             logger.error(
                 f"No channel handler for {context.channel}. "
-                f"Enabled: {', '.join(self._by_name) or 'none'}",
+                f"Available: {', '.join(self._by_name) or 'none'}.{hint}",
                 conversation_id=context.conversation_id,
             )
             return False

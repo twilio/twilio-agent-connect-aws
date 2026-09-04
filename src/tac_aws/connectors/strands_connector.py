@@ -43,21 +43,20 @@ class StrandsConnector:
             and context-aware agent configuration.
         sms_config: Optional SMS channel configuration (SMSChannelConfig or dict)
         voice_config: Optional Voice channel configuration (VoiceChannelConfig or dict)
-        rcs_config: RCS channel configuration. Pass it — `{}` for defaults — to
-            enable RCS. Requires `TWILIO_RCS_SENDER_ID`.
-        whatsapp_config: WhatsApp channel configuration. Pass it — `{}` for
-            defaults — to enable WhatsApp. Requires `TWILIO_WHATSAPP_NUMBER`.
-        chat_config: Chat channel configuration. Pass it — `{}` for defaults —
-            to enable web chat.
+        rcs_config: Optional RCS channel tuning (RCSChannelConfig or dict). RCS
+            itself is enabled by setting `TWILIO_RCS_SENDER_ID`.
+        whatsapp_config: Optional WhatsApp channel tuning (WhatsAppChannelConfig
+            or dict). WhatsApp itself is enabled by setting `TWILIO_WHATSAPP_NUMBER`.
+        chat_config: Optional Chat channel configuration (ChatChannelConfig or dict)
 
     Attributes:
         channels: The full `ConnectorChannels` set. `channels.messaging` is the
             list to hand a server as `messaging_channels=`.
         voice: VoiceChannel instance for voice conversations
         sms: SMSChannel instance for SMS conversations
-        rcs: RCSChannel, or None when `rcs_config` was not given
-        whatsapp: WhatsAppChannel, or None when `whatsapp_config` was not given
-        chat: ChatChannel, or None when `chat_config` was not given
+        chat: ChatChannel instance for web chat conversations
+        rcs: RCSChannel, or None when no RCS sender ID is configured
+        whatsapp: WhatsAppChannel, or None when no WhatsApp number is configured
 
     Example:
         ```python
@@ -81,10 +80,10 @@ class StrandsConnector:
                 )
             )
 
-        # Create connector with agent factory, plus WhatsApp alongside SMS
-        connector = StrandsConnector(
-            tac=tac, agent_factory=create_agent, whatsapp_config={}
-        )
+        # Create connector with agent factory. Every channel whose Twilio
+        # sender is configured is built for you — set TWILIO_WHATSAPP_NUMBER
+        # and connector.whatsapp comes along with SMS.
+        connector = StrandsConnector(tac=tac, agent_factory=create_agent)
 
         # Use connector's channels for server
         server = TACFastAPIServer(
@@ -115,9 +114,10 @@ class StrandsConnector:
                 Receives ConversationSession context as parameter.
             sms_config: Optional SMS channel configuration
             voice_config: Optional Voice channel configuration
-            rcs_config: RCS channel configuration; pass it to enable RCS
-            whatsapp_config: WhatsApp channel configuration; pass it to enable WhatsApp
-            chat_config: Chat channel configuration; pass it to enable web chat
+            rcs_config: Optional RCS channel tuning; TWILIO_RCS_SENDER_ID enables RCS
+            whatsapp_config: Optional WhatsApp channel tuning;
+                TWILIO_WHATSAPP_NUMBER enables WhatsApp
+            chat_config: Optional Chat channel configuration
         """
         self.tac = tac
         self.tac.register_partner_connector(PartnerConnector.AWS_STRANDS, _tac_aws_version)

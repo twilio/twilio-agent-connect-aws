@@ -88,8 +88,10 @@ dependencies = [
 
 Connectors combine agent runtime integration with multi-channel conversation management:
 - Create and manage per-conversation agent instances
-- Build the channel set via `ConnectorChannels` (`connectors/channels.py`) — Voice
-  and SMS always, plus RCS / WhatsApp / Chat when their config is passed
+- Build the channel set via `ConnectorChannels` (`connectors/channels.py`) — Voice,
+  SMS, and Chat always, plus RCS / WhatsApp when their sender is configured
+  (`TACConfig.rcs_sender_id` / `whatsapp_number`). This matches `tac_google` and
+  `tac_microsoft`; `*_config` args are tuning only and never enable a channel.
 - Inject TAC memory context using `MemoryPromptBuilder`
 - Route responses back on the channel a message arrived on, via
   `connector.channels.send(context, response)` — no per-connector if/elif chains

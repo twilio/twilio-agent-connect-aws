@@ -62,8 +62,8 @@ connector = BedrockConnector(
 server = TACAWSFastAPIServer(
     tac=tac,
     voice_channel=connector.voice,
-    # Every messaging channel the connector enabled (SMS here; add rcs_config /
-    # whatsapp_config / chat_config above to enable more).
+    # Every messaging channel available to the connector (SMS and Chat, plus RCS
+    # and WhatsApp once their sender is set in the environment).
     messaging_channels=connector.channels.messaging,
 )
 

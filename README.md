@@ -43,8 +43,9 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
 
 ### Multi-Channel Communication
 - **Every TAC channel** - One codebase handles Voice, SMS, RCS, WhatsApp, and Chat
-- **Automatic conversation routing** - Messages route to the correct agent instance per conversation
+- **Automatic conversation routing** - Messages route to the correct agent instance per conversation, and replies go back out on the channel they arrived on
 - **Memory injection** - Customer history and preferences automatically included in agent context
+- **Voice TwiML control** - Greeting, voice, language, and interruption behavior via `TwiMLOptions`, set statically or per call
 
 ### Deployment Options
 - **FastAPI server** - Production-ready server with AWS ALB optimization and ngrok support for local testing (Fargate deployments)
@@ -102,6 +103,16 @@ TWILIO_CONVERSATION_CONFIGURATION_ID=conv_configuration_xxx
 TWILIO_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
 ```
 
+### Optional Environment Variables
+
+Voice, SMS, and Chat need nothing beyond the above. Setting a sender here is all
+it takes to add that channel — the connector builds it for you.
+
+```bash
+TWILIO_RCS_SENDER_ID=your_rcs_sender_id
+TWILIO_WHATSAPP_NUMBER=whatsapp:+1234567890
+```
+
 ## Examples
 
 Full examples available in [`getting_started/examples/`](https://github.com/twilio/twilio-agent-connect-aws/tree/main/getting_started/examples):
@@ -109,19 +120,6 @@ Full examples available in [`getting_started/examples/`](https://github.com/twil
 - **`strands_agents.py`** - Strands SDK with per-conversation agent management
 - **`bedrock_agents.py`** - AWS Bedrock Agents (console-created agents)
 - **`bedrock_agentcore_agents.py`** - AWS Bedrock AgentCore (custom agent code deployment)
-
-## Channels
-
-Connectors create Voice and SMS automatically, and add RCS, WhatsApp, or Chat
-when you pass their config (`rcs_config={}`, `whatsapp_config={}`,
-`chat_config={}`) — each also needs its sender configured, e.g.
-`TWILIO_RCS_SENDER_ID`. Pass `connector.channels.messaging` to a server as
-`messaging_channels=` and replies go out on whichever channel the message
-arrived on.
-
-Voice TwiML — greeting, voice, language, interruption behavior — is set
-statically or per call with `TwiMLOptions`. See the
-[API reference](https://twilio.github.io/twilio-agent-connect-aws/) for both.
 
 ## Deployment
 

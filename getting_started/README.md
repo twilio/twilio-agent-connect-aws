@@ -50,9 +50,8 @@ TWILIO_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.app
 
 ### Optional Channels
 
-Voice and SMS work with the required variables above. RCS and WhatsApp need one
-more each, then enable the channel on the connector with `rcs_config={}` /
-`whatsapp_config={}` (Chat needs no env var — `chat_config={}`):
+Voice, SMS, and Chat work with the required variables above. RCS and WhatsApp
+need one more each — set it and the connector builds the channel for you:
 
 ```bash
 TWILIO_RCS_SENDER_ID=your_rcs_sender_id

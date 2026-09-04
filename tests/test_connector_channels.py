@@ -40,39 +40,61 @@ def _session(channel: str) -> MagicMock:
     return session
 
 
+def _with_senders(tac: MagicMock) -> MagicMock:
+    """Configure both sender-gated channels on a mock TAC."""
+    tac.config.rcs_sender_id = "rcs_sender_123"
+    tac.config.whatsapp_number = "whatsapp:+15551234567"
+    return tac
+
+
 class TestChannelCreation:
     """Which channels get created, and which stay off."""
 
-    def test_voice_and_sms_always_created_others_opt_in(
+    def test_voice_sms_and_chat_always_created(
         self, mock_tac: MagicMock, channel_classes: dict[str, MagicMock]
     ) -> None:
         channels = ConnectorChannels(mock_tac)
 
         assert channels.voice is channel_classes["VoiceChannel"].return_value
         assert channels.sms is channel_classes["SMSChannel"].return_value
-        assert channels.rcs is None
-        assert channels.whatsapp is None
-        assert channels.chat is None
-        assert channels.messaging == [channels.sms]
-        channel_classes["RCSChannel"].assert_not_called()
-        channel_classes["WhatsAppChannel"].assert_not_called()
-        channel_classes["ChatChannel"].assert_not_called()
+        assert channels.chat is channel_classes["ChatChannel"].return_value
+        assert channels.messaging == [channels.sms, channels.chat]
 
-    def test_empty_dict_enables_a_channel(
+    def test_sender_gated_channels_off_without_a_sender(
         self, mock_tac: MagicMock, channel_classes: dict[str, MagicMock]
     ) -> None:
-        channels = ConnectorChannels(mock_tac, rcs_config={})
+        channels = ConnectorChannels(mock_tac)
 
-        channel_classes["RCSChannel"].assert_called_once_with(tac=mock_tac, config={})
+        assert channels.rcs is None
+        assert channels.whatsapp is None
+        channel_classes["RCSChannel"].assert_not_called()
+        channel_classes["WhatsAppChannel"].assert_not_called()
+
+    def test_configured_sender_enables_the_channel(
+        self, mock_tac: MagicMock, channel_classes: dict[str, MagicMock]
+    ) -> None:
+        mock_tac.config.rcs_sender_id = "rcs_sender_123"
+
+        channels = ConnectorChannels(mock_tac)
+
+        channel_classes["RCSChannel"].assert_called_once_with(tac=mock_tac, config=None)
         assert channels.rcs is channel_classes["RCSChannel"].return_value
+        assert channels.whatsapp is None
 
-    def test_all_channels_enabled(
+    def test_config_alone_does_not_enable_a_channel(
+        self, mock_tac: MagicMock, channel_classes: dict[str, MagicMock]
+    ) -> None:
+        """`*_config` is tuning only — without a sender the channel stays off."""
+        channels = ConnectorChannels(mock_tac, whatsapp_config={"memory_mode": "never"})
+
+        assert channels.whatsapp is None
+        channel_classes["WhatsAppChannel"].assert_not_called()
+
+    def test_all_channels_available(
         self, mock_tac: MagicMock, channel_classes: dict[str, MagicMock]
     ) -> None:
         channels = ConnectorChannels(
-            mock_tac,
-            rcs_config={},
-            whatsapp_config={},
+            _with_senders(mock_tac),
             chat_config={"agent_address": "ai-assistant"},
         )
 
@@ -89,7 +111,7 @@ class TestChannelCreation:
         self, mock_tac: MagicMock, channel_classes: dict[str, MagicMock]
     ) -> None:
         ConnectorChannels(
-            mock_tac,
+            _with_senders(mock_tac),
             voice_config={"memory_mode": "once"},
             sms_config={"memory_mode": "always"},
             whatsapp_config={"memory_mode": "never"},
@@ -124,7 +146,7 @@ class TestRouting:
         channel_name: str,
         attr: str,
     ) -> None:
-        channels = ConnectorChannels(mock_tac, rcs_config={}, whatsapp_config={}, chat_config={})
+        channels = ConnectorChannels(_with_senders(mock_tac))
         for name in ("voice", "sms", "rcs", "whatsapp", "chat"):
             getattr(channels, name).send_response = AsyncMock()
 
@@ -137,10 +159,10 @@ class TestRouting:
             getattr(channels, other).send_response.assert_not_awaited()
 
     @pytest.mark.asyncio
-    async def test_disabled_channel_drops_message(
+    async def test_unavailable_channel_drops_message(
         self, mock_tac: MagicMock, channel_classes: dict[str, MagicMock]
     ) -> None:
-        channels = ConnectorChannels(mock_tac)  # WhatsApp not enabled
+        channels = ConnectorChannels(mock_tac)  # no WhatsApp number configured
         channels.sms.send_response = AsyncMock()
         channels.voice.send_response = AsyncMock()
 
@@ -169,7 +191,7 @@ class TestRouting:
     async def test_stream_is_buffered_for_messaging(
         self, mock_tac: MagicMock, channel_classes: dict[str, MagicMock]
     ) -> None:
-        channels = ConnectorChannels(mock_tac, whatsapp_config={})
+        channels = ConnectorChannels(_with_senders(mock_tac))
         channels.whatsapp.send_response = AsyncMock()
 
         async def stream() -> AsyncGenerator[str, None]:
@@ -194,11 +216,8 @@ class TestConnectorExposure:
         channel_classes: dict[str, MagicMock],
     ) -> None:
         connector = StrandsConnector(
-            tac=mock_tac,
+            tac=_with_senders(mock_tac),
             agent_factory=mock_agent_factory,
-            rcs_config={},
-            whatsapp_config={},
-            chat_config={},
         )
 
         assert connector.voice is connector.channels.voice
@@ -215,9 +234,7 @@ class TestConnectorExposure:
         mock_agent_factory: MagicMock,
         channel_classes: dict[str, MagicMock],
     ) -> None:
-        connector = StrandsConnector(
-            tac=mock_tac, agent_factory=mock_agent_factory, whatsapp_config={}
-        )
+        connector = StrandsConnector(tac=_with_senders(mock_tac), agent_factory=mock_agent_factory)
         connector.whatsapp.send_response = AsyncMock()
 
         await connector._handle_message("hi", _session("WHATSAPP"), None)

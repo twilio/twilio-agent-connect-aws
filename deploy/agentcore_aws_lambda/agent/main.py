@@ -3,8 +3,6 @@ TAC Agent for AWS Bedrock AgentCore with Strands AI
 Simplified using StrandsConnector and TACAWSBedrockAgentCoreServer
 """
 
-import os
-
 from strands import Agent
 from strands.models import BedrockModel
 from strands.session import FileSessionManager
@@ -47,9 +45,8 @@ connector = StrandsConnector(
     agent_factory=create_agent,
     voice_config=VoiceChannelConfig(memory_mode="once"),
     sms_config=SMSChannelConfig(memory_mode="always"),
-    # Enabled only when a sender is set — these channels require one up front.
-    rcs_config={} if os.environ.get("TWILIO_RCS_SENDER_ID") else None,
-    whatsapp_config={} if os.environ.get("TWILIO_WHATSAPP_NUMBER") else None,
+    # RCS and WhatsApp come along automatically when TWILIO_RCS_SENDER_ID /
+    # TWILIO_WHATSAPP_NUMBER are set (see create_tac_config).
 )
 
 # Create app
