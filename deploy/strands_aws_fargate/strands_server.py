@@ -31,7 +31,7 @@ def create_agent(context: ConversationSession) -> Agent:
 connector = StrandsConnector(
     tac=tac,
     agent_factory=create_agent,
-    voice_config=VoiceChannelConfig(memory_mode="always"),
+    voice_config=VoiceChannelConfig(memory_mode="once"),
     sms_config=SMSChannelConfig(memory_mode="always"),
 )
 

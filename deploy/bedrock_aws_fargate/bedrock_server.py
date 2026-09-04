@@ -46,7 +46,7 @@ connector = BedrockConnector(
         "agentId": agent_id,
         "agentAliasId": agent_alias_id,
     },
-    voice_config=VoiceChannelConfig(memory_mode="always"),
+    voice_config=VoiceChannelConfig(memory_mode="once"),
     sms_config=SMSChannelConfig(memory_mode="always"),
 )
 

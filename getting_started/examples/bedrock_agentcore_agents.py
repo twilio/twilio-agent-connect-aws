@@ -124,8 +124,7 @@ connector = BedrockAgentCoreConnector(
     ),
     voice_config=VoiceChannelConfig(
         session_manager=ThreadSafeSessionManager(),
-        # Voice fetches memory once at call start and caches it — a
-        # per-turn fetch ("always") adds latency to every response.
+        # Fetched once at call start and cached; "always" adds per-turn latency.
         memory_mode="once",
         # ConversationRelay TwiML customization. Every <ConversationRelay>
         # attribute is available here (voice, language, interruptible, ...);
