@@ -42,9 +42,10 @@ AWS-specific connectors for [Twilio Agent Connect (TAC)](https://github.com/twil
   - **Fargate Deployment** - Container-based deployment with `BedrockAgentCoreConnector` and FastAPI server on AWS Fargate
 
 ### Multi-Channel Communication
-- **Voice and SMS support** - Single codebase handles both phone calls and text messages
-- **Automatic conversation routing** - Messages route to the correct agent instance per conversation
+- **Every TAC channel** - One codebase handles Voice, SMS, RCS, WhatsApp, and Chat
+- **Automatic conversation routing** - Messages route to the correct agent instance per conversation, and replies go back out on the channel they arrived on
 - **Memory injection** - Customer history and preferences automatically included in agent context
+- **Voice TwiML control** - Greeting, voice, language, and interruption behavior via `TwiMLOptions`, set statically or per call
 
 ### Deployment Options
 - **FastAPI server** - Production-ready server with AWS ALB optimization and ngrok support for local testing (Fargate deployments)
@@ -100,6 +101,16 @@ TWILIO_CONVERSATION_CONFIGURATION_ID=conv_configuration_xxx
 
 # Server Configuration (for Voice)
 TWILIO_VOICE_PUBLIC_DOMAIN=your-domain.ngrok.io
+```
+
+### Optional Environment Variables
+
+Voice, SMS, and Chat need nothing beyond the above. Setting a sender here is all
+it takes to add that channel — the connector builds it for you.
+
+```bash
+TWILIO_RCS_SENDER_ID=your_rcs_sender_id
+TWILIO_WHATSAPP_NUMBER=whatsapp:+1234567890
 ```
 
 ## Examples

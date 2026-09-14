@@ -7,10 +7,10 @@ import json
 from collections.abc import AsyncGenerator, Callable
 from typing import TYPE_CHECKING
 
-from tac.channels.sms import SMSChannel
-from tac.channels.voice import VoiceChannel
 from tac.core.logging import get_logger
 from tac.models.session import ConversationSession
+
+from tac_aws.connectors.channels import ConnectorChannels
 
 if TYPE_CHECKING:
     from mypy_boto3_bedrock_agentcore.type_defs import InvokeAgentRuntimeResponseTypeDef
@@ -168,8 +168,7 @@ async def handle_http_message(
     user_message: str,
     context: ConversationSession,
     memory_context: str | None,
-    voice_channel: VoiceChannel,
-    sms_channel: SMSChannel,
+    channels: ConnectorChannels,
 ) -> None:
     """
     Handle message via HTTP invocation and route response.
@@ -177,39 +176,19 @@ async def handle_http_message(
     Flow:
     1. Call user's invoke function to get streaming response
     2. Parse streaming response into text chunks
-    3. Route to channel:
-       - Voice: Stream chunks immediately for low latency
-       - SMS: Buffer complete response then send
+    3. Route to the channel the conversation arrived on. Voice streams the
+       chunks as they arrive for low latency; messaging channels send one
+       complete message, so the stream is collected first.
 
     Args:
         invoke_fn: User-provided function to invoke agent
         user_message: The user's message text
         context: Conversation session with metadata
         memory_context: Optional memory context string from TAC
-        voice_channel: Voice channel instance
-        sms_channel: SMS channel instance
+        channels: The connector's channel set, which does the routing
     """
     # Call user's invoke function to get response object
     response = invoke_fn(context, user_message, memory_context)
 
-    # Parse streaming response
-    response_stream = parse_streaming_response(response)
-
-    # Route response based on channel
-    if context.channel == "voice" and voice_channel:
-        # Voice: stream response chunks immediately
-        await voice_channel.send_response(
-            context.conversation_id, response_stream, role="assistant"
-        )
-    elif context.channel == "sms" and sms_channel:
-        # SMS: buffer complete response then send
-        chunks = []
-        async for chunk in response_stream:
-            chunks.append(chunk)
-        response_text = "".join(chunks)
-        await sms_channel.send_response(context.conversation_id, response_text, role="assistant")
-    else:
-        logger.error(
-            f"No channel handler for {context.channel}",
-            conversation_id=context.conversation_id,
-        )
+    # Parse streaming response and route it
+    await channels.send(context, parse_streaming_response(response))

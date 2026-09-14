@@ -9,6 +9,8 @@ Usage:
     from tac.core.config import TACConfig
     from tac_aws.server import TACAWSFastAPIServer
 
+    # TWILIO_VOICE_PUBLIC_DOMAIN (e.g. "myapp.ngrok.app") feeds
+    # TACConfig.voice_public_domain, which this server reads for the ALB fix.
     tac = TAC(config=TACConfig.from_env())
 
     # ... setup connectors ...
@@ -17,7 +19,6 @@ Usage:
         tac=tac,
         voice_channel=connector.voice,
         messaging_channels=[connector.sms],
-        public_domain=os.getenv("TWILIO_VOICE_PUBLIC_DOMAIN")  # e.g., "myapp.ngrok.app"
     )
 
     if __name__ == "__main__":
@@ -51,18 +52,16 @@ class TACAWSFastAPIServer(TACFastAPIServer):
     Required for AWS ALB deployments where ALB doesn't set X-Forwarded-Host, but
     also safe to use for local development with ngrok.
 
-    The public_domain is automatically obtained from TACServerConfig.public_domain,
-    which reads from TWILIO_VOICE_PUBLIC_DOMAIN environment variable.
+    The public domain is automatically obtained from ``TACConfig.voice_public_domain``,
+    which reads from the TWILIO_VOICE_PUBLIC_DOMAIN environment variable.
 
     Example:
-        from tac.server import TACServerConfig
-
         # Set TWILIO_VOICE_PUBLIC_DOMAIN=your-app.ngrok.app
+        tac = TAC(config=TACConfig.from_env())
         server = TACAWSFastAPIServer(
             tac=tac,
             voice_channel=voice,
             messaging_channels=[sms],
-            config=TACServerConfig.from_env()
         )
         server.start()
     """
@@ -90,15 +89,16 @@ class TACAWSFastAPIServer(TACFastAPIServer):
 
         super().__init__(tac, voice_channel, messaging_channels, config, app)
 
-        # Get public domain from server config
-        public_domain = config.public_domain if config.public_domain else None
+        # Public domain lives on TACConfig (TAC >= 2.0) — the voice channel builds
+        # its WebSocket and action URLs from the same value.
+        public_domain = tac.config.voice_public_domain
 
-        # Validate that public_domain is set for AWS ALB deployments
+        # Validate that voice_public_domain is set for AWS ALB deployments
         if not public_domain:
             raise ValueError(
-                "TACAWSFastAPIServer requires public_domain to be set. "
-                "Set TWILIO_VOICE_PUBLIC_DOMAIN environment variable or pass "
-                "config=TACServerConfig(public_domain='your-domain.ngrok.app'). "
+                "TACAWSFastAPIServer requires TACConfig.voice_public_domain to be set. "
+                "Set the TWILIO_VOICE_PUBLIC_DOMAIN environment variable or pass "
+                "TACConfig(voice_public_domain='your-domain.ngrok.app'). "
                 "If you don't need AWS ALB header fixing, use TACFastAPIServer instead."
             )
 

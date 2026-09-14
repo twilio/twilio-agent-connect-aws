@@ -35,6 +35,16 @@ async function main() {
         { name: 'AWS_REGION', value: envConfig.awsRegion },
         { name: 'TWILIO_PHONE_NUMBER', value: envConfig.twilioPhoneNumber },
         { name: 'TWILIO_CONVERSATION_CONFIGURATION_ID', value: envConfig.twilioConversationConfigurationId },
+        // Optional: injected only when set in .env.
+        ...(envConfig.twilioRcsSenderId
+          ? [{ name: 'TWILIO_RCS_SENDER_ID', value: envConfig.twilioRcsSenderId }]
+          : []),
+        ...(envConfig.twilioWhatsappNumber
+          ? [{ name: 'TWILIO_WHATSAPP_NUMBER', value: envConfig.twilioWhatsappNumber }]
+          : []),
+        ...(envConfig.twilioLogLevel
+          ? [{ name: 'TWILIO_LOG_LEVEL', value: envConfig.twilioLogLevel }]
+          : []),
       ]
     }))
   };

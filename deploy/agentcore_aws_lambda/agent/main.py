@@ -45,13 +45,18 @@ connector = StrandsConnector(
     agent_factory=create_agent,
     voice_config=VoiceChannelConfig(memory_mode="once"),
     sms_config=SMSChannelConfig(memory_mode="always"),
+    # RCS and WhatsApp come along automatically when TWILIO_RCS_SENDER_ID /
+    # TWILIO_WHATSAPP_NUMBER are set (see create_tac_config).
 )
 
 # Create app
 tac_app = TACAgentCoreApp(
     tac=tac,
     voice_channel=connector.voice,
-    sms_channel=connector.sms,
+    messaging_channels=connector.channels.messaging,
+    # Sent over the WebSocket: a TwiML welcomeGreeting never reaches the caller
+    # on AgentCore. See TACAgentCoreWebSocketAdapter.
+    welcome_message="Hello! How can I assist you today?",
 )
 
 # For AgentCore deployment

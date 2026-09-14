@@ -1,6 +1,6 @@
 [project]
 name = "twilio-agent-connect-aws"
-version = "1.1.0"
+version = "2.0.0"
 description = "AWS integrations for Twilio Agent Connect (TAC) - adapters and servers for AWS agent runtimes"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,13 +23,13 @@ classifiers = [
 
 dependencies = [
     # Core TAC from PyPI
-    "twilio-agent-connect>=1.0.0,<2",
+    "twilio-agent-connect>=2.3.0,<3",
 ]
 
 [project.optional-dependencies]
 # FastAPI-based TAC Server (uses TAC core's server extras)
 server = [
-    "twilio-agent-connect[server]>=1.0.0,<2",
+    "twilio-agent-connect[server]>=2.3.0,<3",
 ]
 
 # AWS Strands SDK connector
@@ -59,7 +59,7 @@ dev = [
     "boto3>=1.34.0,<2",
     "websockets>=13.0,<14",
     # Server dependencies (via TAC core)
-    "twilio-agent-connect[server]>=1.0.0,<2",
+    "twilio-agent-connect[server]>=2.3.0,<3",
     # Dev tools
     "pytest>=9.0.0,<10",
     "pytest-asyncio>=1.0.0,<2",
@@ -119,6 +119,8 @@ exclude = [
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+# Local scratch work, untracked and never seen by CI.
+extend-exclude = ["drafts"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "B", "C4", "UP", "N"]
@@ -135,6 +137,10 @@ combine-as-imports = true
 
 [tool.mypy]
 python_version = "3.10"
+plugins = ["pydantic.mypy"]
+# CDK synth output vendors libraries that shadow the real ones (gitignored, so
+# CI never sees it, but it breaks `make check` after a local deploy).
+exclude = "cdk\\.out/"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true

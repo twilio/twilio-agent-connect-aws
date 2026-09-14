@@ -123,7 +123,7 @@ connector = BedrockAgentCoreConnector(
     ),
     voice_config=VoiceChannelConfig(
         session_manager=ThreadSafeSessionManager(),
-        memory_mode="always",
+        memory_mode="once",
     ),
     sms_config=SMSChannelConfig(memory_mode="always"),
 )

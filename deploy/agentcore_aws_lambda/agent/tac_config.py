@@ -37,4 +37,8 @@ def create_tac_config() -> TACConfig:
         api_secret=credentials["TWILIO_API_SECRET"],
         phone_number=os.environ["TWILIO_PHONE_NUMBER"],
         conversation_configuration_id=os.environ["TWILIO_CONVERSATION_CONFIGURATION_ID"],
+        # Optional: senders for RCS/WhatsApp, required to enable those channels.
+        rcs_sender_id=os.environ.get("TWILIO_RCS_SENDER_ID"),
+        whatsapp_number=os.environ.get("TWILIO_WHATSAPP_NUMBER"),
+        log_level=os.environ.get("TWILIO_LOG_LEVEL", "INFO"),
     )

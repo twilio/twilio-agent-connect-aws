@@ -13,9 +13,16 @@ if TYPE_CHECKING:
 
 @pytest.fixture
 def mock_tac() -> MagicMock:
-    """Create a mock TAC instance."""
+    """Create a mock TAC instance.
+
+    The sender-gated channels (RCS, WhatsApp) are off by default: a bare
+    MagicMock returns a truthy child for `config.rcs_sender_id`, which would
+    silently enable them everywhere. Tests that want them set the sender.
+    """
     tac = MagicMock()
     tac.on_message_ready = MagicMock()
+    tac.config.rcs_sender_id = None
+    tac.config.whatsapp_number = None
     return tac
 
 
@@ -42,7 +49,7 @@ def mock_conversation_session() -> MagicMock:
     """Create a mock ConversationSession."""
     session = MagicMock()
     session.conversation_id = "test_conv_123"
-    session.channel = "voice"
+    session.channel = "VOICE"
     session.customer_id = "customer_123"
     return session
 
