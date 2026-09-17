@@ -2,42 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/api/connectors/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/api/proxy/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/api/server/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/api/tools/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/deploy/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/deploy/agentcore_aws_fargate/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/deploy/agentcore_aws_lambda/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/deploy/bedrock_aws_fargate/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
     <url>
          <loc>https://twilio.github.io/twilio-agent-connect-aws/2.0.0/deploy/strands_aws_fargate/</loc>
-         <lastmod>2026-09-15</lastmod>
+         <lastmod>2026-09-17</lastmod>
     </url>
 </urlset>
