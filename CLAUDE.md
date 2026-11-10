@@ -267,6 +267,8 @@ Tests should:
 - Test connector implementations
 - Test server initialization and routing
 
+CI's `TAC Compat` matrix also runs lint, mypy and tests against the latest patch of each `twilio-agent-connect` minor in the `pyproject.toml` range (`.github/scripts/tac_versions.py`), so code must work on the oldest supported minor, not just the locked one. Reproduce and fix steps: CONTRIBUTING.md, "SDK Compatibility Checks". uv is pinned to 0.9.26; use `uvx --from uv==0.9.26 uv ...` if the local uv differs.
+
 ## Documentation
 
 - The public API reference is published at https://twilio.github.io/twilio-agent-connect-aws/ — versioned with `mike`, deployed from `.github/workflows/docs.yml` on each GitHub release.

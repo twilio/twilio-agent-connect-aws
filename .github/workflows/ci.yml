@@ -261,6 +261,32 @@ jobs:
       - name: Run tests
         run: uv run --no-sync pytest
 
+      - name: Explain failure
+        if: failure()
+        env:
+          TAC_VERSION: ${{ matrix.tac }}
+        run: |
+          echo "::error title=TAC Compat ${TAC_VERSION}::This change breaks twilio-agent-connect ${TAC_VERSION}, which pyproject.toml still declares as supported. See the job summary to reproduce and fix."
+          cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+          ## TAC Compat failed for twilio-agent-connect ${TAC_VERSION}
+
+          The code was checked against ${TAC_VERSION}, the latest patch of a minor that the \`twilio-agent-connect\` range in \`pyproject.toml\` still allows, and a step failed. The failing step's log has the error.
+
+          **Reproduce locally**
+
+          \`\`\`shell
+          uvx --from uv==0.9.26 uv sync --frozen --all-extras --all-groups
+          uvx --from uv==0.9.26 uv pip install "twilio-agent-connect[server]==${TAC_VERSION}"
+          uvx --from uv==0.9.26 uv run --no-sync pytest   # or ruff check . / mypy, whichever step failed
+          uvx --from uv==0.9.26 uv sync --frozen --all-extras --all-groups   # restore the locked version
+          \`\`\`
+
+          **Fix, one of:**
+
+          1. Keep supporting ${TAC_VERSION}: avoid or guard the SDK API that is missing or different in that version.
+          2. Drop it on purpose: raise the lower bound of every \`twilio-agent-connect\` requirement in \`pyproject.toml\`, then run \`uvx --from uv==0.9.26 uv lock\`. The matrix follows the new range automatically.
+          EOF
+
   all-checks:
     name: All Checks Passed
     needs: [lockfile-hygiene, lint, type-check, test, build, discover-tac-versions, tac-compat]
