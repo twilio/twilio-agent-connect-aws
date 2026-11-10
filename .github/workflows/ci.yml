@@ -186,9 +186,84 @@ jobs:
           pip install dist/*.whl
           python -c "import tac_aws; print(f'Successfully imported tac_aws')"
 
+  discover-tac-versions:
+    name: Discover TAC Versions
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest-large' || 'ubuntu-x64' }}
+    outputs:
+      versions: ${{ steps.discover.outputs.versions }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Authenticate with Artifactory
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: twilio/sdk-actions/artifactory-oidc@26f95a54e57993c1bf3b26bec2905f395814c23a # v1.0.0
+        with:
+          ecosystem: python
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        with:
+          version: "0.9.26"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: List latest patch of each supported minor
+        id: discover
+        run: |
+          versions=$(uv run --no-project --with packaging python .github/scripts/tac_versions.py)
+          echo "Testing twilio-agent-connect versions: $versions"
+          echo "versions=$versions" >> "$GITHUB_OUTPUT"
+
+  tac-compat:
+    name: TAC Compat - ${{ matrix.tac }}
+    needs: discover-tac-versions
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest-large' || 'ubuntu-x64' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        tac: ${{ fromJSON(needs.discover-tac-versions.outputs.versions) }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Authenticate with Artifactory
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: twilio/sdk-actions/artifactory-oidc@26f95a54e57993c1bf3b26bec2905f395814c23a # v1.0.0
+        with:
+          ecosystem: python
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        with:
+          version: "0.9.26"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies with twilio-agent-connect ${{ matrix.tac }}
+        run: |
+          uv venv
+          . .venv/bin/activate
+          uv sync --frozen --all-extras --all-groups
+          uv pip install "twilio-agent-connect[server]==${{ matrix.tac }}"
+
+      # --no-sync keeps uv run from reverting the pinned version to the lockfile's.
+      - name: Run ruff check
+        run: uv run --no-sync ruff check .
+
+      - name: Run mypy
+        run: MYPYPATH=src uv run --no-sync mypy src/tac_aws getting_started
+
+      - name: Run tests
+        run: uv run --no-sync pytest
+
   all-checks:
     name: All Checks Passed
-    needs: [lockfile-hygiene, lint, type-check, test, build]
+    needs: [lockfile-hygiene, lint, type-check, test, build, discover-tac-versions, tac-compat]
     runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest-large' || 'ubuntu-x64' }}
     if: always()
     steps:
@@ -198,7 +273,9 @@ jobs:
              [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs['type-check'].result }}" != "success" ] || \
              [ "${{ needs.test.result }}" != "success" ] || \
-             [ "${{ needs.build.result }}" != "success" ]; then
+             [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs['discover-tac-versions'].result }}" != "success" ] || \
+             [ "${{ needs['tac-compat'].result }}" != "success" ]; then
             echo "One or more checks failed"
             exit 1
           fi
