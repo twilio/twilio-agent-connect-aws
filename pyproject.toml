@@ -88,6 +88,10 @@ Issues = "https://github.com/twilio/twilio-agent-connect-aws/issues"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.uv]
+# Matches setup-uv in the workflows; a newer uv would rewrite uv.lock to a newer revision.
+required-version = "==0.9.26"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/tac_aws"]
 exclude = [

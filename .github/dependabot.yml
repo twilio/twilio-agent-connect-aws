@@ -14,3 +14,13 @@ updates:
     directory: "/deploy/agentcore_aws_fargate/agent"
     schedule:
       interval: "weekly"
+
+  - package-ecosystem: "pip"
+    directory: "/deploy/agentcore_aws_lambda/lambda"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "uv"
+    directory: "/deploy/agentcore_aws_lambda/agent"
+    schedule:
+      interval: "weekly"
