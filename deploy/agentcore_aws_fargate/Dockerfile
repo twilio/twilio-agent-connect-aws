@@ -4,13 +4,13 @@ FROM python:3.13.5 AS builder
 # Set working directory
 WORKDIR /app
 
-# Dependency versions (twilio-agent-connect-aws always uses latest)
+# Dependency versions (twilio-agent-connect-aws uses the latest 2.x)
 ARG PYTHON_DOTENV_VERSION=1.0.0
 
 # Install dependencies from PyPI
 # Note: bedrock-agentcore, boto3, and type stubs are managed by twilio-agent-connect-aws
 RUN pip install --no-cache-dir \
-    'twilio-agent-connect-aws[agentcore,server]' \
+    'twilio-agent-connect-aws[agentcore,server]>=2.0.1,<3' \
     "python-dotenv==${PYTHON_DOTENV_VERSION}"
 
 # Final stage
