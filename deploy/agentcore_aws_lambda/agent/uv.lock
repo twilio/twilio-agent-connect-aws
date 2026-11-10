@@ -19,7 +19,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "strands-agents", specifier = ">=1.40.0" },
-    { name = "twilio-agent-connect-aws", extras = ["agentcore", "server"], specifier = "==1.1.0" },
+    { name = "twilio-agent-connect-aws", extras = ["agentcore", "server"], specifier = ">=2.0.1,<3" },
 ]
 
 [[package]]
@@ -1710,6 +1710,20 @@ wheels = [
 ]
 
 [[package]]
+name = "segment-analytics-python"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyjwt", extra = ["crypto"] },
+    { name = "python-dateutil" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6c/e6/528c8b52eb7f2c35a4f240a06cdcdca0787b9667395cbef831a142230efb/segment_analytics_python-2.4.0.tar.gz", hash = "sha256:56184d755aa73415a59e113239f14ff0f98b3bd77b6bfea6c6034a87de561a38", size = 105138, upload-time = "2026-09-29T16:31:09.709Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0c/ea/b28606a3b5aace55a9bcba7c547fa74a209aae71f0807cfc8f8df4dfcc45/segment_analytics_python-2.4.0-py3-none-any.whl", hash = "sha256:0e809bb5555454ac229e52c86c9998b7f6919ffa11cc9cfa70867dd3b2ea87a7", size = 39304, upload-time = "2026-09-29T16:31:08.504Z" },
+]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1784,16 +1798,17 @@ wheels = [
 
 [[package]]
 name = "twilio-agent-connect"
-version = "1.0.1"
+version = "2.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
+    { name = "segment-analytics-python" },
     { name = "twilio" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2f/f2/792ac8115aa396ccbccf7dc109324718262c10df0b8bd730a503b0d2d75b/twilio_agent_connect-1.0.1.tar.gz", hash = "sha256:9c17eb7f9c38e21bd55615baad1480708d4db1382e1f404516c73fa7b6bf8d85", size = 85825, upload-time = "2026-05-07T11:21:52.076Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9a/30/9ba01ca67a69486058cce4f532c042df9ecba4e810aea651cf91a49948de/twilio_agent_connect-2.5.0.tar.gz", hash = "sha256:e582c1bc87fd110c960fe4d9d0455c8ee54899ea65fdb1891463396ad8fb1b61", size = 129751, upload-time = "2026-09-24T18:18:25.449Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5b/8a/cf17bcb06e1b24e421d5f657d12bd21738e065e6a1dab6d351a184960e69/twilio_agent_connect-1.0.1-py3-none-any.whl", hash = "sha256:a115c140f1fde2ab125bec7858cd1e8f009be18f2791248c8947cfe2e6417b44", size = 115221, upload-time = "2026-05-07T11:21:50.746Z" },
+    { url = "https://files.pythonhosted.org/packages/55/6c/1c7785b6ed097878e5477c9c1047e0440a25e5802bac9aa3bb613d386f46/twilio_agent_connect-2.5.0-py3-none-any.whl", hash = "sha256:6e3e0f722f9e57cee143036e19c6c94361afb4c8922f8381aae8ab4f72b34a4d", size = 175327, upload-time = "2026-09-24T18:18:24.134Z" },
 ]
 
 [package.optional-dependencies]
@@ -1805,14 +1820,14 @@ server = [
 
 [[package]]
 name = "twilio-agent-connect-aws"
-version = "1.1.0"
+version = "2.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "twilio-agent-connect" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/63/93/65c5bbd363f89b14400e0b355fc1c5059733bcfbc6dc3810a3af726d4a85/twilio_agent_connect_aws-1.1.0.tar.gz", hash = "sha256:9086a8b7387f1fa46e5f09e23ff4760a3ebbd7e19600fb209ab21a3e6e112a45", size = 27933, upload-time = "2026-07-01T20:59:46.781Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f4/25/2ad00867b442b2428c4bbb12f8e43a6ad19852ad562e492e74ad3d03479f/twilio_agent_connect_aws-2.0.1.tar.gz", hash = "sha256:96505d5f88dbef3353000a05512673e8036c2e0e9575eb70d8bcf5012bbc8435", size = 35752, upload-time = "2026-11-10T17:31:17.985Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/64/e872210c0c2a4dbd037ae1d9aacbc78596c23350c0ea77f8041fef54ebd9/twilio_agent_connect_aws-1.1.0-py3-none-any.whl", hash = "sha256:68437f88bc44df53157ce566708cc70af4c64bd91551c8d5ee099727bd4114fa", size = 32706, upload-time = "2026-07-01T20:59:45.516Z" },
+    { url = "https://files.pythonhosted.org/packages/df/39/6071f6f344661060deac0c3fd713abaae8e9425aa2356ab77b981a69ad9b/twilio_agent_connect_aws-2.0.1-py3-none-any.whl", hash = "sha256:d87d14ffa2e10056bc20fc462db112567bea60d6c4b762ae066fb70390f1aed1", size = 38980, upload-time = "2026-11-10T17:31:16.751Z" },
 ]
 
 [package.optional-dependencies]

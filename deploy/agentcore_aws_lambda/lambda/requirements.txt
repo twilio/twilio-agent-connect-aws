@@ -1,1 +1,1 @@
-twilio-agent-connect-aws[agentcore]==2.0.0
+twilio-agent-connect-aws[agentcore]>=2.0.1,<3
