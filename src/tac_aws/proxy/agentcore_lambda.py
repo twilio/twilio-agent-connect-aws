@@ -36,7 +36,7 @@ from urllib.parse import parse_qs
 
 import boto3
 from bedrock_agentcore.runtime import AgentCoreRuntimeClient
-from tac.channels.voice.twiml import generate_twiml
+from tac.channels.voice import generate_twiml
 from tac.core.logging import get_logger
 from tac.models.voice import TwiMLOptions, TwiMLRequest
 
