@@ -48,25 +48,8 @@ jobs:
           . .venv/bin/activate
           uv sync --frozen --all-extras --all-groups
 
-      - name: Run ruff check
-        run: |
-          . .venv/bin/activate
-          echo "Checking Python files in repository:"
-          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | sort | head -30
-          echo ""
-          echo "Total Python files to check:"
-          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | wc -l
-          echo ""
-          uv run ruff check .
-
-      - name: Run ruff format check
-        run: |
-          . .venv/bin/activate
-          echo "Checking formatting for Python files in repository:"
-          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | wc -l
-          echo "files"
-          echo ""
-          uv run ruff format --check .
+      - name: Run lint
+        run: make lint
 
   type-check:
     name: Type Check
@@ -97,17 +80,7 @@ jobs:
           uv sync --frozen --all-extras --all-groups
 
       - name: Run mypy
-        run: |
-          . .venv/bin/activate
-          echo "Type checking directories: src/tac_aws getting_started"
-          echo ""
-          echo "Python files in src/tac_aws:"
-          find src/tac_aws -name "*.py" -type f | wc -l
-          echo ""
-          echo "Python files in getting_started:"
-          find getting_started -name "*.py" -type f | wc -l
-          echo ""
-          MYPYPATH=src uv run mypy src/tac_aws getting_started
+        run: make type-check
 
   test:
     name: Test - Python ${{ matrix.python-version }}
@@ -142,9 +115,7 @@ jobs:
           uv sync --frozen --all-extras --all-groups
 
       - name: Run tests
-        run: |
-          . .venv/bin/activate
-          uv run pytest
+        run: make test
 
   build:
     name: Build Package
@@ -208,7 +179,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: "3.12"
+          python-version: "3.10"
 
       - name: List latest patch of each supported minor
         id: discover
@@ -225,6 +196,9 @@ jobs:
       fail-fast: false
       matrix:
         tac: ${{ fromJSON(needs.discover-tac-versions.outputs.versions) }}
+    env:
+      # Keeps uv run from reverting the pinned SDK to the lockfile's version.
+      UV_NO_SYNC: "1"
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
@@ -242,7 +216,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: "3.12"
+          python-version: "3.10"
 
       - name: Install dependencies with twilio-agent-connect ${{ matrix.tac }}
         run: |
@@ -251,15 +225,14 @@ jobs:
           uv sync --frozen --all-extras --all-groups
           uv pip install "twilio-agent-connect[server]==${{ matrix.tac }}"
 
-      # --no-sync keeps uv run from reverting the pinned version to the lockfile's.
-      - name: Run ruff check
-        run: uv run --no-sync ruff check .
+      - name: Run lint
+        run: make lint
 
       - name: Run mypy
-        run: MYPYPATH=src uv run --no-sync mypy src/tac_aws getting_started
+        run: make type-check
 
       - name: Run tests
-        run: uv run --no-sync pytest
+        run: make test
 
       - name: Explain failure
         if: failure()
@@ -277,7 +250,7 @@ jobs:
           \`\`\`shell
           uv sync --frozen --all-extras --all-groups
           uv pip install "twilio-agent-connect[server]==${TAC_VERSION}"
-          uv run --no-sync pytest   # or ruff check . / mypy, whichever step failed
+          UV_NO_SYNC=1 make test   # or make lint / make type-check, whichever step failed
           uv sync --frozen --all-extras --all-groups   # restore the locked version
           \`\`\`
 
