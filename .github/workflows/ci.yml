@@ -275,16 +275,16 @@ jobs:
           **Reproduce locally**
 
           \`\`\`shell
-          uvx --from uv==0.9.26 uv sync --frozen --all-extras --all-groups
-          uvx --from uv==0.9.26 uv pip install "twilio-agent-connect[server]==${TAC_VERSION}"
-          uvx --from uv==0.9.26 uv run --no-sync pytest   # or ruff check . / mypy, whichever step failed
-          uvx --from uv==0.9.26 uv sync --frozen --all-extras --all-groups   # restore the locked version
+          uv sync --frozen --all-extras --all-groups
+          uv pip install "twilio-agent-connect[server]==${TAC_VERSION}"
+          uv run --no-sync pytest   # or ruff check . / mypy, whichever step failed
+          uv sync --frozen --all-extras --all-groups   # restore the locked version
           \`\`\`
 
           **Fix, one of:**
 
           1. Keep supporting ${TAC_VERSION}: avoid or guard the SDK API that is missing or different in that version.
-          2. Drop it on purpose: raise the lower bound of every \`twilio-agent-connect\` requirement in \`pyproject.toml\`, then run \`uvx --from uv==0.9.26 uv lock\`. The matrix follows the new range automatically.
+          2. Drop it on purpose: raise the lower bound of every \`twilio-agent-connect\` requirement in \`pyproject.toml\`, then run \`uv lock\`. The matrix follows the new range automatically.
           EOF
 
   all-checks:
