@@ -38,7 +38,9 @@ def fetch_index(index_url: str) -> str:
     parts = urllib.parse.urlsplit(index_url.rstrip("/") + f"/{PACKAGE}/")
     headers = {"Accept": "text/html"}
     if parts.username is not None or parts.password is not None:
-        creds = f"{parts.username or ''}:{parts.password or ''}"
+        user = urllib.parse.unquote(parts.username or "")
+        password = urllib.parse.unquote(parts.password or "")
+        creds = f"{user}:{password}"
         headers["Authorization"] = "Basic " + base64.b64encode(creds.encode()).decode()
         parts = parts._replace(netloc=parts.hostname + (f":{parts.port}" if parts.port else ""))
     request = urllib.request.Request(urllib.parse.urlunsplit(parts), headers=headers)
