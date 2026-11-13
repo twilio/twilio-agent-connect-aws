@@ -20,7 +20,7 @@ TAC (Twilio Agent Connect) is middleware that integrates with Twilio platform se
 - **Conversation Intelligence** - Extracts insights via language operators
 - **Knowledge** - Semantic search over knowledge bases
 
-**In twilio-agent-connect-aws**: Connectors register `on_message_ready()` (and, where they hold per-conversation state, `on_conversation_ended()`) callbacks on a `TAC` instance, inject Conversation Memory into the agent prompt via `MemoryPromptBuilder`, and route each reply back on the channel it arrived on. The TAC conversation id is the key for per-conversation agent state (a Strands agent instance, a Bedrock or AgentCore session).
+**In twilio-agent-connect-aws**: Connectors register `on_message_ready()` (plus lifecycle callbacks where they hold per-conversation state) on a `TAC` instance, inject Conversation Memory into the agent prompt via `MemoryPromptBuilder`, and route each reply back on the channel it arrived on. The TAC conversation id is the key for per-conversation agent state (a Strands agent instance, a Bedrock or AgentCore session).
 
 ## Development Commands
 
@@ -101,7 +101,7 @@ Each runtime's AWS SDK is only required by its own extra, so installing with no 
 Connectors combine agent runtime integration with channel management. Each one:
 - Builds the channel set via `ConnectorChannels`: Voice, SMS and Chat always; RCS and WhatsApp only when `TACConfig.rcs_sender_id` / `whatsapp_number` is configured. Their `*_config` args are tuning only and never enable a channel.
 - Exposes channels as attributes (`voice`, `sms`, `chat`, and `rcs` / `whatsapp`, which are `None` when not configured).
-- Registers with TAC via `on_message_ready()`; Strands and AgentCore also register `on_conversation_ended()` to drop per-conversation state.
+- Registers with TAC via `on_message_ready()`. Strands also registers `on_conversation_ended()`; AgentCore registers `on_conversation_ended()` and `on_interrupt()` only when a WebSocket runtime is configured.
 - Injects Conversation Memory into the agent prompt via `MemoryPromptBuilder`.
 
 **ConnectorChannels** (`connectors/channels.py`): shared by all three connectors. `channels.messaging` is the list to hand a server as `messaging_channels=`; `channels.send(context, response)` routes a reply back on the channel it arrived on, buffering a streamed response for messaging channels and passing it through token-by-token for voice.
@@ -116,7 +116,7 @@ Connectors combine agent runtime integration with channel management. Each one:
 
 **TACAWSFastAPIServer**: FastAPI server with AWS ALB header fixing for Twilio signature validation. Reads the public domain from `TACConfig.voice_public_domain` (TAC 2.x moved it off `TACServerConfig`).
 
-**TACAgentCoreApp**: TAC adapter for AgentCore runtime. Registers HTTP (SMS) and WebSocket (Voice) handlers.
+**TACAgentCoreApp**: TAC adapter for AgentCore runtime. Registers HTTP (messaging channels) and WebSocket (Voice) handlers.
 
 **TACAgentCoreWebSocketAdapter**: WebSocket wrapper that sends welcome greeting for Twilio ConversationRelay.
 
@@ -216,7 +216,7 @@ connector = StrandsConnector(tac=tac, agent_factory=create_agent)
 tac_app = TACAgentCoreApp(
     tac=tac,
     voice_channel=connector.voice,
-    sms_channel=connector.sms,
+    messaging_channels=connector.channels.messaging,
 )
 
 app = tac_app.app  # Expose for AgentCore runtime
@@ -277,6 +277,7 @@ CI's `TAC Compat` matrix also runs lint, mypy and tests against the latest patch
 When a new `twilio-agent-connect` release is published to PyPI, bump every `twilio-agent-connect` constraint in `pyproject.toml` together (base dependency and each extra that pulls it), then re-lock and run all checks:
 
 ```bash
+uv lock --upgrade-package twilio-agent-connect
 make sync
 make check
 ```
