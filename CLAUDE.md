@@ -85,8 +85,6 @@ dependencies = [
 
 ### Optional Extras
 
-Each runtime's AWS SDK is only required by its own extra, so installing with no extras never fails on import.
-
 - `server` - FastAPI server utilities (`twilio-agent-connect[server]`)
 - `strands` - AWS Strands SDK
 - `bedrock` - AWS Bedrock Agents (boto3 + type stubs)
@@ -274,15 +272,9 @@ CI's `TAC Compat` matrix also runs lint, mypy and tests against the latest patch
 
 ## Updating TAC Dependency
 
-When a new `twilio-agent-connect` release is published to PyPI, bump every `twilio-agent-connect` constraint in `pyproject.toml` together (base dependency and each extra that pulls it), then re-lock and run all checks:
+New `twilio-agent-connect` releases need no change here. The `pyproject.toml` range already allows them, Dependabot refreshes `uv.lock` weekly, and the `TAC Compat` matrix picks up new minors automatically.
 
-```bash
-uv lock --upgrade-package twilio-agent-connect
-make sync
-make check
-```
-
-Raising the lower bound drops older minors from the `TAC Compat` matrix, so only raise it when code needs a newer TAC feature.
+Change the range only when code needs a newer TAC feature. Update every `twilio-agent-connect` constraint in `pyproject.toml` together (the base dependency and each extra that pulls it in), then run `uv lock` and `make check`. Raising the lower bound drops older minors from the `TAC Compat` matrix.
 
 ## Documentation
 
