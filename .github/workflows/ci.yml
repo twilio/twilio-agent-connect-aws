@@ -48,25 +48,8 @@ jobs:
           . .venv/bin/activate
           uv sync --frozen --all-extras --all-groups
 
-      - name: Run ruff check
-        run: |
-          . .venv/bin/activate
-          echo "Checking Python files in repository:"
-          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | sort | head -30
-          echo ""
-          echo "Total Python files to check:"
-          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | wc -l
-          echo ""
-          uv run ruff check .
-
-      - name: Run ruff format check
-        run: |
-          . .venv/bin/activate
-          echo "Checking formatting for Python files in repository:"
-          find . -name "*.py" -not -path "./.venv/*" -not -path "./.*" -type f | wc -l
-          echo "files"
-          echo ""
-          uv run ruff format --check .
+      - name: Run lint
+        run: make lint
 
   type-check:
     name: Type Check
@@ -97,17 +80,7 @@ jobs:
           uv sync --frozen --all-extras --all-groups
 
       - name: Run mypy
-        run: |
-          . .venv/bin/activate
-          echo "Type checking directories: src/tac_aws getting_started"
-          echo ""
-          echo "Python files in src/tac_aws:"
-          find src/tac_aws -name "*.py" -type f | wc -l
-          echo ""
-          echo "Python files in getting_started:"
-          find getting_started -name "*.py" -type f | wc -l
-          echo ""
-          MYPYPATH=src uv run mypy src/tac_aws getting_started
+        run: make type-check
 
   test:
     name: Test - Python ${{ matrix.python-version }}
@@ -142,9 +115,7 @@ jobs:
           uv sync --frozen --all-extras --all-groups
 
       - name: Run tests
-        run: |
-          . .venv/bin/activate
-          uv run pytest
+        run: make test
 
   build:
     name: Build Package
@@ -186,9 +157,112 @@ jobs:
           pip install dist/*.whl
           python -c "import tac_aws; print(f'Successfully imported tac_aws')"
 
+  discover-tac-versions:
+    name: Discover TAC Versions
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest-large' || 'ubuntu-x64' }}
+    outputs:
+      versions: ${{ steps.discover.outputs.versions }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Authenticate with Artifactory
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: twilio/sdk-actions/artifactory-oidc@26f95a54e57993c1bf3b26bec2905f395814c23a # v1.0.0
+        with:
+          ecosystem: python
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        with:
+          version: "0.9.26"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"  # tac_versions.py needs tomllib (3.11+); it runs outside the project
+
+      - name: List latest patch of each supported minor
+        id: discover
+        run: |
+          versions=$(uv run --no-project --with packaging python .github/scripts/tac_versions.py)
+          echo "Testing twilio-agent-connect versions: $versions"
+          echo "versions=$versions" >> "$GITHUB_OUTPUT"
+
+  tac-compat:
+    name: TAC Compat - ${{ matrix.tac }}
+    needs: discover-tac-versions
+    runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest-large' || 'ubuntu-x64' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        tac: ${{ fromJSON(needs.discover-tac-versions.outputs.versions) }}
+    env:
+      # Keeps uv run from reverting the pinned SDK to the lockfile's version.
+      UV_NO_SYNC: "1"
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Authenticate with Artifactory
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: twilio/sdk-actions/artifactory-oidc@26f95a54e57993c1bf3b26bec2905f395814c23a # v1.0.0
+        with:
+          ecosystem: python
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@0c5e2b8115b80b4c7c5ddf6ffdd634974642d182 # v5
+        with:
+          version: "0.9.26"
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies with twilio-agent-connect ${{ matrix.tac }}
+        run: |
+          uv venv
+          . .venv/bin/activate
+          uv sync --frozen --all-extras --all-groups
+          uv pip install "twilio-agent-connect[server]==${{ matrix.tac }}"
+
+      - name: Run lint
+        run: make lint
+
+      - name: Run mypy
+        run: make type-check
+
+      - name: Run tests
+        run: make test
+
+      - name: Explain failure
+        if: failure()
+        env:
+          TAC_VERSION: ${{ matrix.tac }}
+        run: |
+          echo "::error title=TAC Compat ${TAC_VERSION}::This change breaks twilio-agent-connect ${TAC_VERSION}, which pyproject.toml still declares as supported. See the job summary to reproduce and fix."
+          cat >> "$GITHUB_STEP_SUMMARY" <<EOF
+          ## TAC Compat failed for twilio-agent-connect ${TAC_VERSION}
+
+          The code was checked against ${TAC_VERSION}, the latest patch of a minor that the \`twilio-agent-connect\` range in \`pyproject.toml\` still allows, and a step failed. The failing step's log has the error.
+
+          **Reproduce locally**
+
+          \`\`\`shell
+          uv sync --frozen --all-extras --all-groups
+          uv pip install "twilio-agent-connect[server]==${TAC_VERSION}"
+          UV_NO_SYNC=1 make test   # or make lint / make type-check, whichever step failed
+          uv sync --frozen --all-extras --all-groups   # restore the locked version
+          \`\`\`
+
+          **Fix, one of:**
+
+          1. Keep supporting ${TAC_VERSION}: avoid or guard the SDK API that is missing or different in that version.
+          2. Drop it on purpose: raise the lower bound of every \`twilio-agent-connect\` requirement in \`pyproject.toml\`, then run \`uv lock\`. The matrix follows the new range automatically.
+          EOF
+
   all-checks:
     name: All Checks Passed
-    needs: [lockfile-hygiene, lint, type-check, test, build]
+    needs: [lockfile-hygiene, lint, type-check, test, build, discover-tac-versions, tac-compat]
     runs-on: ${{ github.event.pull_request.head.repo.fork && 'ubuntu-latest-large' || 'ubuntu-x64' }}
     if: always()
     steps:
@@ -198,7 +272,9 @@ jobs:
              [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs['type-check'].result }}" != "success" ] || \
              [ "${{ needs.test.result }}" != "success" ] || \
-             [ "${{ needs.build.result }}" != "success" ]; then
+             [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs['discover-tac-versions'].result }}" != "success" ] || \
+             [ "${{ needs['tac-compat'].result }}" != "success" ]; then
             echo "One or more checks failed"
             exit 1
           fi

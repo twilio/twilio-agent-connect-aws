@@ -104,4 +104,13 @@ To ensure consistency throughout the source code, keep these rules in mind as yo
 - **Formatting** - Code must pass `make format` (ruff format — line length 100). Run `make format` to auto-fix.
 - **Python Version** - Target Python 3.10+. Use modern syntax (type unions with `|`, etc.).
 
+## SDK Compatibility Checks
+
+`make check` runs against the `twilio-agent-connect` version in `uv.lock`. CI runs the same `make lint`, `make type-check` and `make test` targets against that version, and again, as the `TAC Compat - <version>` jobs, against the latest patch of every SDK minor allowed by the `twilio-agent-connect` range in `pyproject.toml`.
+
+If one of those jobs fails, its job summary shows the commands to reproduce it locally. Then either:
+
+1. Keep supporting that version: avoid or guard the SDK API that is missing or different there.
+2. Drop it on purpose: raise the lower bound of every `twilio-agent-connect` requirement in `pyproject.toml` and run `uv lock`. The matrix follows the new range automatically.
+
 [github]: https://github.com/twilio/twilio-agent-connect-aws
