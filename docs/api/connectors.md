@@ -8,8 +8,9 @@ Connectors combine AWS agent runtime integration with TAC channel management.
 
 ## Channels
 
-Every connector builds the same channel set — Voice, SMS, RCS, WhatsApp, and
-Chat — and routes responses through it. `connector.channels` exposes it.
+Every connector builds the same channel set — Voice, SMS, and Chat always, plus
+RCS and WhatsApp when their sender is configured — and routes responses through
+it. `connector.channels` exposes it.
 
 ::: tac_aws.connectors.channels
     options:
